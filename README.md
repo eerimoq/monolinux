@@ -1,2 +1,0 @@
-# monolinux
-Single process Linux
