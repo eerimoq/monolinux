@@ -6,6 +6,4 @@ before_install:
   - sudo apt-get install -y fakeroot
 
 script:
-  - make download
-  - make musl
-  - make initrd kernel
+  - make build -j $(cat /proc/cpuinfo | grep processor | wc -l)

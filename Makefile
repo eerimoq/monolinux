@@ -8,13 +8,16 @@ KERNEL_SRC = $(STAGE)/linux-4.10.6
 MUSL_SRC = $(STAGE)/musl-1.1.22
 MUSL_GCC = $(STAGE)/musl/bin/musl-gcc
 
-.PHONY: all download kernel initrd run clean
+.PHONY: all download kernel initrd run build clean
 
 all:
+	$(MAKE) build
+	$(MAKE) run
+
+build:
 	$(MAKE) download
 	$(MAKE) musl
 	$(MAKE) initrd kernel
-	$(MAKE) run
 
 download: $(KERNEL_SRC) $(MUSL_SRC)
 
