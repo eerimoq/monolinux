@@ -2,6 +2,9 @@ dist: xenial
 
 language: c
 
+before_install:
+  - sudo apt-get install -y fakeroot
+
 script:
   - make download
   - make musl
