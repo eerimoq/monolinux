@@ -3,6 +3,13 @@ Monolinux
 
 Single process Linux.
 
+Plan
+====
+
+- Networking.
+
+- File access.
+
 Build and run
 =============
 

@@ -18,3 +18,4 @@ mkdir -p $STAGE
 # 4. Download and extract the Linux kernel and BusyBox
 cd $STAGE
 curl https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.10.6.tar.xz | tar xJf -
+curl https://www.musl-libc.org/releases/musl-1.1.22.tar.gz | tar xzf -
