@@ -5,11 +5,6 @@ Monolinux
 
 Single process Linux.
 
-Plan
-====
-
-- Networking.
-
 Build and run
 =============
 
