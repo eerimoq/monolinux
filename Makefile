@@ -30,7 +30,7 @@ $(APP): src/main.c
 	gcc -Wall -Werror $< -static -o $@
 
 $(INITRAMFS): $(APP)
-	scripts/create_initramfs.sh
+	fakeroot scripts/create_initramfs.sh
 
 run:
 	scripts/run.sh

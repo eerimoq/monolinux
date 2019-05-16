@@ -19,7 +19,7 @@ mkdir -p $STAGE
 mkdir -pv $TOP/initramfs/x86-busybox
 cd $TOP/initramfs/x86-busybox
 mkdir -pv {bin,dev,sbin,etc,proc,sys/kernel/debug,usr/{bin,sbin},lib,lib64,mnt/root,root}
-sudo cp -av /dev/{null,console,tty,sda1} $TOP/initramfs/x86-busybox/dev/
+cp -av /dev/{null,console,tty,sda1} $TOP/initramfs/x86-busybox/dev/
 
 # 9. Create init and make it executable
 cp $STAGE/app $TOP/initramfs/x86-busybox/init

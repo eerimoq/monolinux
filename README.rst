@@ -1,11 +1,20 @@
+Monolinux
+=========
+
 Single process Linux.
 
-Initial scripts based on `this blog post`_.
-.
+Build and run
+=============
+
+First of all, install a few packages:
+
+.. code-block:: text
+
+   sudo apt-get install curl qemu-system-x86
+
+Now, run the command below to create a file system, build the Linux
+kernel and run everything in QEMU.
 
 .. code-block:: text
 
    $ make
-   $ make run
-
-.. _this blog post: https://www.centennialsoftwaresolutions.com/blog/build-the-linux-kernel-and-busybox-and-run-them-on-qemu
