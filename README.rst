@@ -1,3 +1,5 @@
+|buildstatus|_
+
 Monolinux
 =========
 
@@ -23,3 +25,6 @@ kernel and run everything in QEMU.
 .. code-block:: text
 
    $ make
+
+.. |buildstatus| image:: https://travis-ci.org/eerimoq/monolinux.svg
+.. _buildstatus: https://travis-ci.org/eerimoq/monolinux
