@@ -7,3 +7,4 @@ before_install:
 
 script:
   - make build -j $(cat /proc/cpuinfo | grep processor | wc -l)
+  - make size
