@@ -1,0 +1,8 @@
+dist: xenial
+
+language: c
+
+script:
+  - make download
+  - make musl
+  - make initrd kernel

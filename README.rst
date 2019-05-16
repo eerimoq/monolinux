@@ -8,8 +8,6 @@ Plan
 
 - Networking.
 
-- File access.
-
 Build and run
 =============
 
