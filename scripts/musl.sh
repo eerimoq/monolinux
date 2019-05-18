@@ -4,11 +4,10 @@
 #
 
 set -e
-set -x
 
-STAGE=$(readlink -f .)/build
+STAGE=$(readlink -f build)
 INSTALL_DIR=$STAGE/musl
-MUSL_ROOT=$STAGE/musl-1.1.22
+MUSL_ROOT=$STAGE/musl-$ML_MUSL_VERSION
 
 mkdir -p $INSTALL_DIR
 

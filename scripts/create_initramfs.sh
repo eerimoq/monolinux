@@ -1,18 +1,13 @@
 #!/usr/bin/env bash
-#
-# Must be run from the repository root.
-#
 
 set -e
-set -x
 
 # Taken from
 # https://www.centennialsoftwaresolutions.com/blog/build-the-linux-kernel-and-busybox-and-run-them-on-qemu.
 
 # 3. Create a workspace:
-ROOT=$(readlink -f .)
-STAGE=$ROOT/build
-TOP=$STAGE/teeny-linux
+STAGE=$(readlink -f build)
+TOP=$STAGE/monolinux
 mkdir -p $STAGE
 
 # 8. Build the directory structure of the initramfs
@@ -29,6 +24,4 @@ chmod +x $TOP/initramfs/x86-busybox/init
 
 # 11. Create the initramfs:
 cd $TOP/initramfs/x86-busybox
-find . | cpio -H newc -o > ../initramfs.cpio
-cd ..
-cat initramfs.cpio | gzip > $TOP/initramfs.igz
+find . | cpio -H newc -o > ../../initramfs.cpio

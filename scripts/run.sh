@@ -3,10 +3,12 @@
 # Must be run from the repository root.
 #
 
+set -e
+
 STAGE=$(readlink -f build)
-TOP=$STAGE/teeny-linux
+TOP=$STAGE/monolinux
 
 qemu-system-x86_64 \
     -kernel $TOP/obj/linux-x86-allnoconfig/arch/x86/boot/bzImage \
-    -initrd $TOP/initramfs.igz \
-    -nographic -append "earlyprintk=serial,ttyS0 console=ttyS0"
+    -initrd $TOP/initramfs.cpio \
+    -nographic -append "console=ttyS0"
