@@ -11,14 +11,14 @@ Build and run
 
 First of all, install a few packages:
 
-.. code-block:: text
+.. code-block:: shell
 
    sudo apt-get install curl qemu-system-x86 flex bison
 
 Then download the sources to the ``$ML_SOURCES`` directory. This is
 normally only done once.
 
-.. code-block:: text
+.. code-block:: shell
 
    cd ..
    wget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.1.3.tar.xz
@@ -28,7 +28,7 @@ normally only done once.
 Now, run the commands below to create a file system, build the Linux
 kernel and run everything in QEMU.
 
-.. code-block:: text
+.. code-block:: shell
 
    $ source setup.sh
    $ make -C examples/hello_world
@@ -38,7 +38,7 @@ Configuration
 
 Environment variables exported in setup.sh. Change at will.
 
-.. code-block:: text
+.. code-block:: shell
 
    $ env | grep ML_
    ML_LINUX_VERSION=5.1.3
@@ -52,7 +52,7 @@ Linux kernel
 
 Unpack the Linux kernel archive.
 
-.. code-block:: text
+.. code-block:: shell
 
    $ cd examples/hello_world
    $ make unpack
@@ -61,7 +61,7 @@ Unpack the Linux kernel archive.
 Create a new Linux kernel configuration based on the all-no
 configuration.
 
-.. code-block:: text
+.. code-block:: shell
 
    $ make O=myconfig allnoconfig
    $ make O=myconfig nconfig
@@ -70,7 +70,7 @@ Start using the default configuraiton.
 
 .. code-block:: shell
 
-   $ cp myconfig/.config $ML_LINUX_CONFIG
+   $ cp myconfig/.config ${ML_LINUX_CONFIG}
 
 or
 
