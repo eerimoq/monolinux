@@ -9,3 +9,6 @@ export ML_LINUX_VERSION=5.1.3
 
 # MUSL version to use.
 export ML_MUSL_VERSION=1.1.22
+
+# Linux kernel configuration.
+export ML_LINUX_CONFIG=$ML_ROOT/configs/x86_64-default.config

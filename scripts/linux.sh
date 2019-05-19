@@ -11,6 +11,6 @@ TOP=$STAGE/monolinux
 mkdir -p $STAGE
 
 cd $STAGE/linux-$ML_LINUX_VERSION
-make O=$TOP/obj/linux-x86-allnoconfig allnoconfig
-cp $ML_ROOT/configs/linux-x86-allnoconfig.config $TOP/obj/linux-x86-allnoconfig/.config
-make O=$TOP/obj/linux-x86-allnoconfig
+make O=$TOP/obj/monolinux allnoconfig
+cp $ML_LINUX_CONFIG $TOP/obj/monolinux/.config
+make O=$TOP/obj/monolinux

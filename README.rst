@@ -42,11 +42,41 @@ Environment variables exported in setup.sh. Change at will.
 
    $ env | grep ML_
    ML_LINUX_VERSION=5.1.3
+   ML_LINUX_CONFIG=/home/erik/workspace/monolinux/configs/x86_64-default.config
    ML_SOURCES=/home/erik/workspace/monolinux/..
    ML_ROOT=/home/erik/workspace/monolinux
    ML_MUSL_VERSION=1.1.22
 
-ToDo: Add some information about Linux kernel configuration.
+Linux kernel
+------------
+
+Unpack the Linux kernel archive.
+
+.. code-block:: text
+
+   $ cd examples/hello_world
+   $ make unpack
+   $ cd build/linux-$ML_LINUX_VERSION
+
+Create a new Linux kernel configuration based on the all-no
+configuration.
+
+.. code-block:: text
+
+   $ make O=myconfig allnoconfig
+   $ make O=myconfig nconfig
+
+Start using the default configuraiton.
+
+.. code-block:: text
+
+   $ cp myconfig/.config $ML_LINUX_CONFIG
+
+or
+
+.. code-block:: text
+
+   $ export ML_LINUX_CONFIG=$(readlink -f myconfig/.config)
 
 Ideas
 =====

@@ -1,6 +1,6 @@
 STAGE = $(shell readlink -f build)
 TOP = $(STAGE)/monolinux
-BZIMAGE = $(TOP)/obj/linux-x86-allnoconfig/arch/x86/boot/bzImage
+BZIMAGE = $(TOP)/obj/monolinux/arch/x86/boot/bzImage
 INITRAMFS = $(TOP)/initramfs.igz
 INITRAMFS_CPIO = $(TOP)/initramfs.cpio
 APP = $(STAGE)/app
