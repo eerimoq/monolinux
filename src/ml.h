@@ -69,15 +69,30 @@ struct ml_bus_t {
 };
 
 /**
- * Initialize the monolinux module.
+ * Initialize the monolinux module. This must be called before any
+ * other function in this module.
  */
 void ml_init(void);
 
 /**
- * Get the unique id string.
+ * Get the name of given unique id.
  */
 const char *ml_uid_str(struct ml_uid_t *uid_p);
 
+/**
+ * Subscribe to given message on the default bus.
+ */
+void ml_subscribe(struct ml_queue_t *queue_p, struct ml_uid_t *uid_p);
+
+/**
+ * Broadcast given message on the default bus.
+ */
+void ml_broadcast(void *message_p);
+
+/**
+ * Initialize the message submodule. Normally only called by
+ * ml_init().
+ */
 void ml_message_init(void);
 
 /**
@@ -102,9 +117,9 @@ void ml_message_share(void *message_p, int count);
 void ml_queue_init(struct ml_queue_t *self_p, int length);
 
 /**
- * Get the oldest message from given message queue. It is forbedden to
+ * Get the oldest message from given message queue. It is forbidden to
  * modify the message as it may be shared between multiple
- * threads.
+ * threads. Free the message once used.
  */
 struct ml_uid_t *ml_queue_get(struct ml_queue_t *self_p, void **message_pp);
 
@@ -127,24 +142,9 @@ void ml_bus_subscribe(struct ml_bus_t *self_p,
                       struct ml_uid_t *uid_p);
 
 /**
- * Broadcast given message on the default bus.
- */
-void ml_broadcast(void *message_p);
-
-/**
- * Subscribe to given message on the default bus.
- */
-void ml_subscribe(struct ml_queue_t *queue_p, struct ml_uid_t *uid_p);
-
-/**
  * Broadcast given message on given bus. All subscribers will receive
  * the message.
  */
 void ml_bus_broadcast(struct ml_bus_t *self_p, void *message_p);
-
-/**
- * Get the default bus object.
- */
-struct ml_bus_t *ml_bus(void);
 
 #endif
