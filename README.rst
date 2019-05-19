@@ -20,10 +20,10 @@ normally only done once.
 
 .. code-block:: shell
 
-   cd ..
-   wget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.1.3.tar.xz
-   wget https://www.musl-libc.org/releases/musl-1.1.22.tar.gz
-   cd -
+   $ cd ..
+   $ wget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.1.3.tar.xz
+   $ wget https://www.musl-libc.org/releases/musl-1.1.22.tar.gz
+   $ cd -
 
 Now, run the commands below to create a file system, build the Linux
 kernel and run everything in QEMU.
