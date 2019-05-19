@@ -13,7 +13,7 @@ First of all, install a few packages:
 
 .. code-block:: shell
 
-   sudo apt-get install curl qemu-system-x86 flex bison
+   $ sudo apt-get install curl qemu-system-x86 flex bison
 
 Then download the sources to the ``$ML_SOURCES`` directory. This is
 normally only done once.
