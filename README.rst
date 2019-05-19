@@ -15,8 +15,8 @@ First of all, install a few packages:
 
    sudo apt-get install curl qemu-system-x86 flex bison
 
-Then download the sources into ``$ML_SOURCES``. This is normally only
-done once.
+Then download the sources to the ``$ML_SOURCES`` directory. This is
+normally only done once.
 
 .. code-block:: text
 
@@ -68,13 +68,13 @@ configuration.
 
 Start using the default configuraiton.
 
-.. code-block:: text
+.. code-block:: shell
 
    $ cp myconfig/.config $ML_LINUX_CONFIG
 
 or
 
-.. code-block:: text
+.. code-block:: shell
 
    $ export ML_LINUX_CONFIG=$(readlink -f myconfig/.config)
 
