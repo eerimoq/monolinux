@@ -1,12 +1,8 @@
 #!/usr/bin/env bash
-#
-# Must be run from the repository root.
-#
 
 set -e
 
-STAGE=$(readlink -f build)
-TOP=$STAGE/monolinux
+TOP=$(readlink -f build)/monolinux
 
 qemu-system-x86_64 \
     -kernel $TOP/obj/monolinux/arch/x86/boot/bzImage \

@@ -1,12 +1,11 @@
-STAGE = $(shell readlink -f build)
-TOP = $(STAGE)/monolinux
+BUILD = $(shell readlink -f build)
+TOP = $(BUILD)/monolinux
 BZIMAGE = $(TOP)/obj/monolinux/arch/x86/boot/bzImage
-INITRAMFS = $(TOP)/initramfs.igz
-INITRAMFS_CPIO = $(TOP)/initramfs.cpio
-APP = $(STAGE)/app
-LINUX_SRC = $(STAGE)/linux-$(ML_LINUX_VERSION)
-MUSL_SRC = $(STAGE)/musl-$(ML_MUSL_VERSION)
-MUSL_GCC = $(STAGE)/musl/bin/musl-gcc
+INITRAMFS = $(TOP)/initramfs.cpio
+APP = $(BUILD)/app
+LINUX_SRC = $(BUILD)/linux-$(ML_LINUX_VERSION)
+MUSL_SRC = $(BUILD)/musl-$(ML_MUSL_VERSION)
+MUSL_GCC = $(BUILD)/musl/bin/musl-gcc
 SCRIPTS_DIR = $(ML_ROOT)/scripts
 
 INC += $(ML_ROOT)/src
@@ -31,13 +30,13 @@ build:
 unpack: $(LINUX_SRC) $(MUSL_SRC)
 
 $(MUSL_SRC):
-	mkdir -p $(STAGE)
-	cd $(STAGE) && \
+	mkdir -p $(BUILD)
+	cd $(BUILD) && \
 	tar xzf $(ML_SOURCES)/musl-$(ML_MUSL_VERSION).tar.gz
 
 $(LINUX_SRC):
-	mkdir -p $(STAGE)
-	cd $(STAGE) && \
+	mkdir -p $(BUILD)
+	cd $(BUILD) && \
 	tar xJf $(ML_SOURCES)/linux-$(ML_LINUX_VERSION).tar.xz
 
 linux: $(BZIMAGE)
@@ -56,17 +55,17 @@ initrd:
 app: $(APP)
 
 $(APP): $(SRC)
-	mkdir -p $(STAGE)
+	mkdir -p $(BUILD)
 	$(MUSL_GCC) -Wall -Wextra -Werror -O2 $(INC:%=-I%) $^ -static -o $@
 
 $(INITRAMFS): $(APP)
 	fakeroot $(SCRIPTS_DIR)/create_initramfs.sh
 
 size:
-	ls -l $(BZIMAGE) $(INITRAMFS_CPIO)
+	ls -l $(BZIMAGE) $(INITRAMFS)
 
 run:
 	$(SCRIPTS_DIR)/run.sh
 
 clean:
-	rm -rf $(TOP) $(APP)
+	rm -rf $(BUILD)

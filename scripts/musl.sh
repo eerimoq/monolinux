@@ -1,13 +1,10 @@
 #!/usr/bin/env bash
-#
-# Must be run from the repository root.
-#
 
 set -e
 
-STAGE=$(readlink -f build)
-INSTALL_DIR=$STAGE/musl
-MUSL_ROOT=$STAGE/musl-$ML_MUSL_VERSION
+BUILD=$(readlink -f build)
+INSTALL_DIR=$BUILD/musl
+MUSL_ROOT=$BUILD/musl-$ML_MUSL_VERSION
 
 mkdir -p $INSTALL_DIR
 

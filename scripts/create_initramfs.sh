@@ -6,9 +6,9 @@ set -e
 # https://www.centennialsoftwaresolutions.com/blog/build-the-linux-kernel-and-busybox-and-run-them-on-qemu.
 
 # 3. Create a workspace:
-STAGE=$(readlink -f build)
-TOP=$STAGE/monolinux
-mkdir -p $STAGE
+BUILD=$(readlink -f build)
+TOP=$BUILD/monolinux
+mkdir -p $BUILD
 
 # 8. Build the directory structure of the initramfs
 mkdir -pv $TOP/initramfs/x86-busybox
@@ -17,7 +17,7 @@ mkdir -pv {bin,dev,sbin,etc,proc,sys/kernel/debug,usr/{bin,sbin},lib,lib64,mnt/r
 cp -av /dev/{null,console,tty,sda1} $TOP/initramfs/x86-busybox/dev/
 
 # 9. Create init and make it executable
-cp $STAGE/app $TOP/initramfs/x86-busybox/init
+cp $BUILD/app $TOP/initramfs/x86-busybox/init
 
 # 10. Make init executable:
 chmod +x $TOP/initramfs/x86-busybox/init
