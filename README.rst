@@ -70,7 +70,7 @@ Start using the default configuraiton.
 
 .. code-block:: shell
 
-   $ cp myconfig/.config ${ML_LINUX_CONFIG}
+   $ cp myconfig/.config $ML_LINUX_CONFIG
 
 or
 
