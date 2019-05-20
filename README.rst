@@ -32,6 +32,13 @@ kernel and run everything in QEMU.
 
    $ source setup.sh
    $ make -C examples/hello_world
+   ...
+   Hello world!
+   Hello world!
+   Hello world!
+   ...
+
+Exit QEMU with Ctrl-A C and then q <Enter>.
 
 Configuration
 =============
