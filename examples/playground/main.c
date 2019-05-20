@@ -140,9 +140,9 @@ int print_info(const char *fpath,
     return (0);
 }
 
-static void print_processes(void)
+static void print_filesystem(void)
 {
-    nftw("/proc", print_info, 20, FTW_PHYS);
+    nftw("/", print_info, 20, FTW_PHYS);
 }
 
 static void slog(void)
@@ -172,7 +172,7 @@ int main()
     }
 
     print_banner();
-    print_processes();
+    print_filesystem();
     slog();
 
     while (1) {
