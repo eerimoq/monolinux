@@ -65,4 +65,15 @@ static inline void *xrealloc(void *buf_p, size_t size)
     return (buf_p);
 }
 
+/**
+ * Initialize the message submodule. Normally only called by
+ * ml_init().
+ */
+void ml_message_init(void);
+
+/**
+ * Share given message count times. Count must not be negative.
+ */
+void ml_message_share(void *message_p, int count);
+
 #endif

@@ -28,6 +28,7 @@
 
 #include <stdlib.h>
 #include "ml.h"
+#include "internal.h"
 
 struct module_t {
     struct ml_bus_t bus;

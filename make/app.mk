@@ -30,11 +30,13 @@ build:
 unpack: $(LINUX_SRC) $(MUSL_SRC)
 
 $(MUSL_SRC):
+	@echo "Unpacking MUSL."
 	mkdir -p $(BUILD)
 	cd $(BUILD) && \
 	tar xzf $(ML_SOURCES)/musl-$(ML_MUSL_VERSION).tar.gz
 
 $(LINUX_SRC):
+	@echo "Unpacking Linux."
 	mkdir -p $(BUILD)
 	cd $(BUILD) && \
 	tar xJf $(ML_SOURCES)/linux-$(ML_LINUX_VERSION).tar.xz
@@ -44,9 +46,11 @@ linux: $(BZIMAGE)
 musl: $(MUSL_GCC)
 
 $(MUSL_GCC): $(MUSL_SRC)
+	@echo "Building MUSL."
 	+$(SCRIPTS_DIR)/musl.sh
 
 $(BZIMAGE): $(LINUX_SRC)
+	@echo "Building linux."
 	+$(SCRIPTS_DIR)/linux.sh
 
 initrd:
@@ -55,10 +59,12 @@ initrd:
 app: $(APP)
 
 $(APP): $(SRC)
+	@echo "Building the application."
 	mkdir -p $(BUILD)
 	$(MUSL_GCC) -Wall -Wextra -Werror -O2 $(INC:%=-I%) $^ -static -o $@
 
 $(INITRAMFS): $(APP)
+	@echo "Creating the initramfs."
 	fakeroot $(SCRIPTS_DIR)/create_initramfs.sh
 
 size:

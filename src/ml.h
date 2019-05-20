@@ -90,12 +90,6 @@ void ml_subscribe(struct ml_queue_t *queue_p, struct ml_uid_t *uid_p);
 void ml_broadcast(void *message_p);
 
 /**
- * Initialize the message submodule. Normally only called by
- * ml_init().
- */
-void ml_message_init(void);
-
-/**
  * Allocate a message with given id and size.
  */
 void *ml_message_alloc(struct ml_uid_t *uid_p, size_t size);
@@ -104,11 +98,6 @@ void *ml_message_alloc(struct ml_uid_t *uid_p, size_t size);
  * Free given message.
  */
 void ml_message_free(void *message_p);
-
-/**
- * Share given message count times. Count must not be negative.
- */
-void ml_message_share(void *message_p, int count);
 
 /**
  * Initialize given message queue. Only one thread may get messages
