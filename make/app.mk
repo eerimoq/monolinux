@@ -15,6 +15,7 @@ SRC ?= \
 	main.c \
 	$(ML_ROOT)/src/ml.c \
 	$(ML_ROOT)/src/ml_bus.c \
+	$(ML_ROOT)/src/ml_log_object.c \
 	$(ML_ROOT)/src/ml_message.c \
 	$(ML_ROOT)/src/ml_queue.c
 

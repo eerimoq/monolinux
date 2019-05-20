@@ -26,54 +26,33 @@
  * This file is part of the Monolinux project.
  */
 
-#ifndef INTERNAL_H
-#define INTERNAL_H
+#include "ml.h"
 
-#include <stdlib.h>
-
-static inline struct ml_message_header_t *message_to_header(void *message_p)
+int main()
 {
-    return (&((struct ml_message_header_t *)message_p)[-1]);
+    struct ml_log_object_t log_object_1;
+    struct ml_log_object_t log_object_2;
+
+    ml_init();
+
+    /* Initialize two log objects. */
+    ml_log_object_init(&log_object_1, "object-1", ML_LOG_UPTO(DEBUG));
+    ml_log_object_init(&log_object_2, "object-2", ML_LOG_UPTO(INFO));
+
+    /* Use the first log object. */
+    ml_log_object_print(&log_object_1, ML_LOG_DEBUG, "Debug level 1!");
+    ml_log_object_print(&log_object_1, ML_LOG_INFO, "Info level 1!");
+
+    /* Use the second log object. */
+    ml_log_object_print(&log_object_2, ML_LOG_DEBUG, "Debug level 2!");
+    ml_log_object_print(&log_object_2, ML_LOG_INFO, "Info level 2!");
+    ml_log_object_set_mask(&log_object_2, ML_LOG_MASK(DEBUG));
+    ml_log_object_print(&log_object_2, ML_LOG_DEBUG, "Debug level 3!");
+    ml_log_object_print(&log_object_2, ML_LOG_INFO, "Info level 3!");
+
+    /* Short form. */
+    ML_DEBUG(&log_object_1, "Debug level 4!");
+    ML_INFO(&log_object_1, "Info level 4!");
+
+    return (0);
 }
-
-static inline void *message_from_header(struct ml_message_header_t *header_p)
-{
-    return (&header_p[1]);
-}
-
-static inline void *xmalloc(size_t size)
-{
-    void *buf_p;
-
-    buf_p = malloc(size);
-
-    if (buf_p == NULL) {
-        exit(1);
-    }
-
-    return (buf_p);
-}
-
-static inline void *xrealloc(void *buf_p, size_t size)
-{
-    buf_p = realloc(buf_p, size);
-
-    if (buf_p == NULL) {
-        exit(1);
-    }
-
-    return (buf_p);
-}
-
-/**
- * Initialize the message submodule. Normally only called by
- * ml_init().
- */
-void ml_message_init(void);
-
-/**
- * Share given message count times. Count must not be negative.
- */
-void ml_message_share(void *message_p, int count);
-
-#endif

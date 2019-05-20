@@ -1,4 +1,4 @@
-# monolinux root folder.
+# Monolinux root folder.
 export ML_ROOT=$(readlink -f .)
 
 # Path to source code archives.

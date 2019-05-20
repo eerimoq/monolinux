@@ -23,12 +23,13 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * This file is part of the monolinux project.
+ * This file is part of the Monolinux project.
  */
 
 #ifndef ML_H
 #define ML_H
 
+#include <stdbool.h>
 #include <pthread.h>
 
 /**
@@ -38,6 +39,37 @@
     struct ml_uid_t name = {                    \
         .name_p = #name                         \
     }
+
+#define ML_LOG_EMERGENCY   0
+#define ML_LOG_ALERT       1
+#define ML_LOG_CRITICAL    2
+#define ML_LOG_ERROR       3
+#define ML_LOG_WARNING     4
+#define ML_LOG_NOTICE      5
+#define ML_LOG_INFO        6
+#define ML_LOG_DEBUG       7
+
+#define ML_LOG_MASK(level) (1 << (ML_LOG_ ## level))
+#define ML_LOG_UPTO(level) ((1 << (ML_LOG_ ## level + 1)) - 1)
+#define ML_LOG_ALL         ML_LOG_UPTO(DEBUG)
+#define ML_LOG_NONE        0x00
+
+#define ML_EMERGENCY(log_object_p, fmt_p, ...)                          \
+    ml_log_object_print(log_object_p, ML_LOG_EMERGENCY, fmt_p, ##__VA_ARGS__)
+#define ML_ALERT(log_object_p, fmt_p, ...)                              \
+    ml_log_object_print(log_object_p, ML_LOG_ALERT, fmt_p, ##__VA_ARGS__)
+#define ML_CRITICAL(log_object_p, fmt_p, ...)                           \
+    ml_log_object_print(log_object_p, ML_LOG_CRITICAL, fmt_p, ##__VA_ARGS__)
+#define ML_ERROR(log_object_p, fmt_p, ...)                              \
+    ml_log_object_print(log_object_p, ML_LOG_ERROR, fmt_p, ##__VA_ARGS__)
+#define ML_WARNING(log_object_p, fmt_p, ...)                            \
+    ml_log_object_print(log_object_p, ML_LOG_WARNING, fmt_p, ##__VA_ARGS__)
+#define ML_NOTICE(log_object_p, fmt_p, ...)                             \
+    ml_log_object_print(log_object_p, ML_LOG_NOTICE, fmt_p, ##__VA_ARGS__)
+#define ML_INFO(log_object_p, fmt_p, ...)                               \
+    ml_log_object_print(log_object_p, ML_LOG_INFO, fmt_p, ##__VA_ARGS__)
+#define ML_DEBUG(log_object_p, fmt_p, ...)                              \
+    ml_log_object_print(log_object_p, ML_LOG_DEBUG, fmt_p, ##__VA_ARGS__)
 
 struct ml_uid_t {
     const char *name_p;
@@ -68,8 +100,13 @@ struct ml_bus_t {
     struct ml_bus_elem_t *elems_p;
 };
 
+struct ml_log_object_t {
+    const char *name_p;
+    int mask;
+};
+
 /**
- * Initialize the monolinux module. This must be called before any
+ * Initialize the Monolinux module. This must be called before any
  * other function in this module.
  */
 void ml_init(void);
@@ -135,5 +172,33 @@ void ml_bus_subscribe(struct ml_bus_t *self_p,
  * the message.
  */
 void ml_bus_broadcast(struct ml_bus_t *self_p, void *message_p);
+
+/**
+ * Initialize given log object with given name and mask.
+ */
+void ml_log_object_init(struct ml_log_object_t *self_p,
+                        const char *name_p,
+                        int mask);
+
+/**
+ * Set given log mask for given log object.
+ */
+void ml_log_object_set_mask(struct ml_log_object_t *self_p,
+                            int mask);
+
+/**
+ * Check if given log level is enabled in given log object.
+ */
+bool ml_log_object_is_enabled_for(struct ml_log_object_t *self_p,
+                                  int level);
+
+/**
+ * Check if given log level is set in the log object mask. If so,
+ * format a log entry and print it.
+ */
+void ml_log_object_print(struct ml_log_object_t *self_p,
+                         int level,
+                         const char *fmt_p,
+                         ...);
 
 #endif

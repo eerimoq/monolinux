@@ -23,7 +23,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * This file is part of the monolinux project.
+ * This file is part of the Monolinux project.
  */
 
 #include <stdint.h>
