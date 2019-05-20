@@ -31,7 +31,7 @@ kernel and run everything in QEMU.
 .. code-block:: shell
 
    $ source setup.sh
-   $ make -C examples/hello_world
+   $ make -C examples/hello_world run
    ...
    Hello world!
    Hello world!
@@ -94,7 +94,7 @@ Ideas
 
 - Run on some embedded system.
 
-- Add unit tests of the monolinux library.
+- Add unit tests of the Monolinux library.
 
 .. |buildstatus| image:: https://travis-ci.org/eerimoq/monolinux.svg
 .. _buildstatus: https://travis-ci.org/eerimoq/monolinux
