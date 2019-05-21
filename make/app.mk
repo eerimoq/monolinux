@@ -85,4 +85,4 @@ $(APP): $(SRC)
 
 $(INITRAMFS): $(APP)
 	@echo "Creating the initramfs."
-	fakeroot $(ML_ROOT)/make/create_initramfs.sh
+	fakeroot $(ML_ROOT)/make/create_initramfs.sh $(BUILD) $(TOP)
