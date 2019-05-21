@@ -64,8 +64,7 @@ static int compare_qsort(const void *lelem_p, const void *relem_p)
     }
 }
 
-static void insert_element_with_uid(struct ml_bus_t *self_p,
-                                    struct ml_uid_t *uid_p)
+static void insert_element(struct ml_bus_t *self_p, struct ml_uid_t *uid_p)
 {
     struct ml_bus_elem_t *elem_p;
 
@@ -127,7 +126,7 @@ void ml_bus_subscribe(struct ml_bus_t *self_p,
     elem_p = find_element(self_p, uid_p);
 
     if (elem_p == NULL) {
-        insert_element_with_uid(self_p, uid_p);
+        insert_element(self_p, uid_p);
         elem_p = find_element(self_p, uid_p);
     }
 
