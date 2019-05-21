@@ -88,9 +88,21 @@ or
 Ideas
 =====
 
-- Cross compilation.
+- Cross compilation. Something like this?
 
-- Board support. How?
+  .. code-block:: shell
+
+     # Use configs/jiffy.config and cross compiler.
+     $ make BOARD=jiffy
+
+     $ sudo apt install gcc-aarch64-linux-gnu
+
+     $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=myconfig allnoconfig
+     $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=myconfig nconfig
+     $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=myconfig -j4
+
+     $ ARCH=aarch64 CC=aarch64-linux-gnu-gcc ./configure --disable-shared --prefix=../musl
+     $ make
 
 - Run on some embedded system.
 
