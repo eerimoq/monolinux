@@ -87,6 +87,8 @@ void ml_bus_broadcast(struct ml_bus_t *self_p, void *message_p)
         for (i = 0; i < elem_p->number_of_queues; i++) {
             ml_queue_put(elem_p->queues_pp[i], message_p);
         }
+    } else {
+        ml_message_free(message_p);
     }
 }
 
