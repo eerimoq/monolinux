@@ -90,17 +90,17 @@ Cross compilation
 
 ARM 32 bits.
 
-  .. code-block:: shell
+.. code-block:: shell
 
-     $ sudo apt install gcc-arm-linux-gnueabi
-     $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- ML_LINUX_CONFIG=$ML_ROOT/configs/arm-all-no.config
+   $ sudo apt install gcc-arm-linux-gnueabi
+   $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- ML_LINUX_CONFIG=$ML_ROOT/configs/arm-all-no.config
 
 ARM 64 bits.
 
-  .. code-block:: shell
+.. code-block:: shell
 
-     $ sudo apt install gcc-aarch64-linux-gnu
-     $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- ML_LINUX_CONFIG=$ML_ROOT/configs/arm64-all-no.config
+   $ sudo apt install gcc-aarch64-linux-gnu
+   $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- ML_LINUX_CONFIG=$ML_ROOT/configs/arm64-all-no.config
 
 Ideas
 =====
