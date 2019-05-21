@@ -64,6 +64,25 @@ static int compare_qsort(const void *lelem_p, const void *relem_p)
     }
 }
 
+static void insert_element_with_uid(struct ml_bus_t *self_p,
+                                    struct ml_uid_t *uid_p)
+{
+    struct ml_bus_elem_t *elem_p;
+
+    self_p->number_of_elems++;
+    self_p->elems_p = xrealloc(
+        self_p->elems_p,
+        sizeof(*self_p->elems_p) * self_p->number_of_elems);
+    elem_p = &self_p->elems_p[self_p->number_of_elems - 1];
+    elem_p->uid_p = uid_p;
+    elem_p->number_of_queues = 0;
+    elem_p->queues_pp = xmalloc(1);
+    qsort(self_p->elems_p,
+          self_p->number_of_elems,
+          sizeof(*self_p->elems_p),
+          compare_qsort);
+}
+
 void ml_bus_init(struct ml_bus_t *self_p)
 {
     self_p->number_of_elems = 0;
@@ -106,18 +125,12 @@ void ml_bus_subscribe(struct ml_bus_t *self_p,
                      compare_bsearch);
 
     if (elem_p == NULL) {
-        self_p->number_of_elems++;
-        self_p->elems_p = xrealloc(
-            self_p->elems_p,
-            sizeof(*self_p->elems_p) * self_p->number_of_elems);
-        elem_p = &self_p->elems_p[self_p->number_of_elems - 1];
-        elem_p->uid_p = uid_p;
-        elem_p->number_of_queues = 0;
-        elem_p->queues_pp = xmalloc(1);
-        qsort(self_p->elems_p,
-              self_p->number_of_elems,
-              sizeof(*self_p->elems_p),
-              compare_qsort);
+        insert_element_with_uid(self_p, uid_p);
+        elem_p = bsearch(uid_p,
+                         self_p->elems_p,
+                         self_p->number_of_elems,
+                         sizeof(*self_p->elems_p),
+                         compare_bsearch);
     }
 
     /* Append the queue to the array. */
