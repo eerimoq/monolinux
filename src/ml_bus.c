@@ -83,6 +83,16 @@ static void insert_element_with_uid(struct ml_bus_t *self_p,
           compare_qsort);
 }
 
+static struct ml_bus_elem_t *find_element(struct ml_bus_t *self_p,
+                                          struct ml_uid_t *uid_p)
+{
+    return (bsearch(uid_p,
+                    self_p->elems_p,
+                    self_p->number_of_elems,
+                    sizeof(*self_p->elems_p),
+                    compare_bsearch));
+}
+
 void ml_bus_init(struct ml_bus_t *self_p)
 {
     self_p->number_of_elems = 0;
@@ -94,11 +104,7 @@ void ml_bus_broadcast(struct ml_bus_t *self_p, void *message_p)
     struct ml_bus_elem_t *elem_p;
     int i;
 
-    elem_p = bsearch(message_to_header(message_p)->uid_p,
-                     self_p->elems_p,
-                     self_p->number_of_elems,
-                     sizeof(*self_p->elems_p),
-                     compare_bsearch);
+    elem_p = find_element(self_p, message_to_header(message_p)->uid_p);
 
     if (elem_p != NULL) {
         ml_message_share(message_p, elem_p->number_of_queues - 1);
@@ -118,22 +124,14 @@ void ml_bus_subscribe(struct ml_bus_t *self_p,
     struct ml_bus_elem_t *elem_p;
 
     /* Find the element for this UID, or create one if missing. */
-    elem_p = bsearch(uid_p,
-                     self_p->elems_p,
-                     self_p->number_of_elems,
-                     sizeof(*self_p->elems_p),
-                     compare_bsearch);
+    elem_p = find_element(self_p, uid_p);
 
     if (elem_p == NULL) {
         insert_element_with_uid(self_p, uid_p);
-        elem_p = bsearch(uid_p,
-                         self_p->elems_p,
-                         self_p->number_of_elems,
-                         sizeof(*self_p->elems_p),
-                         compare_bsearch);
+        elem_p = find_element(self_p, uid_p);
     }
 
-    /* Append the queue to the array. */
+    /* Append the queue to the element. */
     elem_p->number_of_queues++;
     elem_p->queues_pp = xrealloc(
         elem_p->queues_pp,
