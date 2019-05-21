@@ -95,6 +95,7 @@ Ideas
      # Use configs/jiffy.config and cross compiler.
      $ make BOARD=jiffy
 
+     # 64 bits.
      $ sudo apt install gcc-aarch64-linux-gnu
 
      $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=myconfig allnoconfig
@@ -102,6 +103,16 @@ Ideas
      $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=myconfig -j4
 
      $ ARCH=aarch64 CC=aarch64-linux-gnu-gcc ./configure --disable-shared --prefix=../musl
+     $ make
+
+     # 32 bits.
+     $ sudo apt install gcc-arm-linux-gnueabi
+
+     $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- O=myconfig allnoconfig
+     $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- O=myconfig nconfig
+     $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- O=myconfig -j4
+
+     $ ARCH=arm CC=arm-linux-gnueabi-gcc ./configure --disable-shared --prefix=../musl
      $ make
 
 - Run on some embedded system.
