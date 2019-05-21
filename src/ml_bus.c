@@ -92,6 +92,16 @@ static struct ml_bus_elem_t *find_element(struct ml_bus_t *self_p,
                     compare_bsearch));
 }
 
+static void append_queue(struct ml_bus_elem_t *elem_p,
+                         struct ml_queue_t *queue_p)
+{
+    elem_p->number_of_queues++;
+    elem_p->queues_pp = xrealloc(
+        elem_p->queues_pp,
+        sizeof(*elem_p->queues_pp) * elem_p->number_of_queues);
+    elem_p->queues_pp[elem_p->number_of_queues - 1] = queue_p;
+}
+
 void ml_bus_init(struct ml_bus_t *self_p)
 {
     self_p->number_of_elems = 0;
@@ -122,7 +132,6 @@ void ml_bus_subscribe(struct ml_bus_t *self_p,
 {
     struct ml_bus_elem_t *elem_p;
 
-    /* Find the element for this UID, or create one if missing. */
     elem_p = find_element(self_p, uid_p);
 
     if (elem_p == NULL) {
@@ -130,10 +139,5 @@ void ml_bus_subscribe(struct ml_bus_t *self_p,
         elem_p = find_element(self_p, uid_p);
     }
 
-    /* Append the queue to the element. */
-    elem_p->number_of_queues++;
-    elem_p->queues_pp = xrealloc(
-        elem_p->queues_pp,
-        sizeof(*elem_p->queues_pp) * elem_p->number_of_queues);
-    elem_p->queues_pp[elem_p->number_of_queues - 1] = queue_p;
+    append_queue(elem_p, queue_p);
 }
