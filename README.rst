@@ -85,35 +85,25 @@ or
 
    $ export ML_LINUX_CONFIG=$(readlink -f .config)
 
-Ideas
-=====
+Cross compilation
+=================
 
-- Cross compilation. Something like this?
+ARM 32 bits.
 
   .. code-block:: shell
 
-     # Use configs/jiffy.config and cross compiler.
-     $ make BOARD=jiffy
-
-     # 64 bits.
-     $ sudo apt install gcc-aarch64-linux-gnu
-
-     $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- allnoconfig
-     $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- nconfig
-     $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j4
-
-     $ ARCH=aarch64 CC=aarch64-linux-gnu-gcc ./configure --disable-shared --prefix=../musl
-     $ make
-
-     # 32 bits.
      $ sudo apt install gcc-arm-linux-gnueabi
+     $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- ML_LINUX_CONFIG=$ML_ROOT/configs/arm-all-no.config
 
-     $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- allnoconfig
-     $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- nconfig
-     $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- -j4
+ARM 64 bits.
 
-     $ ARCH=arm CC=arm-linux-gnueabi-gcc ./configure --disable-shared --prefix=../musl
-     $ make
+  .. code-block:: shell
+
+     $ sudo apt install gcc-aarch64-linux-gnu
+     $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- ML_LINUX_CONFIG=$ML_ROOT/configs/arm64-all-no.config
+
+Ideas
+=====
 
 - Run on some embedded system.
 

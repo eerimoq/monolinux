@@ -19,6 +19,12 @@ SRC ?= \
 	$(ML_ROOT)/src/ml_message.c \
 	$(ML_ROOT)/src/ml_queue.c
 
+ifeq ($(ARCH), arm64)
+    MUSL_ARCH = ARCH=aarch64
+endif
+
+CC = $(CROSS_COMPILE)gcc
+
 .PHONY: all unpack linux initrd run build clean app
 
 all: build
@@ -62,9 +68,9 @@ $(MUSL_GCC): $(MUSL_SRC)
 	@echo "Building MUSL."
 	mkdir -p $(MUSL_INSTALL_DIR)
 	cd $(MUSL_ROOT) && \
-	./configure --disable-shared --prefix=$(MUSL_INSTALL_DIR) && \
-	$(MAKE) && \
-	$(MAKE) install
+	$(MUSL_ARCH) ./configure --disable-shared --prefix=$(MUSL_INSTALL_DIR) && \
+	$(MAKE) $(MUSL_ARCH) && \
+	$(MAKE) $(MUSL_ARCH) install
 
 $(BZIMAGE): $(LINUX_SRC)
 	@echo "Building Linux."
