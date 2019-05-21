@@ -70,20 +70,20 @@ configuration.
 
 .. code-block:: shell
 
-   $ make O=myconfig allnoconfig
-   $ make O=myconfig nconfig
+   $ make allnoconfig
+   $ make nconfig
 
 Start using the default configuraiton.
 
 .. code-block:: shell
 
-   $ cp myconfig/.config $ML_LINUX_CONFIG
+   $ cp .config $ML_LINUX_CONFIG
 
 or
 
 .. code-block:: shell
 
-   $ export ML_LINUX_CONFIG=$(readlink -f myconfig/.config)
+   $ export ML_LINUX_CONFIG=$(readlink -f .config)
 
 Ideas
 =====
@@ -98,9 +98,9 @@ Ideas
      # 64 bits.
      $ sudo apt install gcc-aarch64-linux-gnu
 
-     $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=myconfig allnoconfig
-     $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=myconfig nconfig
-     $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=myconfig -j4
+     $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- allnoconfig
+     $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- nconfig
+     $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j4
 
      $ ARCH=aarch64 CC=aarch64-linux-gnu-gcc ./configure --disable-shared --prefix=../musl
      $ make
@@ -108,9 +108,9 @@ Ideas
      # 32 bits.
      $ sudo apt install gcc-arm-linux-gnueabi
 
-     $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- O=myconfig allnoconfig
-     $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- O=myconfig nconfig
-     $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- O=myconfig -j4
+     $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- allnoconfig
+     $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- nconfig
+     $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- -j4
 
      $ ARCH=arm CC=arm-linux-gnueabi-gcc ./configure --disable-shared --prefix=../musl
      $ make
