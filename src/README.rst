@@ -7,10 +7,12 @@ Features:
 
 - Inter-thread message passing.
 
+- Logging.
+
 ToDo:
 
-- Logging (on top of syslog?).
-
 - A Shell, by default on stdin and stdout.
+
+- Networking.
 
 - ...
