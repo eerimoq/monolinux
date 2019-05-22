@@ -11,7 +11,7 @@ Features:
 
 ToDo:
 
-- A Shell, by default on stdin and stdout.
+- A shell, by default on stdin and stdout.
 
 - Networking.
 

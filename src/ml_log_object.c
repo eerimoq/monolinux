@@ -104,10 +104,9 @@ void ml_log_object_print(struct ml_log_object_t *self_p,
                       const char *fmt_p,
                       ...)
 {
-    char timebuf[16];
+    char buf[16];
     time_t now;
     struct tm tm;
-    char buf[512];
     va_list ap;
 
     if ((self_p->mask & (1 << level)) == 0) {
@@ -116,16 +115,11 @@ void ml_log_object_print(struct ml_log_object_t *self_p,
 
     now = time(NULL);
     gmtime_r(&now, &tm);
-    strftime(&timebuf[0], sizeof(timebuf), "%b %e %T", &tm);
+    strftime(&buf[0], sizeof(buf), "%b %e %T", &tm);
 
+    printf("%s %s %s ", &buf[0], level_to_string(level), self_p->name_p);
     va_start(ap, fmt_p);
-    vsnprintf(&buf[0], sizeof(buf), fmt_p, ap);
+    vprintf(fmt_p, ap);
     va_end(ap);
-
-    /* ToDo: Where to write this? */
-    printf("%s %s %s %s\n",
-           &timebuf[0],
-           level_to_string(level),
-           self_p->name_p,
-           &buf[0]);
+    printf("\n");
 }
