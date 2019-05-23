@@ -1,7 +1,6 @@
 BUILD = $(shell readlink -f build)
-TOP = $(BUILD)/monolinux
-BZIMAGE = $(TOP)/obj/monolinux/arch/x86/boot/bzImage
-INITRAMFS = $(TOP)/initramfs.cpio
+BZIMAGE = $(BUILD)/linux/arch/x86/boot/bzImage
+INITRAMFS = $(BUILD)/initramfs.cpio
 APP = $(BUILD)/app
 LINUX_SRC = $(BUILD)/linux-$(ML_LINUX_VERSION)
 MUSL_SRC = $(BUILD)/musl-$(ML_MUSL_VERSION)
@@ -43,8 +42,8 @@ size:
 
 run: build
 	qemu-system-x86_64 \
-	    -kernel $(TOP)/obj/monolinux/arch/x86/boot/bzImage \
-	    -initrd $(TOP)/initramfs.cpio \
+	    -kernel $(BZIMAGE) \
+	    -initrd $(INITRAMFS) \
 	    -nographic -append "console=ttyS0"
 
 clean:
@@ -77,9 +76,9 @@ $(MUSL_GCC): $(MUSL_SRC)
 $(BZIMAGE): $(LINUX_SRC)
 	@echo "Building Linux."
 	cd $(BUILD)/linux-$(ML_LINUX_VERSION) && \
-	$(MAKE) O=$(TOP)/obj/monolinux allnoconfig && \
-	cp $(ML_LINUX_CONFIG) $(TOP)/obj/monolinux/.config && \
-	$(MAKE) O=$(TOP)/obj/monolinux
+	$(MAKE) O=$(BUILD)/linux allnoconfig && \
+	cp $(ML_LINUX_CONFIG) $(BUILD)/linux/.config && \
+	$(MAKE) O=$(BUILD)/linux
 
 initrd:
 	$(MAKE) $(INITRAMFS)
@@ -93,4 +92,4 @@ $(APP): $(SRC)
 
 $(INITRAMFS): $(APP)
 	@echo "Creating the initramfs."
-	fakeroot $(ML_ROOT)/make/create_initramfs.sh $(BUILD) $(TOP)
+	fakeroot $(ML_ROOT)/make/create_initramfs.sh $(BUILD)
