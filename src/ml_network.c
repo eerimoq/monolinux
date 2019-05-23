@@ -145,6 +145,7 @@ static int command_udp_send(const char *ip_address_p,
                             const char *data_p)
 {
     int res;
+    ssize_t size;
     int sockfd;
     struct sockaddr_in other;
 
@@ -157,12 +158,14 @@ static int command_udp_send(const char *ip_address_p,
         sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
         if (sockfd != -1) {
-            if (sendto(sockfd,
-                       data_p,
-                       strlen(data_p),
-                       0,
-                       (struct sockaddr *)&other,
-                       sizeof(other)) != -1) {
+            size = sendto(sockfd,
+                          data_p,
+                          strlen(data_p),
+                          0,
+                          (struct sockaddr *)&other,
+                          sizeof(other));
+
+            if (size != -1) {
                 res = 0;
             } else {
                 perror("sendto failed");
@@ -232,20 +235,16 @@ static int command_udp(int argc, const char *argv[])
 {
     int res;
 
+    res = -1;
+
     if (argc == 5) {
         if (strcmp(argv[1], "send") == 0) {
             res = command_udp_send(argv[2], argv[3], argv[4]);
-        } else {
-            res = -1;
         }
     } else if (argc == 3) {
         if (strcmp(argv[1], "recv") == 0) {
             res = command_udp_recv(argv[2]);
-        } else {
-            res = -1;
         }
-    } else {
-        res = -1;
     }
 
     if (res != 0) {
