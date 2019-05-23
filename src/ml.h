@@ -213,8 +213,26 @@ void ml_shell_start(void);
 void ml_shell_register_command(const char *name_p,
                                ml_shell_command_callback_t callback);
 
+void ml_network_init(void);
+
 void ml_network_interface_configure(const char *name_p,
                                     const char *ipv4_address_p,
                                     const char *ipv4_netmask_p);
+
+void ml_network_interface_up(const char *name_p);
+
+void ml_network_interface_down(const char *name_p);
+
+char *strip(char *str_p, const char *strip_p);
+
+void *xmalloc(size_t size);
+
+void *xrealloc(void *buf_p, size_t size);
+
+int xmount(const char *source_p,
+           const char *target_p,
+           const char *type_p);
+
+#define membersof(array) (sizeof(array) / sizeof((array)[0]))
 
 #endif

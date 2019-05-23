@@ -32,6 +32,7 @@
 #include <unistd.h>
 #include <sys/param.h>
 #include <termios.h>
+#include <dirent.h>
 #include "ml.h"
 #include "internal.h"
 
@@ -165,13 +166,100 @@ static struct command_t *find_command(const char *name_p)
                     compare_bsearch));
 }
 
+/**
+ * Parse one argument from given string. An argument must be in quotes
+ * if it contains spaces.
+ */
+static char *parse_argument(char *line_p, const char **begin_pp)
+{
+    bool in_quote;
+
+    in_quote = false;
+    *begin_pp = line_p;
+
+    while (*line_p != '\0') {
+        if (*line_p == '\\') {
+            if (line_p[1] == '\"') {
+                /* Remove the \. */
+                memmove(line_p, &line_p[1], strlen(&line_p[1]) + 1);
+            }
+        } else {
+            if (in_quote) {
+                if (*line_p == '\"') {
+                    /* Remove the ". */
+                    memmove(line_p, &line_p[1], strlen(&line_p[1]) + 1);
+                    in_quote = false;
+                    line_p--;
+                }
+            } else {
+                if (*line_p == '\"') {
+                    /* Remove the ". */
+                    memmove(line_p, &line_p[1], strlen(&line_p[1]) + 1);
+                    in_quote = true;
+                    line_p--;
+                } else if (*line_p == ' ') {
+                    *line_p = '\0';
+                    line_p++;
+                    break;
+                }
+            }
+        }
+
+        line_p++;
+    }
+
+    if (in_quote) {
+        line_p =  NULL;
+    }
+
+    return (line_p);
+}
+
+static int parse_command(char *line_p, const char *argv[])
+{
+    int argc;
+
+    /* Remove white spaces at the beginning and end of the string. */
+    line_p = strip(line_p, NULL);
+    argc = 0;
+
+    /* Command string missing. */
+    if (strlen(line_p) == 0) {
+        return (-1);
+    }
+
+    while (*line_p != '\0') {
+        /* Too many arguemnts? */
+        if (argc == 32) {
+            return (-1);
+        }
+
+        /* Remove white spaces before the next argument. */
+        line_p = strip(line_p, NULL);
+
+        if ((line_p = parse_argument(line_p, &argv[argc++])) == NULL) {
+            return (-1);
+        }
+    }
+
+    return (argc);
+}
+
 static int execute_command(char *line_p)
 {
     struct command_t *command_p;
     const char *name_p;
     int res;
+    const char *argv[32];
+    int argc;
 
-    name_p = strtok(line_p, " ");
+    argc = parse_command(line_p, &argv[0]);
+
+    if (argc < 1) {
+        return (-1);
+    }
+
+    name_p = argv[0];
 
     if (name_p == NULL) {
         name_p = "";
@@ -180,7 +268,7 @@ static int execute_command(char *line_p)
     command_p = find_command(name_p);
 
     if (command_p != NULL) {
-        res = command_p->callback(1, (const char **)&name_p);
+        res = command_p->callback(argc, &argv[0]);
     } else {
         printf("%s: command not found\n", name_p);
         res = -1;
@@ -222,16 +310,6 @@ static int is_shell_command(const char *line_p)
     return (shell_command_compare(line_p, "logout", 6)
             || shell_command_compare(line_p, "history", 7)
             || shell_command_compare(line_p, "help", 4));
-}
-
-static int command_logout(int argc, const char *argv[])
-{
-    (void)argc;
-    (void)argv;
-
-    module.authenticated = false;
-
-    return (0);
 }
 
 static void line_init(struct line_t *self_p)
@@ -374,7 +452,15 @@ static int command_help(int argc, const char *argv[])
            "       Ctrl+R   Recall the last command including the specified "
            "character(s)\n"
            "                searches the command history as you type.\n"
-           "       Ctrl+G   Escape from history searching mode.\n");
+           "       Ctrl+G   Escape from history searching mode.\n"
+           "\n"
+           "Built-in commands\n"
+           "\n"
+           "         help   Print this help.\n"
+           "      history   Comand history.\n"
+           "       logout   Shell logout.\n"
+           "           ls   List directory contents.\n"
+           "          cat   Print a file.\n");
 
     print_prompt();
 
@@ -404,6 +490,83 @@ static int command_history(int argc, const char *argv[])
     print_prompt();
 
     return (0);
+}
+
+static int command_logout(int argc, const char *argv[])
+{
+    (void)argc;
+    (void)argv;
+
+    module.authenticated = false;
+
+    return (0);
+}
+
+static int command_ls(int argc, const char *argv[])
+{
+    int res;
+    DIR *dir_p;
+    struct dirent *dirent_p;
+    const char *path_p;
+
+    res = 0;
+
+    if (argc == 2) {
+        path_p = argv[1];
+    } else {
+        path_p = ".";
+    }
+
+    dir_p = opendir(path_p);
+
+    if (dir_p != NULL) {
+        while ((dirent_p = readdir(dir_p)) != NULL) {
+            if (dirent_p->d_type & DT_DIR) {
+                printf("%s/\n", dirent_p->d_name);
+            } else {
+                printf("%s\n", dirent_p->d_name);
+            }
+        }
+
+        closedir(dir_p);
+    } else {
+        res = -1;
+    }
+
+    return (res);
+}
+
+static int command_cat(int argc, const char *argv[])
+{
+    FILE *file_p;
+    int res;
+    uint8_t buf[256];
+    size_t size;
+
+    res = 0;
+
+    if (argc != 2) {
+        printf("No file given\n");
+
+        return (-1);
+    }
+
+    file_p = fopen(argv[1], "rb");
+
+    if (file_p != NULL) {
+        while ((size = fread(&buf[0], 1, membersof(buf), file_p)) > 0) {
+            if (fwrite(&buf[0], 1, size, stdout) != size) {
+                res = -2;
+                break;
+            }
+        }
+
+        fclose(file_p);
+    } else {
+        res = -1;
+    }
+
+    return (res);
 }
 
 static void history_init(void)
@@ -1152,9 +1315,11 @@ void ml_shell_init(void)
     module.authenticated = false;
     history_init();
 
-    ml_shell_register_command("logout", command_logout);
-    ml_shell_register_command("history", command_history);
     ml_shell_register_command("help", command_help);
+    ml_shell_register_command("history", command_history);
+    ml_shell_register_command("logout", command_logout);
+    ml_shell_register_command("ls", command_ls);
+    ml_shell_register_command("cat", command_cat);
 }
 
 void ml_shell_start(void)
