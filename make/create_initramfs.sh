@@ -4,11 +4,10 @@ set -e
 
 BUILD=$1
 
-mkdir -p $BUILD
-mkdir -pv $BUILD/initramfs
+mkdir -p $BUILD/initramfs
 cd $BUILD/initramfs
-mkdir -pv {bin,dev,sbin,etc,proc,sys/kernel/debug,usr/{bin,sbin},lib,lib64,mnt/root,root}
-cp -av /dev/{null,console,tty,sda1} dev
+mkdir -p {bin,dev,sbin,etc,proc,sys/kernel/debug,usr/{bin,sbin},lib,lib64,mnt/root,root}
+cp -a /dev/{null,console,tty,sda1} dev
 cp $BUILD/app init
 chmod +x init
 find . | cpio -H newc -o > ../initramfs.cpio
