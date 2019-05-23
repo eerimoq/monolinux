@@ -54,7 +54,7 @@ int main()
     ml_init();
     ml_shell_init();
     ml_network_init();
-    ml_shell_register_command("hello", command_hello);
+    ml_shell_register_command("hello", "My command.", command_hello);
     ml_shell_start();
 
     xmount("none", "/proc", "proc");

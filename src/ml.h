@@ -211,6 +211,7 @@ void ml_shell_start(void);
  * Must be called before ml_shell_start().
  */
 void ml_shell_register_command(const char *name_p,
+                               const char *description_p,
                                ml_shell_command_callback_t callback);
 
 void ml_network_init(void);

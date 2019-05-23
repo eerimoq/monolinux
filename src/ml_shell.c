@@ -56,6 +56,7 @@
 
 struct command_t {
     const char *name_p;
+    const char *description_p;
     ml_shell_command_callback_t callback;
 };
 
@@ -428,6 +429,8 @@ static int command_help(int argc, const char *argv[])
     (void)argc;
     (void)argv;
 
+    int i;
+
     printf("Cursor movement\n"
            "\n"
            "         LEFT   Go left one character.\n"
@@ -454,13 +457,14 @@ static int command_help(int argc, const char *argv[])
            "                searches the command history as you type.\n"
            "       Ctrl+G   Escape from history searching mode.\n"
            "\n"
-           "Built-in commands\n"
-           "\n"
-           "         help   Print this help.\n"
-           "      history   Comand history.\n"
-           "       logout   Shell logout.\n"
-           "           ls   List directory contents.\n"
-           "          cat   Print a file.\n");
+           "Commands\n"
+           "\n");
+
+    for (i = 0; i < module.number_of_commands; i++) {
+        printf("%13s   %s\n",
+               module.commands_p[i].name_p,
+               module.commands_p[i].description_p);
+    }
 
     print_prompt();
 
@@ -1315,11 +1319,21 @@ void ml_shell_init(void)
     module.authenticated = false;
     history_init();
 
-    ml_shell_register_command("help", command_help);
-    ml_shell_register_command("history", command_history);
-    ml_shell_register_command("logout", command_logout);
-    ml_shell_register_command("ls", command_ls);
-    ml_shell_register_command("cat", command_cat);
+    ml_shell_register_command("help",
+                              "Print this help.",
+                              command_help);
+    ml_shell_register_command("history",
+                              "List comand history.",
+                              command_history);
+    ml_shell_register_command("logout",
+                              "Shell logout.",
+                              command_logout);
+    ml_shell_register_command("ls",
+                              "List directory contents.",
+                              command_ls);
+    ml_shell_register_command("cat",
+                              "Print a file.",
+                              command_cat);
 }
 
 void ml_shell_start(void)
@@ -1331,6 +1345,7 @@ void ml_shell_start(void)
 }
 
 void ml_shell_register_command(const char *name_p,
+                               const char *description_p,
                                ml_shell_command_callback_t callback)
 {
     struct command_t *command_p;
@@ -1341,5 +1356,6 @@ void ml_shell_register_command(const char *name_p,
         sizeof(*module.commands_p) * module.number_of_commands);
     command_p = &module.commands_p[module.number_of_commands - 1];
     command_p->name_p = name_p;
+    command_p->description_p = description_p;
     command_p->callback = callback;
 }

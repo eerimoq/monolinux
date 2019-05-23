@@ -258,8 +258,12 @@ static int command_udp(int argc, const char *argv[])
 
 void ml_network_init(void)
 {
-    ml_shell_register_command("ifconfig", command_ifconfig);
-    ml_shell_register_command("udp", command_udp);
+    ml_shell_register_command("ifconfig",
+                              "Network interface management.",
+                              command_ifconfig);
+    ml_shell_register_command("udp",
+                              "UDP testing.",
+                              command_udp);
 }
 
 void ml_network_interface_configure(const char *name_p,
