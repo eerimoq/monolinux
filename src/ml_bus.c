@@ -30,12 +30,12 @@
 #include "ml.h"
 #include "internal.h"
 
-static int compare_bsearch(const void *uid_p, const void *elem_p)
+static int compare_bsearch(const void *key_p, const void *elem_p)
 {
     uintptr_t uid;
     uintptr_t elem_uid;
 
-    uid = (uintptr_t)(struct ml_uid_t *)uid_p;
+    uid = (uintptr_t)(struct ml_uid_t *)key_p;
     elem_uid = (uintptr_t)((struct ml_bus_elem_t *)elem_p)->uid_p;
 
     if (uid < elem_uid) {

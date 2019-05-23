@@ -9,10 +9,6 @@ Features:
 
 - Logging.
 
-ToDo:
+- A simple shell (not yet finalized).
 
-- A shell, by default on stdin and stdout.
-
-- Networking.
-
-- ...
+- Networking (not yet finalized).

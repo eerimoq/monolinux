@@ -17,7 +17,9 @@ SRC ?= \
 	$(ML_ROOT)/src/ml_bus.c \
 	$(ML_ROOT)/src/ml_log_object.c \
 	$(ML_ROOT)/src/ml_message.c \
-	$(ML_ROOT)/src/ml_queue.c
+	$(ML_ROOT)/src/ml_network.c \
+	$(ML_ROOT)/src/ml_queue.c \
+	$(ML_ROOT)/src/ml_shell.c
 
 ifeq ($(ARCH), arm64)
     MUSL_ARCH = ARCH=aarch64

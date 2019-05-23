@@ -30,6 +30,7 @@
 #define INTERNAL_H
 
 #include <stdlib.h>
+#include <string.h>
 
 static inline struct ml_message_header_t *message_to_header(void *message_p)
 {
@@ -75,5 +76,47 @@ void ml_message_init(void);
  * Share given message count times. Count must not be negative.
  */
 void ml_message_share(void *message_p, int count);
+
+static inline bool char_in_string(char c, const char *str_p)
+{
+    while (*str_p != '\0') {
+        if (c == *str_p) {
+            return (true);
+        }
+
+        str_p++;
+    }
+
+    return (false);
+}
+
+static inline char *strip(char *str_p, const char *strip_p)
+{
+    char *begin_p;
+    size_t length;
+
+    /* Strip whitespace characters by default. */
+    if (strip_p == NULL) {
+        strip_p = "\t\n\x0b\x0c\r ";
+    }
+
+    /* String leading characters. */
+    while ((*str_p != '\0') && char_in_string(*str_p, strip_p)) {
+        str_p++;
+    }
+
+    begin_p = str_p;
+
+    /* Strip training characters. */
+    length = strlen(str_p);
+    str_p += (length - 1);
+
+    while ((str_p >= begin_p) && char_in_string(*str_p, strip_p)) {
+        *str_p = '\0';
+        str_p--;
+    }
+
+    return (begin_p);
+}
 
 #endif

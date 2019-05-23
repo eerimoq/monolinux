@@ -1,0 +1,1180 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2019, Erik Moqvist
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy,
+ * modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+ * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * This file is part of the Monolinux project.
+ */
+
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#include <unistd.h>
+#include <sys/param.h>
+#include <termios.h>
+#include "ml.h"
+#include "internal.h"
+
+#define PROMPT              "$ "
+
+#define COMMAND_MAX          256
+
+#define TAB                 '\t'
+#define CARRIAGE_RETURN     '\r'
+#define NEWLINE             '\n'
+#define BACKSPACE              8
+#define DELETE               127
+#define CTRL_A                 1
+#define CTRL_E                 5
+#define CTRL_D                 4
+#define CTRL_K                11
+#define CTRL_T                20
+#define CTRL_R                18
+#define CTRL_G                 7
+#define ALT                   27
+
+struct command_t {
+    const char *name_p;
+    ml_shell_command_callback_t callback;
+};
+
+struct history_elem_t {
+    struct history_elem_t *next_p;
+    struct history_elem_t *prev_p;
+    char buf[1];
+};
+
+struct line_t {
+    char buf[COMMAND_MAX];
+    int length;
+    int cursor;
+};
+
+struct module_t {
+    const char *username_p;
+    const char *password_p;
+    struct line_t line;
+    struct line_t prev_line;
+    bool carriage_return_received;
+    bool newline_received;
+    bool authenticated;
+    struct {
+        struct history_elem_t *head_p;
+        struct history_elem_t *tail_p;
+        struct history_elem_t *current_p;
+        struct line_t pattern;
+        struct line_t match;
+        /* Command line when first UP was pressed. */
+        struct line_t line;
+        bool line_valid;
+    } history;
+    int number_of_commands;
+    struct command_t *commands_p;
+    pthread_t pthread;
+};
+
+static struct module_t module;
+
+static void history_init(void);
+
+static int xgetc(void)
+{
+    int ch;
+
+    ch = fgetc(stdin);
+
+    if (ch == EOF) {
+        printf("error: shell input error");
+        exit(1);
+    }
+
+    return (ch);
+}
+
+static void make_stdin_unbuffered(void)
+{
+    struct termios ctrl;
+
+    tcgetattr(STDIN_FILENO, &ctrl);
+    ctrl.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &ctrl);
+}
+
+static void print_prompt(void)
+{
+    printf(PROMPT);
+    fflush(stdout);
+}
+
+static int compare_bsearch(const void *key_p, const void *elem_p)
+{
+    const char *name_p;
+    const char *elem_name_p;
+
+    name_p = (const char *)key_p;
+    elem_name_p = ((struct command_t *)elem_p)->name_p;
+
+    return (strcmp(name_p, elem_name_p));
+}
+
+static int compare_qsort(const void *lelem_p, const void *relem_p)
+{
+    const char *lname_p;
+    const char *rname_p;
+    int res;
+
+    lname_p = ((struct command_t *)lelem_p)->name_p;
+    rname_p = ((struct command_t *)relem_p)->name_p;
+
+    res = strcmp(lname_p, rname_p);
+
+    if (res == 0) {
+        printf("%s: shell commands must be unique", lname_p);
+        exit(1);
+    }
+
+    return (res);
+}
+
+static struct command_t *find_command(const char *name_p)
+{
+    return (bsearch(name_p,
+                    module.commands_p,
+                    module.number_of_commands,
+                    sizeof(*module.commands_p),
+                    compare_bsearch));
+}
+
+static int execute_command(char *line_p)
+{
+    struct command_t *command_p;
+    const char *name_p;
+    int res;
+
+    name_p = strtok(line_p, " ");
+
+    if (name_p == NULL) {
+        name_p = "";
+    }
+
+    command_p = find_command(name_p);
+
+    if (command_p != NULL) {
+        res = command_p->callback(1, (const char **)&name_p);
+    } else {
+        printf("%s: command not found\n", name_p);
+        res = -1;
+    }
+
+    return (res);
+}
+
+static int shell_command_compare(const char *line_p,
+                                 const char *command_p,
+                                 size_t length)
+{
+    char chend;
+
+    chend = line_p[length];
+
+    return ((strncmp(command_p, line_p, length) == 0)
+            && ((chend == '\0') || (chend == ' ')));
+}
+
+/**
+ * Check if given line is a comment.
+ *
+ * @return true(1) if given line is a comment, otherwise false(0).
+ */
+static int is_comment(const char *line_p)
+{
+    return (*line_p == '#');
+}
+
+/**
+ * Check if given line is a shell command.
+ *
+ * @return true(1) if given line is a shell command, otherwise
+ *         false(0).
+ */
+static int is_shell_command(const char *line_p)
+{
+    return (shell_command_compare(line_p, "logout", 6)
+            || shell_command_compare(line_p, "history", 7)
+            || shell_command_compare(line_p, "help", 4));
+}
+
+static int command_logout(int argc, const char *argv[])
+{
+    (void)argc;
+    (void)argv;
+
+    module.authenticated = false;
+
+    return (0);
+}
+
+static void line_init(struct line_t *self_p)
+{
+    self_p->buf[0] = '\0';
+    self_p->cursor = 0;
+    self_p->length = 0;
+}
+
+static bool line_insert(struct line_t *self_p,
+                        int ch)
+{
+    /* Buffer full? */
+    if (self_p->length == COMMAND_MAX - 1) {
+        return (false);
+    }
+
+    /* Move the string, including the NULL termination, one step to
+       the right and insert the new character. */
+    memmove(&self_p->buf[self_p->cursor + 1],
+            &self_p->buf[self_p->cursor],
+            self_p->length - self_p->cursor + 1);
+    self_p->buf[self_p->cursor++] = ch;
+    self_p->length++;
+
+    return (true);
+}
+
+static void line_insert_string(struct line_t *self_p,
+                               char *str_p)
+{
+    while (*str_p != '\0') {
+        if (!line_insert(self_p, *str_p)) {
+            break;
+        }
+
+        str_p++;
+    }
+}
+
+static void line_delete(struct line_t *self_p)
+{
+    /* End of buffer? */
+    if (self_p->cursor == self_p->length) {
+        return;
+    }
+
+    /* Move the string, including the NULL termination, one step to
+       the left to overwrite the deleted character. */
+    memmove(&self_p->buf[self_p->cursor],
+            &self_p->buf[self_p->cursor + 1],
+            self_p->length - self_p->cursor);
+    self_p->length--;
+}
+
+static int line_peek(struct line_t *self_p)
+{
+    return (self_p->buf[self_p->cursor]);
+}
+
+static void line_truncate(struct line_t *self_p)
+{
+    self_p->length = self_p->cursor;
+    self_p->buf[self_p->length] = '\0';
+}
+
+static bool line_is_empty(struct line_t *self_p)
+{
+    return (self_p->length == 0);
+}
+
+static char *line_get_buf(struct line_t *self_p)
+{
+    return (self_p->buf);
+}
+
+static int line_get_length(struct line_t *self_p)
+{
+    return (self_p->length);
+}
+
+static bool line_seek(struct line_t *self_p, int pos)
+{
+    if (pos < 0) {
+        if ((self_p->cursor + pos) < 0) {
+            return (false);
+        }
+    } else {
+        if ((self_p->cursor + pos) > self_p->length) {
+            return (false);
+        }
+    }
+
+    self_p->cursor += pos;
+
+    return (true);
+}
+
+static int line_get_cursor(struct line_t *self_p)
+{
+    return (self_p->cursor);
+}
+
+static void line_seek_begin(struct line_t *self_p)
+{
+    self_p->cursor = 0;
+}
+
+static void line_seek_end(struct line_t *self_p)
+{
+    self_p->cursor = self_p->length;
+}
+
+static int command_help(int argc, const char *argv[])
+{
+    (void)argc;
+    (void)argv;
+
+    printf("Cursor movement\n"
+           "\n"
+           "         LEFT   Go left one character.\n"
+           "        RIGHT   Go right on character.\n"
+           "  HOME/Ctrl+A   Go to the beginning of the line.\n"
+           "   END/Ctrl+E   Go to the end of the line.\n"
+           "\n"
+           "Edit\n"
+           "\n"
+           "        Alt+D   Delete the word at the cursor.\n"
+           "       Ctrl+D   Delete the chracter at the cursor.\n"
+           "       Ctrl+K   Cut the line from cursor to end.\n"
+           "       Ctrl+T   Swap the last two characters before the cursor "
+           "(typo).\n"
+           "          TAB   Tab completion for file/directory names.\n"
+           "    BACKSPACE   Delete the character before the cursor.\n"
+           "\n"
+           "History\n"
+           "\n"
+           "           UP   Previous command.\n"
+           "         DOWN   Next command.\n"
+           "       Ctrl+R   Recall the last command including the specified "
+           "character(s)\n"
+           "                searches the command history as you type.\n"
+           "       Ctrl+G   Escape from history searching mode.\n");
+
+    print_prompt();
+
+    return (0);
+}
+
+static int command_history(int argc, const char *argv[])
+{
+    struct history_elem_t *current_p;
+    int i;
+
+    if (argc == 1) {
+        current_p = module.history.head_p;
+        i = 1;
+
+        while (current_p != NULL) {
+            printf("%d: %s\n", i, current_p->buf);
+            current_p = current_p->next_p;
+            i++;
+        }
+    } else if (argc == 2) {
+        if (strcmp(argv[1], "-c") == 0) {
+            history_init();
+        }
+    }
+
+    print_prompt();
+
+    return (0);
+}
+
+static void history_init(void)
+{
+    module.history.head_p = NULL;
+    module.history.tail_p = NULL;
+    module.history.current_p = NULL;
+    line_init(&module.history.line);
+    module.history.line_valid = false;
+}
+
+static int history_append(char *command_p)
+{
+    struct history_elem_t *elem_p, *head_p;
+    size_t command_size;
+
+    /* Do not append if the command already is at the end of the
+       list. */
+    if (module.history.tail_p != NULL) {
+        if (strcmp(module.history.tail_p->buf, command_p) == 0) {
+            return (0);
+        }
+    }
+
+    elem_p = NULL;
+    command_size = strlen(command_p) + 1;
+
+    while (elem_p == NULL) {
+        /* Allocate memory. */
+        elem_p = malloc(sizeof(*elem_p) + command_size);
+
+        /* Free the oldest command if there is no memory available. */
+        if (elem_p == NULL) {
+            head_p = module.history.head_p;
+
+            /* Any element to free? */
+            if (head_p == NULL) {
+                return (-1);
+            }
+
+            /* Remove the head element from the list. */
+            if (head_p == module.history.tail_p) {
+                module.history.head_p = NULL;
+                module.history.tail_p = NULL;
+            } else {
+                module.history.head_p = head_p->next_p;
+                head_p->next_p->prev_p = NULL;
+            }
+
+            free(head_p);
+        }
+    }
+
+    if (elem_p != NULL) {
+        strcpy(elem_p->buf, command_p);
+
+        /* Append the command to the command history list. */
+        elem_p->next_p = NULL;
+
+        if (module.history.head_p == NULL) {
+            elem_p->prev_p = NULL;
+            module.history.head_p = elem_p;
+        } else {
+            elem_p->prev_p = module.history.tail_p;
+            elem_p->prev_p->next_p = elem_p;
+        }
+
+        module.history.tail_p = elem_p;
+    }
+
+    return (0);
+}
+
+/**
+ * Find the previous element, if any.
+ */
+static char *history_get_previous_command(void)
+{
+    if (module.history.current_p == module.history.head_p) {
+        return (NULL);
+    } else if (module.history.current_p == NULL) {
+        module.history.current_p = module.history.tail_p;
+
+        /* Save the current command to be able to restore it when DOWN
+           is pressed. */
+        module.history.line = module.line;
+        module.history.line_valid = true;
+    } else if (module.history.current_p != module.history.head_p) {
+        module.history.current_p = module.history.current_p->prev_p;
+    }
+
+    if (module.history.current_p != NULL) {
+        return (module.history.current_p->buf);
+    } else {
+        return (NULL);
+    }
+}
+
+/**
+ * Find the next element, if any.
+ */
+static char *history_get_next_command(void)
+{
+    if (module.history.current_p != NULL) {
+        module.history.current_p = module.history.current_p->next_p;
+    }
+
+    if (module.history.current_p != NULL) {
+        return (module.history.current_p->buf);
+    } else if (module.history.line_valid) {
+        module.history.line_valid = false;
+
+        return (line_get_buf(&module.history.line));
+    } else {
+        return (NULL);
+    }
+}
+
+static void history_reset_current(void)
+{
+    module.history.current_p = NULL;
+}
+
+static char *history_reverse_search(const char *pattern_p)
+{
+    struct history_elem_t *elem_p;
+
+    elem_p = module.history.tail_p;
+
+    while (elem_p != NULL) {
+        if (strstr(elem_p->buf, pattern_p) != NULL) {
+            return (elem_p->buf);
+        }
+
+        elem_p = elem_p->prev_p;
+    }
+
+    return (NULL);
+}
+
+static void read_line(bool is_sensitive)
+{
+    int ch;
+
+    line_init(&module.line);
+    module.newline_received = false;
+
+    while (!module.newline_received) {
+        ch = xgetc();
+
+        switch (ch) {
+
+        case NEWLINE:
+            module.newline_received = true;
+            break;
+
+        case CARRIAGE_RETURN:
+            break;
+
+        case DELETE:
+        case BACKSPACE:
+            if (line_seek(&module.line, -1)) {
+                line_delete(&module.line);
+                printf("\x08 \x08");
+            }
+
+            continue;
+
+        default:
+            line_insert(&module.line, ch);
+
+            if (is_sensitive) {
+                ch = '*';
+            }
+
+            break;
+        }
+
+        fputc(ch, stdout);
+        fflush(stdout);
+    }
+}
+
+/**
+ * Let the user write its username and password and compare them to
+ * the allowed shell credentials.
+ */
+static void login(void)
+{
+    bool correct_username;
+    bool correct_password;
+
+    while (true) {
+        correct_username = false;
+        correct_password = false;
+
+        /* Read the username. */
+        printf("username: ");
+        fflush(stdout);
+        read_line(false);
+
+        /* Write 'username: ' on empty string. */
+        if (line_is_empty(&module.line)) {
+            continue;
+        }
+
+        correct_username = !strcmp(module.username_p,
+                                   line_get_buf(&module.line));
+
+        /* Read the password. */
+        printf("password: ");
+        fflush(stdout);
+        read_line(true);
+        correct_password = !strcmp(module.password_p,
+                                   line_get_buf(&module.line));
+
+        if (correct_username && correct_password) {
+            break;
+        } else {
+            printf("authentication failure\n");
+            sleep(2);
+        }
+    }
+
+    /* Print a prompt on successful login. */
+    print_prompt();
+}
+
+static void handle_tab(void)
+{
+}
+
+static void handle_carrige_return(void)
+{
+    module.carriage_return_received = true;
+}
+
+static void handle_newline(void)
+{
+    module.newline_received = true;
+}
+
+/**
+ * BACKSPACE Delete the character before the cursor.
+ */
+static void handle_backspace(void)
+{
+    if (line_seek(&module.line, -1)) {
+        line_delete(&module.line);
+    }
+}
+
+/**
+ * Ctrl+A Go to the beginning of the line.
+ */
+static void handle_ctrl_a(void)
+{
+    line_seek_begin(&module.line);
+}
+
+/**
+ * Ctrl+E Go to the end of the line.
+ */
+static void handle_ctrl_e(void)
+{
+    line_seek_end(&module.line);
+}
+
+/**
+ * Ctrl+D Delete the chracter at the cursor.
+ */
+static void handle_ctrl_d(void)
+{
+    line_delete(&module.line);
+}
+
+/**
+ * Ctrl+K Cut the line from cursor to end.
+ */
+static void handle_ctrl_k(void)
+{
+    line_truncate(&module.line);
+}
+
+/**
+ * Ctrl+T Swap the last two characters before the cursor (typo).
+ */
+static void handle_ctrl_t(void)
+{
+    int ch;
+    int cursor;
+
+    /* Is a swap possible? */
+    cursor = line_get_cursor(&module.line);
+
+    /* Cannot swap if the cursor is at the beginning of the line. */
+    if (cursor == 0) {
+        return;
+    }
+
+    /* Cannot swap if there are less than two characters. */
+    if (line_get_length(&module.line) < 2) {
+        return;
+    }
+
+    /* Move the cursor to the second character. */
+    if (cursor == line_get_length(&module.line)) {
+        line_seek(&module.line, -1);
+    }
+
+    /* Swap the two characters. */
+    ch = line_peek(&module.line);
+    line_delete(&module.line);
+    line_seek(&module.line, -1);
+    line_insert(&module.line, ch);
+    line_seek(&module.line, 1);
+}
+
+static void restore_previous_line(struct line_t *pattern_p)
+{
+    int cursor;
+    int length;
+
+    printf("\x1b[%dD\x1b[K%s",
+           17 + line_get_length(pattern_p),
+           line_get_buf(&module.prev_line));
+
+    cursor = line_get_cursor(&module.prev_line);
+    length = line_get_length(&module.prev_line);
+
+    if (cursor != length) {
+        printf("\x1b[%dD", length - cursor);
+    }
+}
+
+/**
+ * Ctrl+R Recall the last command including the specified character(s)
+ * searches the command history as you type.
+ *
+ * The original line buffer is printed and cursor reset, then the
+ * selected command is copied into the line buffer. The output of the
+ * new command occurs in the main command loop.
+ */
+static void handle_ctrl_r(void)
+{
+    int ch;
+    char *buf_p;
+
+    line_init(&module.history.pattern);
+    line_init(&module.history.match);
+
+    if (!line_is_empty(&module.line)) {
+        printf("\x1b[%dD", line_get_length(&module.line));
+    }
+
+    printf("\x1b[K(history-search)`': \x1b[3D");
+
+    while (true) {
+        ch = xgetc();
+
+        switch (ch) {
+
+        case DELETE:
+        case BACKSPACE:
+            if (!line_is_empty(&module.history.pattern)) {
+                printf("\x1b[1D\x1b[K': ");
+                line_seek(&module.history.pattern, -1);
+                line_delete(&module.history.pattern);
+                buf_p = history_reverse_search(
+                    line_get_buf(&module.history.pattern));
+                line_init(&module.history.match);
+
+                if (buf_p != NULL) {
+                    line_insert_string(&module.history.match, buf_p);
+                }
+
+                printf("%s\x1b[%dD",
+                       line_get_buf(&module.history.match),
+                       line_get_length(&module.history.match) + 3);
+            }
+
+            break;
+
+        case CARRIAGE_RETURN:
+            module.carriage_return_received = true;
+            break;
+
+        case CTRL_G:
+            restore_previous_line(&module.history.pattern);
+            return;
+
+        default:
+            if (isprint(ch)) {
+                if (line_insert(&module.history.pattern, ch)) {
+                    printf("\x1b[K%c': ", ch);
+                    buf_p = history_reverse_search(
+                        line_get_buf(&module.history.pattern));
+                    line_init(&module.history.match);
+
+                    if (buf_p != NULL) {
+                        line_insert_string(&module.history.match, buf_p);
+                    }
+
+                    printf("%s\x1b[%dD",
+                           line_get_buf(&module.history.match),
+                           line_get_length(&module.history.match) + 3);
+                }
+            } else {
+                restore_previous_line(&module.history.pattern);
+
+                /* Copy the match to current line. */
+                module.line = module.history.match;
+
+                if (ch == NEWLINE) {
+                    module.newline_received = true;
+                } else {
+                    if (ch == ALT) {
+                        ch = xgetc();
+
+                        if (ch != 'd') {
+                            (void)xgetc();
+                        }
+                    }
+                }
+
+                return;
+            }
+        }
+    }
+}
+
+/**
+ * ALT.
+ */
+static void handle_alt(void)
+{
+    int ch;
+    char *buf_p;
+
+    ch = xgetc();
+
+    switch (ch) {
+
+    case 'd':
+        /* Alt+D Delete the word at the cursor. */
+        while (isblank((int)line_peek(&module.line))) {
+            line_delete(&module.line);
+        }
+
+        while (!isblank((int)line_peek(&module.line))
+               && (line_peek(&module.line) != '\0')) {
+            line_delete(&module.line);
+        }
+
+        break;
+
+    case 'O':
+        ch = xgetc();
+
+        switch (ch) {
+
+        case 'H':
+            /* HOME. */
+            line_seek_begin(&module.line);
+            break;
+
+        case 'F':
+            /* END. */
+            line_seek_end(&module.line);
+            break;
+
+        default:
+            break;
+        }
+
+        break;
+
+    case '[':
+        ch = xgetc();
+
+        switch (ch) {
+
+        case 'A':
+        case 'B':
+            if (ch == 'A') {
+                /* UP Previous command. */
+                buf_p = history_get_previous_command();
+            } else {
+                /* DOWN Next command. */
+                buf_p = history_get_next_command();
+            }
+
+            if (buf_p != NULL) {
+                line_init(&module.line);
+                line_insert_string(&module.line, buf_p);
+            }
+
+            break;
+
+        case 'C':
+            /* RIGHT Go right on character. */
+            line_seek(&module.line, 1);
+            break;
+
+        case 'D':
+            /* LEFT Go left one character. */
+            line_seek(&module.line, -1);
+            break;
+
+        default:
+            break;
+        }
+
+        break;
+
+    default:
+        break;
+    }
+}
+
+static void handle_other(char ch)
+{
+    line_insert(&module.line, ch);
+}
+
+/**
+ * Show updated line to the user and update the cursor to its new
+ * position.
+ */
+static void show_line(void)
+{
+    int i;
+    int cursor;
+    int new_cursor;
+    int length;
+    int new_length;
+    int min_length;
+
+    cursor = line_get_cursor(&module.prev_line);
+    length = line_get_length(&module.prev_line);
+    new_length = line_get_length(&module.line);
+    new_cursor = line_get_cursor(&module.line);
+    min_length = MIN(line_get_length(&module.prev_line), new_length);
+
+    /* Was the line edited? */
+    if (strcmp(line_get_buf(&module.line),
+               line_get_buf(&module.prev_line)) != 0) {
+        /* Only output the change if the last part of the string
+           shall be deleted. */
+        if ((strncmp(line_get_buf(&module.line),
+                     line_get_buf(&module.prev_line),
+                     min_length) == 0)
+            && (new_cursor == new_length)) {
+            if (length < new_length) {
+                /* New character. */
+                printf("%s", &line_get_buf(&module.line)[cursor]);
+            } else {
+                /* Move the cursor to the end of the old line. */
+                for (i = cursor; i < length; i++) {
+                    printf(" ");
+                }
+
+                /* Backspace. */
+                for (i = new_length; i < length; i++) {
+                    printf("\x08 \x08");
+                }
+            }
+        } else {
+            if (cursor > 0) {
+                printf("\x1b[%dD", cursor);
+            }
+
+            printf("\x1b[K%s", line_get_buf(&module.line));
+
+            if (new_cursor < new_length) {
+                printf("\x1b[%dD", new_length - new_cursor);
+            }
+        }
+    } else if (cursor < new_cursor) {
+        printf("\x1b[%dC", new_cursor - cursor);
+    } else if (new_cursor < cursor) {
+        printf("\x1b[%dD", cursor - new_cursor);
+    }
+
+    fflush(stdout);
+}
+
+/**
+ * Execute the current line.
+ */
+static int execute_line(void)
+{
+    if (module.carriage_return_received) {
+        printf("\r");
+    }
+
+    printf("\n");
+
+    /* Append the command to the history. */
+    if (!line_is_empty(&module.line)) {
+        history_append(line_get_buf(&module.line));
+    }
+
+    history_reset_current();
+
+    return (line_get_length(&module.line));
+}
+
+/**
+ * Read the next command.
+ */
+static int read_command(void)
+{
+    int ch;
+
+    /* Initialize the read command state. */
+    line_init(&module.line);
+    module.carriage_return_received = false;
+    module.newline_received = false;
+
+    while (true) {
+        ch = xgetc();
+
+        /* Save current line. */
+        module.prev_line = module.line;
+
+        switch (ch) {
+
+        case TAB:
+            handle_tab();
+            break;
+
+        case CARRIAGE_RETURN:
+            handle_carrige_return();
+            break;
+
+        case NEWLINE:
+            handle_newline();
+            break;
+
+        case DELETE:
+        case BACKSPACE:
+            handle_backspace();
+            break;
+
+        case CTRL_A:
+            handle_ctrl_a();
+            break;
+
+        case CTRL_E:
+            handle_ctrl_e();
+            break;
+
+        case CTRL_D:
+            handle_ctrl_d();
+            break;
+
+        case CTRL_K:
+            handle_ctrl_k();
+            break;
+
+        case CTRL_T:
+            handle_ctrl_t();
+            break;
+
+        case CTRL_R:
+            handle_ctrl_r();
+            break;
+
+        case ALT:
+            handle_alt();
+            break;
+
+        default:
+            handle_other(ch);
+            break;
+        }
+
+        /* Show the new line to the user and execute it if enter was
+           pressed. */
+        show_line();
+
+        if (module.newline_received) {
+            return (execute_line());
+        }
+    }
+}
+
+void *shell_main(void *arg_p)
+{
+    (void)arg_p;
+
+    int res;
+    char *stripped_line_p;
+
+    printf("Shell started!\n");
+
+    qsort(module.commands_p,
+          module.number_of_commands,
+          sizeof(*module.commands_p),
+          compare_qsort);
+
+    while (true) {
+        /* Authentication. */
+        if (!module.authenticated) {
+            login();
+            module.authenticated = true;
+        }
+
+        /* Read command.*/
+        res = read_command();
+
+        if (res > 0) {
+            stripped_line_p = strip(line_get_buf(&module.line), NULL);
+
+            if (is_comment(stripped_line_p)) {
+                /* Just print a prompt. */
+            } else if (is_shell_command(stripped_line_p)) {
+                (void)execute_command(stripped_line_p);
+                continue;
+            } else {
+                res = execute_command(stripped_line_p);
+
+                if (res == 0) {
+                    printf("OK\n");
+                } else {
+                    printf("ERROR(%d)\n", res);
+                }
+            }
+        }
+
+        print_prompt();
+    }
+
+    return (NULL);
+}
+
+void ml_shell_init(void)
+{
+    make_stdin_unbuffered();
+
+    module.username_p = "erik";
+    module.password_p = "m";
+    module.number_of_commands = 0;
+    module.commands_p = xmalloc(1);
+    module.authenticated = false;
+    history_init();
+
+    ml_shell_register_command("logout", command_logout);
+    ml_shell_register_command("history", command_history);
+    ml_shell_register_command("help", command_help);
+}
+
+void ml_shell_start(void)
+{
+    pthread_create(&module.pthread,
+                   NULL,
+                   (void *(*)(void *))shell_main,
+                   NULL);
+}
+
+void ml_shell_register_command(const char *name_p,
+                               ml_shell_command_callback_t callback)
+{
+    struct command_t *command_p;
+
+    module.number_of_commands++;
+    module.commands_p = xrealloc(
+        module.commands_p,
+        sizeof(*module.commands_p) * module.number_of_commands);
+    command_p = &module.commands_p[module.number_of_commands - 1];
+    command_p->name_p = name_p;
+    command_p->callback = callback;
+}

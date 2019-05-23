@@ -71,6 +71,8 @@
 #define ML_DEBUG(log_object_p, fmt_p, ...)                              \
     ml_log_object_print(log_object_p, ML_LOG_DEBUG, fmt_p, ##__VA_ARGS__)
 
+typedef int (*ml_shell_command_callback_t)(int argc, const char *argv[]);
+
 struct ml_uid_t {
     const char *name_p;
 };
@@ -200,5 +202,19 @@ void ml_log_object_print(struct ml_log_object_t *self_p,
                          int level,
                          const char *fmt_p,
                          ...);
+
+void ml_shell_init(void);
+
+void ml_shell_start(void);
+
+/**
+ * Must be called before ml_shell_start().
+ */
+void ml_shell_register_command(const char *name_p,
+                               ml_shell_command_callback_t callback);
+
+void ml_network_interface_configure(const char *name_p,
+                                    const char *ipv4_address_p,
+                                    const char *ipv4_netmask_p);
 
 #endif
