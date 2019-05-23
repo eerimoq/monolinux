@@ -929,6 +929,7 @@ static void handle_ctrl_r(void)
     printf("\x1b[K(history-search)`': \x1b[3D");
 
     while (true) {
+        fflush(stdout);
         ch = xgetc();
 
         switch (ch) {
