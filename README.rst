@@ -101,11 +101,9 @@ ARM 64 bits.
 
    $ sudo apt install gcc-aarch64-linux-gnu
    $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- ML_LINUX_CONFIG=$ML_ROOT/configs/arm64-all-no.config
-
+   
 Ideas
 =====
-
-- Run on some embedded system.
 
 - Add unit tests of the Monolinux library.
 
