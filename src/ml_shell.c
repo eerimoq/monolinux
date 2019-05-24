@@ -434,7 +434,7 @@ static int command_help(int argc, const char *argv[])
     printf("Cursor movement\n"
            "\n"
            "         LEFT   Go left one character.\n"
-           "        RIGHT   Go right on character.\n"
+           "        RIGHT   Go right one character.\n"
            "  HOME/Ctrl+A   Go to the beginning of the line.\n"
            "   END/Ctrl+E   Go to the end of the line.\n"
            "\n"
