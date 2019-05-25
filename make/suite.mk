@@ -18,6 +18,7 @@ CFLAGS += -coverage
 CFLAGS += -Wall -Wextra -std=gnu11
 CFLAGS += -g -Og
 CFLAGS += $(INC:%=-I%)
+CFLAGS += -DUNIT_TEST
 LIBS = -lunicorn -lpthread
 
 .PHONY: all clean

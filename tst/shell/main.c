@@ -45,11 +45,114 @@ static int command_hello(int argc, const char *argv[])
     return (0);
 }
 
-TEST(register_command)
+static int stdin_pipe(void)
 {
+    int fds[2];
+
+    ASSERT_EQ(pipe(fds), 0);
+    dup2(fds[0], STDIN_FILENO);
+
+    return (fds[1]);
+}
+
+static void input(int fd, const char *string_p)
+{
+    size_t length;
+
+    length = strlen(string_p);
+
+    ASSERT_EQ(write(fd, string_p, length), length);
+}
+
+TEST(various_commands)
+{
+    int fd;
+
     ml_shell_init();
     ml_shell_register_command("hello", "My command.", command_hello);
-    ml_shell_start();
+
+    CAPTURE_OUTPUT(output) {
+        fd = stdin_pipe();
+        ml_shell_start();
+        input(fd, "root\n");
+        input(fd, "\n");
+        input(fd, "help\n");
+        input(fd, "history\n");
+        input(fd, "hello\n");
+        input(fd, "hello Foo\n");
+        input(fd, "logout\n");
+        /* ToDo: Should wait until output is available, but how? */
+        usleep(50000);
+    }
+
+    ASSERT_EQ(output,
+              "username: root\n"
+              "password: \n"
+              "$ help\n"
+              "Cursor movement\n"
+              "\n"
+              "         LEFT   Go left one character.\n"
+              "        RIGHT   Go right one character.\n"
+              "  HOME/Ctrl+A   Go to the beginning of the line.\n"
+              "   END/Ctrl+E   Go to the end of the line.\n"
+              "\n"
+              "Edit\n"
+              "\n"
+              "        Alt+D   Delete the word at the cursor.\n"
+              "       Ctrl+D   Delete the chracter at the cursor.\n"
+              "       Ctrl+K   Cut the line from cursor to end.\n"
+              "       Ctrl+T   Swap the last two characters before the "
+              "cursor (typo).\n"
+              "          TAB   Tab completion for file/directory names.\n"
+              "    BACKSPACE   Delete the character before the cursor.\n"
+              "\n"
+              "History\n"
+              "\n"
+              "           UP   Previous command.\n"
+              "         DOWN   Next command.\n"
+              "       Ctrl+R   Recall the last command including the specified "
+              "character(s)\n"
+              "                searches the command history as you type.\n"
+              "       Ctrl+G   Escape from history searching mode.\n"
+              "\n"
+              "Commands\n"
+              "\n"
+              "          cat   Print a file.\n"
+              "        hello   My command.\n"
+              "         help   Print this help.\n"
+              "      history   List comand history.\n"
+              "       logout   Shell logout.\n"
+              "           ls   List directory contents.\n"
+              "$ history\n"
+              "1: help\n"
+              "2: history\n"
+              "$ hello\n"
+              "Hello stranger!\n"
+              "OK\n"
+              "$ hello Foo\n"
+              "Hello Foo!\n"
+              "OK\n"
+              "$ logout\n"
+              "username: ");
+}
+
+TEST(ls)
+{
+    int fd;
+
+    ml_shell_init();
+
+    CAPTURE_OUTPUT(output) {
+        fd = stdin_pipe();
+        ml_shell_start();
+        input(fd, "root\n");
+        input(fd, "\n");
+        input(fd, "ls\n");
+        /* ToDo: Should wait until output is available, but how?. */
+        usleep(50000);
+    }
+
+    ASSERT_SUBSTRING(output, "OK\n$ ");
 }
 
 int main()
@@ -57,6 +160,7 @@ int main()
     ml_init();
 
     return RUN_TESTS(
-        register_command
+        various_commands,
+        ls
     );
 }

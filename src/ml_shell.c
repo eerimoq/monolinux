@@ -117,6 +117,8 @@ static int xgetc(void)
     return (ch);
 }
 
+#ifndef UNIT_TEST
+
 static void make_stdin_unbuffered(void)
 {
     struct termios ctrl;
@@ -125,6 +127,14 @@ static void make_stdin_unbuffered(void)
     ctrl.c_lflag &= ~(ICANON | ECHO);
     tcsetattr(STDIN_FILENO, TCSANOW, &ctrl);
 }
+
+#else
+
+static void make_stdin_unbuffered(void)
+{
+}
+
+#endif
 
 static void print_prompt(void)
 {
@@ -1270,8 +1280,6 @@ void *shell_main(void *arg_p)
 
     int res;
     char *stripped_line_p;
-
-    printf("Shell started!\n");
 
     qsort(module.commands_p,
           module.number_of_commands,
