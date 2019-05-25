@@ -140,9 +140,9 @@ static int command_ifconfig(int argc, const char *argv[])
     return (res);
 }
 
-static int command_udp_send(const char *ip_address_p,
-                            const char *port_p,
-                            const char *data_p)
+static int udp_send(const char *ip_address_p,
+                    const char *port_p,
+                    const char *data_p)
 {
     int res;
     ssize_t size;
@@ -180,7 +180,7 @@ static int command_udp_send(const char *ip_address_p,
     return (res);
 }
 
-static int command_udp_recv(const char *port_p)
+static int udp_recv(const char *port_p)
 {
     int res;
     ssize_t size;
@@ -231,25 +231,35 @@ static int command_udp_recv(const char *port_p)
     return (res);
 }
 
-static int command_udp(int argc, const char *argv[])
+static int command_udp_send(int argc, const char *argv[])
 {
     int res;
 
-    res = -1;
-
-    if (argc == 5) {
-        if (strcmp(argv[1], "send") == 0) {
-            res = command_udp_send(argv[2], argv[3], argv[4]);
-        }
-    } else if (argc == 3) {
-        if (strcmp(argv[1], "recv") == 0) {
-            res = command_udp_recv(argv[2]);
-        }
+    if (argc == 4) {
+        res = udp_send(argv[1], argv[2], argv[3]);
+    } else {
+        res = -1;
     }
 
     if (res != 0) {
-        printf("udp send <ip-address> <port> <data>\n"
-               "udp recv <port>\n");
+        printf("udp_send <ip-address> <port> <data>\n");
+    }
+
+    return (res);
+}
+
+static int command_udp_recv(int argc, const char *argv[])
+{
+    int res;
+
+    if (argc == 2) {
+        res = udp_recv(argv[1]);
+    } else {
+        res = -1;
+    }
+
+    if (res != 0) {
+        printf("udp_recv <port>\n");
     }
 
     return (res);
@@ -260,9 +270,12 @@ void ml_network_init(void)
     ml_shell_register_command("ifconfig",
                               "Network interface management.",
                               command_ifconfig);
-    ml_shell_register_command("udp",
-                              "UDP testing.",
-                              command_udp);
+    ml_shell_register_command("udp_send",
+                              "UDP send.",
+                              command_udp_send);
+    ml_shell_register_command("udp_recv",
+                              "UDP receive.",
+                              command_udp_recv);
 }
 
 void ml_network_interface_configure(const char *name_p,
