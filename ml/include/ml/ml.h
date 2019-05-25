@@ -226,7 +226,9 @@ void ml_network_interface_up(const char *name_p);
 
 void ml_network_interface_down(const char *name_p);
 
-char *strip(char *str_p, const char *strip_p);
+char *ml_strip(char *str_p, const char *strip_p);
+
+void ml_hexdump(const void *buf_p, size_t size);
 
 void *xmalloc(size_t size);
 

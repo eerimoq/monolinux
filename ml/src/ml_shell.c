@@ -235,7 +235,7 @@ static int parse_command(char *line_p, const char *argv[])
     int argc;
 
     /* Remove white spaces at the beginning and end of the string. */
-    line_p = strip(line_p, NULL);
+    line_p = ml_strip(line_p, NULL);
     argc = 0;
 
     /* Command string missing. */
@@ -250,7 +250,7 @@ static int parse_command(char *line_p, const char *argv[])
         }
 
         /* Remove white spaces before the next argument. */
-        line_p = strip(line_p, NULL);
+        line_p = ml_strip(line_p, NULL);
 
         if ((line_p = parse_argument(line_p, &argv[argc++])) == NULL) {
             return (-1);
@@ -1297,7 +1297,7 @@ void *shell_main(void *arg_p)
         res = read_command();
 
         if (res > 0) {
-            stripped_line_p = strip(line_get_buf(&module.line), NULL);
+            stripped_line_p = ml_strip(line_get_buf(&module.line), NULL);
 
             if (is_comment(stripped_line_p)) {
                 /* Just print a prompt. */

@@ -222,13 +222,6 @@ TEST(command_editing)
         usleep(50000);
     }
 
-    int i = 0;
-
-    while (output[i] != 0) {
-        printf("0x%02x (%c)\n", output[i], output[i]);
-        i++;
-    }
-
     ASSERT_EQ(
         output,
         "username: root\n"
@@ -257,6 +250,87 @@ TEST(command_editing)
         "$ ");
 }
 
+static int command_quotes(int argc, const char *argv[])
+{
+    ASSERT_EQ(argc, 3);
+    ASSERT_EQ(strcmp(argv[0], "quotes"), 0);
+    ASSERT_EQ(strcmp(argv[1], "ba\" \\r"), 0);
+    ASSERT_EQ(strcmp(argv[2], ""), 0);
+
+    return (0);
+}
+
+TEST(quotes)
+{
+    int fd;
+
+    ml_shell_init();
+    ml_shell_register_command("quotes", ".", command_quotes);
+
+    CAPTURE_OUTPUT(output) {
+        fd = stdin_pipe();
+        ml_shell_start();
+        input(fd, "root\n");
+        input(fd, "\n");
+        input(fd, "quotes \"ba\\\" \\r\" \"\"\n");
+        /* ToDo: Should wait until output is available, but how?. */
+        usleep(50000);
+    }
+
+    ASSERT_EQ(
+        output,
+        "username: root\n"
+        "password: \n"
+        "$ quotes \"ba\\\" \\r\" \"\"\n"
+        "OK\n"
+        "$ ");
+}
+
+TEST(history)
+{
+    int fd;
+
+    ml_shell_init();
+
+    CAPTURE_OUTPUT(output) {
+        fd = stdin_pipe();
+        ml_shell_start();
+        input(fd, "root\n");
+        input(fd, "\n");
+        input(fd, "foo\n");
+        input(fd, "bar\n");
+        input(fd, "fie\n");
+        input(fd, "history\n");
+        input(fd, "\x12""fo\n");
+        /* ToDo: Should wait until output is available, but how?. */
+        usleep(50000);
+    }
+
+    ASSERT_EQ(
+        output,
+        "username: root\n"
+        "password: \n"
+        "$ foo\n"
+        "foo: command not found\n"
+        "ERROR(-1)\n"
+        "$ bar\n"
+        "bar: command not found\n"
+        "ERROR(-1)\n"
+        "$ fie\n"
+        "fie: command not found\n"
+        "ERROR(-1)\n"
+        "$ history\n"
+        "1: foo\n"
+        "2: bar\n"
+        "3: fie\n"
+        "4: history\n"
+        "$ "ESC"[K(history-search)`': "ESC"[3D"ESC"[Kf': fie"ESC"[6D"
+        ESC"[Ko': foo"ESC"[6D"ESC"[19D"ESC"[Kfoo\n"
+        "foo: command not found\n"
+        "ERROR(-1)\n"
+        "$ ");
+}
+
 int main()
 {
     ml_init();
@@ -265,6 +339,8 @@ int main()
         various_commands,
         ls,
         cat,
-        command_editing
+        command_editing,
+        quotes,
+        history
     );
 }

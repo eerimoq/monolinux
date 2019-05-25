@@ -28,6 +28,7 @@
 
 #include <stdio.h>
 #include <sys/mount.h>
+#include <ctype.h>
 #include "ml/ml.h"
 #include "internal.h"
 
@@ -48,6 +49,23 @@ static inline bool char_in_string(char c, const char *str_p)
     }
 
     return (false);
+}
+
+static void print_ascii(const char *buf_p, size_t size)
+{
+    size_t i;
+
+    for (i = 0; i < 16 - size; i++) {
+        printf("   ");
+    }
+
+    printf("'");
+
+    for (i = 0; i < size; i++) {
+        printf("%c", isprint((int)buf_p[i]) ? buf_p[i] : '.');
+    }
+
+    printf("'");
 }
 
 void ml_init(void)
@@ -71,7 +89,7 @@ void ml_subscribe(struct ml_queue_t *queue_p, struct ml_uid_t *uid_p)
     ml_bus_subscribe(&module.bus, queue_p, uid_p);
 }
 
-char *strip(char *str_p, const char *strip_p)
+char *ml_strip(char *str_p, const char *strip_p)
 {
     char *begin_p;
     size_t length;
@@ -98,6 +116,34 @@ char *strip(char *str_p, const char *strip_p)
     }
 
     return (begin_p);
+}
+
+void ml_hexdump(const void *buf_p, size_t size)
+{
+    const char *b_p;
+    int pos;
+
+    pos = 0;
+    b_p = buf_p;
+
+    while (size > 0) {
+        if ((pos % 16) == 0) {
+            printf("%08x: ", pos);
+        }
+
+        printf("%02x ", b_p[pos] & 0xff);
+
+        if ((pos % 16) == 15) {
+            print_ascii(&b_p[pos - 15], 16);
+            printf("\n");
+        }
+
+        pos++;
+        size--;
+    }
+
+    print_ascii(&b_p[pos - (pos % 16)], pos % 16);
+    printf("\n");
 }
 
 void *xmalloc(size_t size)
