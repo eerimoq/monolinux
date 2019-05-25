@@ -13,6 +13,33 @@ def on_modify(s):
     print(80 * '=')
     run(['make', '-s', '-j4'])
 
+def suite_paths_to_watch():
+    stdout = run(['make', '-s', 'print-SRC'],
+                 capture_output=True,
+                 encoding='utf-8').stdout
+
+    return stdout.split()
+
+
+def package_paths_to_watch():
+    stdout = run(['make', '-s', 'print-SUITES'],
+                 capture_output=True,
+                 encoding='utf-8').stdout
+    paths = []
+
+    for suite in stdout.split():
+        relative_path = 'tst/{}'.format(suite)
+        stdout = run(
+            ['make', '-C', relative_path, '-s', 'print-SRC'],
+            capture_output=True,
+            encoding='utf-8').stdout
+        paths += [
+            os.path.join(relative_path, path)
+            for path in stdout.split()
+        ]
+
+    return paths
+
 
 def paths_to_watch():
     stdout = run(['make', '-s', 'print-SRC'],
@@ -23,24 +50,28 @@ def paths_to_watch():
 
 
 def do_test(_):
+    from pyinotify import WatchManager
+    from pyinotify import Notifier
+    from pyinotify import EventsCodes
+    from pyinotify import ProcessEvent
+
     if not os.path.exists('Makefile'):
         sys.exit('No test suite found in {}.'.format(os.getcwd()))
 
     with open('Makefile', 'r') as fin:
         contents = fin.read()
 
-    if 'suite.mk' not in contents:
+    if 'suite.mk' in contents:
+        paths = suite_paths_to_watch()
+    elif 'package.mk' in contents:
+        paths = package_paths_to_watch()
+    else:
         sys.exit('No test suite found in {}.'.format(os.getcwd()))
-
-    from pyinotify import WatchManager
-    from pyinotify import Notifier
-    from pyinotify import EventsCodes
-    from pyinotify import ProcessEvent
 
     wm = WatchManager()
     notifier = Notifier(wm, default_proc_fun=ProcessEvent())
 
-    for path in paths_to_watch():
+    for path in paths:
         wm.add_watch(path, EventsCodes.ALL_FLAGS['IN_MODIFY'])
 
     notifier.loop(callback=on_modify)
