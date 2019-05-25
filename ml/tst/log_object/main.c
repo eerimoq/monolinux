@@ -98,6 +98,8 @@ TEST(enable_disable)
 
     /* Only debug, no info. */
     ml_log_object_init(&log_object, "foo", ML_LOG_MASK(DEBUG));
+    ASSERT(ml_log_object_is_enabled_for(&log_object, ML_LOG_DEBUG));
+    ASSERT(!ml_log_object_is_enabled_for(&log_object, ML_LOG_INFO));
 
     CAPTURE_OUTPUT(output1) {
         ml_log_object_print(&log_object, ML_LOG_DEBUG, "bar");
@@ -109,6 +111,8 @@ TEST(enable_disable)
 
     /* Only info, no debug. */
     ml_log_object_set_mask(&log_object, ML_LOG_MASK(INFO));
+    ASSERT(!ml_log_object_is_enabled_for(&log_object, ML_LOG_DEBUG));
+    ASSERT(ml_log_object_is_enabled_for(&log_object, ML_LOG_INFO));
 
     CAPTURE_OUTPUT(output2) {
         ml_log_object_print(&log_object, ML_LOG_DEBUG, "bar");
