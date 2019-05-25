@@ -68,6 +68,8 @@ TEST(broadcast_to_two_subscribers)
 
 int main()
 {
+    ml_init();
+
     return RUN_TESTS(
         broadcast_to_two_subscribers
     );

@@ -145,6 +145,8 @@ TEST(queue_empty_and_full)
 
 int main()
 {
+    ml_init();
+
     return RUN_TESTS(
         multiple_put_get,
         queue_empty_and_full
