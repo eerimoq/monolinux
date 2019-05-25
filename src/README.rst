@@ -1,7 +1,7 @@
 About
 =====
 
-The Monolinux C library is built on top of pthread.
+The Monolinux C library.
 
 Features:
 
@@ -9,6 +9,6 @@ Features:
 
 - Logging.
 
-- A simple shell (not yet finalized).
+- A simple shell.
 
-- Networking (not yet finalized).
+- Networking.
