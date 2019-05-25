@@ -3,10 +3,6 @@ BZIMAGE = $(BUILD)/linux/arch/x86/boot/bzImage
 INITRAMFS = $(BUILD)/initramfs.cpio
 APP = $(BUILD)/app
 LINUX_SRC = $(BUILD)/linux-$(ML_LINUX_VERSION)
-MUSL_SRC = $(BUILD)/musl-$(ML_MUSL_VERSION)
-MUSL_GCC = $(BUILD)/musl/bin/musl-gcc
-MUSL_INSTALL_DIR=$(BUILD)/musl
-MUSL_ROOT=$(BUILD)/musl-$(ML_MUSL_VERSION)
 SCRIPTS_DIR = $(ML_ROOT)/scripts
 
 INC += $(ML_ROOT)/src
@@ -20,21 +16,16 @@ SRC ?= \
 	$(ML_ROOT)/src/ml_queue.c \
 	$(ML_ROOT)/src/ml_shell.c
 
-ifeq ($(ARCH), arm64)
-    MUSL_ARCH = ARCH=aarch64
-endif
-
 CC = $(CROSS_COMPILE)gcc
 
 .PHONY: all unpack linux initrd run build clean app
 
 all: build
 
-unpack: $(LINUX_SRC) $(MUSL_SRC)
+unpack: $(LINUX_SRC)
 
 build:
 	$(MAKE) unpack
-	$(MAKE) musl
 	$(MAKE) initrd linux
 
 size:
@@ -49,12 +40,6 @@ run: build
 clean:
 	rm -rf $(BUILD)
 
-$(MUSL_SRC):
-	@echo "Unpacking $(ML_SOURCES)/musl-$(ML_MUSL_VERSION).tar.gz."
-	mkdir -p $(BUILD)
-	cd $(BUILD) && \
-	tar xzf $(ML_SOURCES)/musl-$(ML_MUSL_VERSION).tar.gz
-
 $(LINUX_SRC):
 	@echo "Unpacking $(ML_SOURCES)/linux-$(ML_LINUX_VERSION).tar.xz."
 	mkdir -p $(BUILD)
@@ -62,16 +47,6 @@ $(LINUX_SRC):
 	tar xJf $(ML_SOURCES)/linux-$(ML_LINUX_VERSION).tar.xz
 
 linux: $(BZIMAGE)
-
-musl: $(MUSL_GCC)
-
-$(MUSL_GCC): $(MUSL_SRC)
-	@echo "Building MUSL."
-	mkdir -p $(MUSL_INSTALL_DIR)
-	cd $(MUSL_ROOT) && \
-	$(MUSL_ARCH) ./configure --disable-shared --prefix=$(MUSL_INSTALL_DIR) && \
-	$(MAKE) $(MUSL_ARCH) && \
-	$(MAKE) $(MUSL_ARCH) install
 
 $(BZIMAGE): $(LINUX_SRC)
 	@echo "Building Linux."
@@ -88,7 +63,7 @@ app: $(APP)
 $(APP): $(SRC)
 	@echo "Building the application."
 	mkdir -p $(BUILD)
-	$(MUSL_GCC) -Wall -Wextra -Werror -O2 $(INC:%=-I%) $^ -static -o $@
+	$(CC) -Wall -Wextra -Werror -O2 $(INC:%=-I%) $^ -static -lpthread -o $@
 
 $(INITRAMFS): $(APP)
 	@echo "Creating the initramfs."

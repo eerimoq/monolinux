@@ -27,7 +27,7 @@ Source the development environment setup script.
 
    $ source setup.sh
 
-Download the Linux and MUSL sources to the ``$ML_SOURCES``
+Download the Linux kernel sources to the ``$ML_SOURCES``
 directory. This is normally only done once.
 
 .. code-block:: shell
@@ -35,7 +35,6 @@ directory. This is normally only done once.
    $ source setup.sh
    $ cd $ML_SOURCES
    $ wget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.1.3.tar.xz
-   $ wget https://www.musl-libc.org/releases/musl-1.1.22.tar.gz
    $ cd -
 
 Run the commands below to create a file system, build the Linux kernel
@@ -74,7 +73,6 @@ Environment variables exported in setup.sh. Change at will.
    ML_LINUX_CONFIG=/home/erik/workspace/monolinux/configs/x86_64-default.config
    ML_SOURCES=/home/erik/workspace/monolinux/..
    ML_ROOT=/home/erik/workspace/monolinux
-   ML_MUSL_VERSION=1.1.22
 
 Linux kernel
 ------------
@@ -110,12 +108,14 @@ or
 Cross compilation
 =================
 
-ARM 32 bits.
+ARM 32 bits with MUSL.
 
 .. code-block:: shell
 
-   $ sudo apt install gcc-arm-linux-gnueabi
-   $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- ML_LINUX_CONFIG=$ML_ROOT/configs/arm-all-no.config
+   $ wget https://musl.cc/arm-linux-musleabi-cross.tgz
+   $ tar xf https://musl.cc/arm-linux-musleabi-cross.tgz
+   $ export PATH=$PATH:$(readlink -f arm-linux-musleabi-cross/bin)
+   $ make ARCH=arm CROSS_COMPILE=arm-linux-musleabi- ML_LINUX_CONFIG=$ML_ROOT/configs/arm-all-no.config
 
 ARM 64 bits.
 
