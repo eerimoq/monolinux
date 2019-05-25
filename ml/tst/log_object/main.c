@@ -27,7 +27,7 @@
  */
 
 #include <unicorn/unicorn.h>
-#include "ml.h"
+#include "ml/ml.h"
 
 TEST(format)
 {

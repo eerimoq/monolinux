@@ -27,7 +27,7 @@
  */
 
 #include <stdbool.h>
-#include "ml.h"
+#include "ml/ml.h"
 #include "internal.h"
 
 static bool is_empty(struct ml_queue_t *self_p)

@@ -29,7 +29,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <unistd.h>
-#include "ml.h"
+#include "ml/ml.h"
 
 /**
  * A shell command printing "Hello <name>!".

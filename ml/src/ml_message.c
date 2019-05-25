@@ -27,7 +27,7 @@
  */
 
 #include <stdlib.h>
-#include "ml.h"
+#include "ml/ml.h"
 #include "internal.h"
 
 struct module_t {

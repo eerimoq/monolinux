@@ -34,7 +34,7 @@
 #include <sys/param.h>
 #include <termios.h>
 #include <dirent.h>
-#include "ml.h"
+#include "ml/ml.h"
 #include "internal.h"
 
 #define USERNAME "root"

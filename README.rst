@@ -124,6 +124,22 @@ ARM 64 bits.
    $ sudo apt install gcc-aarch64-linux-gnu
    $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- ML_LINUX_CONFIG=$ML_ROOT/configs/arm64-all-no.config
 
+File tree
+=========
+
+This is the file tree of the Monolinux repository.
+
+.. code-block:: text
+
+   monolinux/               - this repository
+   ├── bin/                 - executables
+   ├── configs/             - a few Linux kernel configs
+   ├── examples/            - example applications
+   ├── LICENSE              - license
+   ├── make/                - build system
+   ├── ml/                  - the Monolinux C library
+   └── setup.sh             - development environment setup script
+
 .. |buildstatus| image:: https://travis-ci.org/eerimoq/monolinux.svg
 .. _buildstatus: https://travis-ci.org/eerimoq/monolinux
 

@@ -26,8 +26,8 @@
  * This file is part of the Monolinux project.
  */
 
-#ifndef ML_H
-#define ML_H
+#ifndef ML_ML_H
+#define ML_ML_H
 
 #include <stdbool.h>
 #include <pthread.h>

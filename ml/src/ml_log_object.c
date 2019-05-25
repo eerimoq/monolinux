@@ -30,7 +30,7 @@
 #include <stdbool.h>
 #include <stdarg.h>
 #include <time.h>
-#include "ml.h"
+#include "ml/ml.h"
 #include "internal.h"
 
 static const char *level_to_string(int level)

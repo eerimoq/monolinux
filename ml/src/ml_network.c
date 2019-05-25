@@ -33,7 +33,7 @@
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <arpa/inet.h>
-#include "ml.h"
+#include "ml/ml.h"
 
 static void xioctl(int fd, unsigned long request, void *data_p)
 {

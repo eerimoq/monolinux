@@ -27,7 +27,7 @@
  */
 
 #include <stdint.h>
-#include "ml.h"
+#include "ml/ml.h"
 #include "internal.h"
 
 static int compare_bsearch(const void *key_p, const void *elem_p)
