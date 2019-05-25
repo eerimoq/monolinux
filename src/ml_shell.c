@@ -37,6 +37,9 @@
 #include "ml.h"
 #include "internal.h"
 
+#define USERNAME "root"
+#define PASSWORD ""
+
 #define PROMPT              "$ "
 
 #define COMMAND_MAX          256
@@ -1314,8 +1317,8 @@ void ml_shell_init(void)
 {
     make_stdin_unbuffered();
 
-    module.username_p = "erik";
-    module.password_p = "m";
+    module.username_p = USERNAME;
+    module.password_p = PASSWORD;
     module.number_of_commands = 0;
     module.commands_p = xmalloc(1);
     module.authenticated = false;

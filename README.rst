@@ -14,6 +14,9 @@ First of all, install a few packages:
 .. code-block:: shell
 
    $ sudo apt-get install curl qemu-system-x86 flex bison
+   # Only required for unit testing:
+   $ git clone https://github.com/eerimoq/unicorn
+   $ (cd unicorn && make && sudo make install)
 
 Then download the sources to the ``$ML_SOURCES`` directory. This is
 normally only done once.
@@ -101,7 +104,7 @@ ARM 64 bits.
 
    $ sudo apt install gcc-aarch64-linux-gnu
    $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- ML_LINUX_CONFIG=$ML_ROOT/configs/arm64-all-no.config
-   
+
 Ideas
 =====
 
