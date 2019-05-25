@@ -10,7 +10,7 @@ because smaller is better!
 Build and run
 =============
 
-First of all, install a few packages:
+Install all prerequisites:
 
 .. code-block:: shell
 
@@ -21,22 +21,28 @@ First of all, install a few packages:
    $ (cd unicorn && make && sudo make install)
    $ sudo pip3 install pyinotify
 
-Then download the sources to the ``$ML_SOURCES`` directory. This is
-normally only done once.
-
-.. code-block:: shell
-
-   $ cd ..
-   $ wget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.1.3.tar.xz
-   $ wget https://www.musl-libc.org/releases/musl-1.1.22.tar.gz
-   $ cd -
-
-Now, run the commands below to create a file system, build the Linux
-kernel and run everything in QEMU.
+Source the development environment setup script.
 
 .. code-block:: shell
 
    $ source setup.sh
+
+Download the Linux and MUSL sources to the ``$ML_SOURCES``
+directory. This is normally only done once.
+
+.. code-block:: shell
+
+   $ source setup.sh
+   $ cd $ML_SOURCES
+   $ wget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.1.3.tar.xz
+   $ wget https://www.musl-libc.org/releases/musl-1.1.22.tar.gz
+   $ cd -
+
+Run the commands below to create a file system, build the Linux kernel
+and run everything in QEMU.
+
+.. code-block:: shell
+
    $ make -C examples/hello_world run
    ...
    Hello world!
@@ -45,6 +51,16 @@ kernel and run everything in QEMU.
    ...
 
 Exit QEMU with Ctrl-A C and then q <Enter>.
+
+Unit testing
+============
+
+Execute all unit tests.
+
+.. code-block:: shell
+
+   $ make -s -j4
+   ...
 
 Configuration
 =============
