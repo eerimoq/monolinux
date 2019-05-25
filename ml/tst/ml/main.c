@@ -69,19 +69,20 @@ TEST(hexdump_long)
 {
     CAPTURE_OUTPUT(output) {
         ml_hexdump(
-            "110238\x00\x2190112039jiajsFEWAFWE@#%!45eeeeeeeeeeeeeeeeeeeeeee"
+            "110238\x00\x21h0112039jiajsFEWAFWE@#%!45eeeeeeeeeeeeeeeeeeeeeee"
             "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\x01\x0ageeeeerG",
-            91);
+            99);
     }
 
     ASSERT_EQ(
         output,
-        "00000000: 31 31 30 32 33 38 00 39 6a 69 61 6a 73 46 45 57 '110238.9jiajsFEW'\n"
-        "00000010: 41 46 57 45 40 23 25 21 34 35 65 65 65 65 65 65 'AFWE@#%!45eeeeee'\n"
-        "00000020: 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 'eeeeeeeeeeeeeeee'\n"
+        "00000000: 31 31 30 32 33 38 00 21 68 30 31 31 32 30 33 39 '110238.!h0112039'\n"
+        "00000010: 6a 69 61 6a 73 46 45 57 41 46 57 45 40 23 25 21 'jiajsFEWAFWE@#%!'\n"
+        "00000020: 34 35 65 65 65 65 65 65 65 65 65 65 65 65 65 65 '45eeeeeeeeeeeeee'\n"
         "00000030: 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 'eeeeeeeeeeeeeeee'\n"
         "00000040: 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 'eeeeeeeeeeeeeeee'\n"
-        "00000050: 65 01 0a 67 65 65 65 65 65 72 47                'e..geeeeerG'\n");
+        "00000050: 65 65 65 65 65 65 65 65 65 01 0a 67 65 65 65 65 'eeeeeeeee..geeee'\n"
+        "00000060: 65 72 47                                        'erG'\n");
 }
 
 int main()
