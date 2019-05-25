@@ -30,6 +30,8 @@
 #include <unicorn/unicorn.h>
 #include "ml.h"
 
+#define ESC "\x1b"
+
 static int command_hello(int argc, const char *argv[])
 {
     const char *name_p;
@@ -188,6 +190,73 @@ TEST(cat)
         "$ ");
 }
 
+TEST(command_editing)
+{
+    int fd;
+
+    ml_shell_init();
+
+    CAPTURE_OUTPUT(output) {
+        fd = stdin_pipe();
+        ml_shell_start();
+        input(fd, "root\n");
+        input(fd, "\n");
+
+        /* 1. Ctrl-A + Ctrl-D + Enter. */
+        input(fd, "12");
+        input(fd, "\x01\x04\n");
+
+        /* 2. Left arrow + Ctrl-T + Enter. */
+        input(fd, "12");
+        input(fd, ESC"[D\x14\n");
+
+        /* 3. Left arrow + Space + Enter. */
+        input(fd, "12");
+        input(fd, ESC"[D \n");
+
+        /* 4. Left arrow + Right arrow+ Enter. */
+        input(fd, "12");
+        input(fd, ESC"[D"ESC"[C""\n");
+
+        /* ToDo: Should wait until output is available, but how?. */
+        usleep(50000);
+    }
+
+    int i = 0;
+
+    while (output[i] != 0) {
+        printf("0x%02x (%c)\n", output[i], output[i]);
+        i++;
+    }
+
+    ASSERT_EQ(
+        output,
+        "username: root\n"
+        "password: \n"
+
+        /* 1. Ctrl-A + Ctrl-D + Enter. */
+        "$ 12"ESC"[2D"ESC"[K2"ESC"[1D\n"
+        "2: command not found\n"
+        "ERROR(-1)\n"
+
+        /* 2. Left arrow + Ctrl-T + Enter. */
+        "$ 12"ESC"[1D"ESC"[1D"ESC"[K21\n"
+        "21: command not found\n"
+        "ERROR(-1)\n"
+
+        /* 3. Left arrow + Space + Enter. */
+        "$ 12"ESC"[1D"ESC"[1D"ESC"[K1 2"ESC"[1D\n"
+        "1: command not found\n"
+        "ERROR(-1)\n"
+
+        /* 4. Left arrow + Right arrow + Enter. */
+        "$ 12"ESC"[1D"ESC"[1C\n"
+        "12: command not found\n"
+        "ERROR(-1)\n"
+
+        "$ ");
+}
+
 int main()
 {
     ml_init();
@@ -195,6 +264,7 @@ int main()
     return RUN_TESTS(
         various_commands,
         ls,
-        cat
+        cat,
+        command_editing
     );
 }
