@@ -4,6 +4,8 @@ SUITES := $(shell ls tst)
 
 all:
 	for test in $(SUITES) ; do \
+	  echo ; \
+	  echo "============================ $$test ============================" ; \
 	  $(MAKE) -C tst/$$test ; \
 	done
 
