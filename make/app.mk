@@ -5,6 +5,7 @@ INITRAMFS = $(BUILD)/initramfs.cpio
 LINUX_SRC = $(BUILD)/linux-$(ML_LINUX_VERSION)
 SCRIPTS_DIR = $(ML_ROOT)/scripts
 CC = $(CROSS_COMPILE)gcc
+CFLAGS += -O2
 LDFLAGS += -static
 
 .PHONY: all unpack kernel initrd run build

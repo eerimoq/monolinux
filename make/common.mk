@@ -10,6 +10,8 @@ SRC ?= \
 	$(ML_ROOT)/ml/src/ml_shell.c
 OBJ = $(patsubst %,$(BUILD)%,$(abspath $(SRC:%.c=%.o)))
 CFLAGS += $(INC:%=-I%)
+CFLAGS += -ffunction-sections -fdata-sections
+LDFLAGS += -Wl,--gc-sections
 
 .PHONY: clean
 
