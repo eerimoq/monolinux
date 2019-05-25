@@ -1,4 +1,5 @@
 |buildstatus|_
+|codecov|_
 
 Monolinux
 =========
@@ -114,3 +115,6 @@ Ideas
 
 .. |buildstatus| image:: https://travis-ci.org/eerimoq/monolinux.svg
 .. _buildstatus: https://travis-ci.org/eerimoq/monolinux
+
+.. |codecov| image:: https://codecov.io/gh/eerimoq/monolinux/branch/master/graph/badge.svg
+.. _codecov: https://codecov.io/gh/eerimoq/monolinux
