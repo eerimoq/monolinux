@@ -155,12 +155,46 @@ TEST(ls)
     ASSERT_SUBSTRING(output, "OK\n$ ");
 }
 
+TEST(cat)
+{
+    int fd;
+
+    ml_shell_init();
+
+    CAPTURE_OUTPUT(output) {
+        fd = stdin_pipe();
+        ml_shell_start();
+        input(fd, "root\n");
+        input(fd, "\n");
+        input(fd, "cat\n");
+        input(fd, "cat Makefile\n");
+        input(fd, "cat foobar\n");
+        /* ToDo: Should wait until output is available, but how?. */
+        usleep(50000);
+    }
+
+    ASSERT_EQ(
+        output,
+        "username: root\n"
+        "password: \n"
+        "$ cat\n"
+        "No file given\n"
+        "ERROR(-1)\n"
+        "$ cat Makefile\n"
+        "include $(ML_ROOT)/make/suite.mk\n"
+        "OK\n"
+        "$ cat foobar\n"
+        "ERROR(-1)\n"
+        "$ ");
+}
+
 int main()
 {
     ml_init();
 
     return RUN_TESTS(
         various_commands,
-        ls
+        ls,
+        cat
     );
 }

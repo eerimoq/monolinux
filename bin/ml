@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+
+import os
 import sys
 import argparse
 from subprocess import run
@@ -24,6 +27,15 @@ def paths_to_watch():
 
 
 def do_test(_):
+    if not os.path.exists('Makefile'):
+        sys.exit('No test suite found in {}.'.format(os.getcwd()))
+
+    with open('Makefile', 'r') as fin:
+        contents = fin.read()
+
+    if 'suite.mk' not in contents:
+        sys.exit('No test suite found in {}.'.format(os.getcwd()))
+
     wm = WatchManager()
     notifier = Notifier(wm, default_proc_fun=ProcessEvent())
 
