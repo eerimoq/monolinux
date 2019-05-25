@@ -2,7 +2,7 @@
 export ML_ROOT=$(readlink -f .)
 
 # Path to source code archives.
-export ML_SOURCES=$ML_ROOT/..
+export ML_SOURCES=$ML_ROOT/../sources
 
 # Linux kernel version to use.
 export ML_LINUX_VERSION=5.1.3

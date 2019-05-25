@@ -63,7 +63,7 @@ app: $(APP)
 $(APP): $(SRC)
 	@echo "Building the application."
 	mkdir -p $(BUILD)
-	$(CC) -Wall -Wextra -Werror -O2 $(INC:%=-I%) $^ -static -lpthread -o $@
+	$(CC) -Wall -Wextra -Werror -O2 $(INC:%=-I%) $^ -static $(LDFLAGS) -lpthread -o $@
 
 $(INITRAMFS): $(APP)
 	@echo "Creating the initramfs."

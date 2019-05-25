@@ -71,7 +71,7 @@ Environment variables exported in setup.sh. Change at will.
    $ env | grep ML_
    ML_LINUX_VERSION=5.1.3
    ML_LINUX_CONFIG=/home/erik/workspace/monolinux/configs/x86_64-default.config
-   ML_SOURCES=/home/erik/workspace/monolinux/..
+   ML_SOURCES=/home/erik/workspace/monolinux/../sources
    ML_ROOT=/home/erik/workspace/monolinux
 
 Linux kernel
