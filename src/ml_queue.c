@@ -37,7 +37,7 @@ static bool is_empty(struct ml_queue_t *self_p)
 
 static bool is_full(struct ml_queue_t *self_p)
 {
-    return (((self_p->rdpos + 1) % self_p->length) == self_p->wrpos);
+    return (((self_p->wrpos + 1) % self_p->length) == self_p->rdpos);
 }
 
 static void push_message(struct ml_queue_t *self_p,
@@ -63,7 +63,7 @@ void ml_queue_init(struct ml_queue_t *self_p, int length)
 {
     self_p->rdpos = 0;
     self_p->wrpos = 0;
-    self_p->length = length;
+    self_p->length = (length + 1);
     self_p->messages_p = xmalloc(sizeof(void *) * length);
     pthread_mutex_init(&self_p->mutex, NULL);
     pthread_cond_init(&self_p->cond, NULL);

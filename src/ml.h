@@ -71,6 +71,8 @@
 #define ML_DEBUG(log_object_p, fmt_p, ...)                              \
     ml_log_object_print(log_object_p, ML_LOG_DEBUG, fmt_p, ##__VA_ARGS__)
 
+#define PRINT_FILE_LINE() printf("%s:%d\n", __FILE__, __LINE__);
+
 typedef int (*ml_shell_command_callback_t)(int argc, const char *argv[]);
 
 struct ml_uid_t {

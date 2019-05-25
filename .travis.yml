@@ -7,9 +7,12 @@ before_install:
   - source setup.sh
   - export ML_SOURCES=$ML_ROOT
   - env | grep ML_
+  - git clone https://github.com/eerimoq/unicorn
+  - cd unicorn && make && sudo make install && cd ..
 
 script:
   - wget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.1.3.tar.xz
   - wget https://www.musl-libc.org/releases/musl-1.1.22.tar.gz
   - make -C examples/hello_world build
   - make -C examples/hello_world size
+  - make
