@@ -13,10 +13,12 @@ First of all, install a few packages:
 
 .. code-block:: shell
 
-   $ sudo apt-get install curl qemu-system-x86 flex bison
+   $ sudo apt install curl qemu-system-x86 flex bison
+
    # Only required for unit testing:
    $ git clone https://github.com/eerimoq/unicorn
    $ (cd unicorn && make && sudo make install)
+   $ sudo pip3 install pyinotify
 
 Then download the sources to the ``$ML_SOURCES`` directory. This is
 normally only done once.

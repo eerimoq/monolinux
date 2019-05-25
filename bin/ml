@@ -4,10 +4,6 @@ import os
 import sys
 import argparse
 from subprocess import run
-from pyinotify import WatchManager
-from pyinotify import Notifier
-from pyinotify import EventsCodes
-from pyinotify import ProcessEvent
 
 
 __version__ = '0.1.0'
@@ -35,6 +31,11 @@ def do_test(_):
 
     if 'suite.mk' not in contents:
         sys.exit('No test suite found in {}.'.format(os.getcwd()))
+
+    from pyinotify import WatchManager
+    from pyinotify import Notifier
+    from pyinotify import EventsCodes
+    from pyinotify import ProcessEvent
 
     wm = WatchManager()
     notifier = Notifier(wm, default_proc_fun=ProcessEvent())
