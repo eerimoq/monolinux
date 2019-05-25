@@ -33,9 +33,10 @@
 ML_UID(m1);
 ML_UID(m2);
 
+static struct ml_queue_t queue;
+
 TEST(multiple_put_get)
 {
-    struct ml_queue_t queue;
     void *message_1_p;
     void *message_2_p;
     struct ml_uid_t *uid_p;
@@ -113,8 +114,6 @@ static void *queue_empty_and_full_main(void *arg_p)
 
 TEST(queue_empty_and_full)
 {
-    void *message_1_p;
-    void *message_2_p;
     struct ml_uid_t *uid_p;
     void *message_p;
     pthread_t pthread;

@@ -32,11 +32,12 @@
 
 ML_UID(m1);
 
+static struct ml_bus_t bus;
+static struct ml_queue_t queue_1;
+static struct ml_queue_t queue_2;
+
 TEST(broadcast_to_two_subscribers)
 {
-    struct ml_bus_t bus;
-    struct ml_queue_t queue_1;
-    struct ml_queue_t queue_2;
     struct ml_uid_t *uid_p;
     void *bmessage_p;
     void *message_p;

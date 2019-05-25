@@ -64,7 +64,7 @@ void ml_queue_init(struct ml_queue_t *self_p, int length)
     self_p->rdpos = 0;
     self_p->wrpos = 0;
     self_p->length = (length + 1);
-    self_p->messages_p = xmalloc(sizeof(void *) * length);
+    self_p->messages_p = xmalloc(sizeof(void *) * (length + 1));
     pthread_mutex_init(&self_p->mutex, NULL);
     pthread_cond_init(&self_p->cond, NULL);
 }

@@ -14,8 +14,9 @@ OBJ = $(patsubst %,$(BUILD)%,$(abspath $(SRC:%.c=%.o)))
 EXE = $(BUILD)/suite
 
 CFLAGS += -fsanitize=address -fno-omit-frame-pointer
+CFLAGS += -coverage
 CFLAGS += -Wall -Wextra -std=gnu11
-CFLAGS = -g -Og
+CFLAGS += -g -Og
 CFLAGS += $(INC:%=-I%)
 LIBS = -lunicorn -lpthread
 
