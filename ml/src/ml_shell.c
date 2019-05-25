@@ -749,6 +749,7 @@ static void read_line(bool is_sensitive)
             if (line_seek(&module.line, -1)) {
                 line_delete(&module.line);
                 printf("\x08 \x08");
+                fflush(stdout);
             }
 
             continue;
