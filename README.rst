@@ -32,6 +32,7 @@ directory. This is normally only done once.
 
 .. code-block:: shell
 
+   $ mkdir $ML_SOURCES
    $ cd $ML_SOURCES
    $ wget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.1.3.tar.xz
    $ cd -
@@ -63,7 +64,7 @@ Execute all unit tests.
 Automatically build and run a test suite when one of its files has
 been modified.
 
-.. code-block:: shell
+.. code-block:: text
 
    $ cd ml/tst/shell
    $ ml test
