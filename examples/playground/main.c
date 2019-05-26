@@ -45,6 +45,10 @@
 #include <curl/curl.h>
 #include <heatshrink_encoder.h>
 #include <heatshrink_decoder.h>
+#include <lzma.h>
+#include "ml/ml.h"
+
+extern int command_lzma_compress(int argc, const char *argv[]);
 
 static int pmount(const char *source_p,
                   const char *target_p,
@@ -74,7 +78,12 @@ static int init(void)
 {
     int res;
 
-    make_stdin_unbuffered();
+    ml_init();
+    ml_shell_init();
+    ml_shell_register_command("lzmac",
+                              "LZMA compress.",
+                              command_lzma_compress);
+    ml_shell_start();
 
     res = pmount("none", "/proc", "proc");
 
@@ -170,9 +179,25 @@ static void heatshrink_test(void)
     heatshrink_decoder hsd;
 
     printf("Heatshrink encode and decode.\n");
-    
+
     heatshrink_encoder_reset(&hse);
     heatshrink_decoder_reset(&hsd);
+}
+
+static void lzma_test(void)
+{
+    lzma_ret ret;
+    lzma_stream stream;
+
+    memset(&stream, 0, sizeof(stream));
+
+    ret = lzma_alone_decoder(&stream, UINT64_MAX);
+
+    if (ret != LZMA_OK) {
+        printf("LZMA decoder init failed.\n");
+    } else {
+        printf("LZMA decoder init successful.\n");
+    }
 }
 
 int main()
@@ -192,15 +217,10 @@ int main()
     print_filesystem();
     slog();
     heatshrink_test();
-    
-    while (1) {
-        res = read(STDIN_FILENO, &ch, sizeof(ch));
+    lzma_test();
 
-        if (res == sizeof(ch)) {
-            printf("echo: %c\n", ch);
-        } else {
-            printf("error: Failed to read from stdin.");
-        }
+    while (1) {
+        sleep(10);
     }
 
     return (0);

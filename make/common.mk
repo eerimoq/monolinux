@@ -1,5 +1,5 @@
 INC += $(ML_ROOT)/ml/include $(BUILD)/root/include
-SRC ?= \
+SRC += \
 	main.c \
 	$(ML_ROOT)/ml/src/ml.c \
 	$(ML_ROOT)/ml/src/ml_bus.c \
