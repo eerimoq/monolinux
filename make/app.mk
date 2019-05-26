@@ -1,9 +1,9 @@
 BUILD = $(shell readlink -f build)
 PACKAGES = $(BUILD)/packages
 EXE = $(BUILD)/app
-BZIMAGE ?= $(BUILD)/linux/arch/x86/boot/bzImage
-INITRAMFS = $(BUILD)/initramfs.cpio
 LINUX_SRC = $(BUILD)/linux-$(ML_LINUX_VERSION)
+BZIMAGE ?= $(LINUX_SRC)/arch/x86/boot/bzImage
+INITRAMFS = $(BUILD)/initramfs.cpio
 SCRIPTS_DIR = $(ML_ROOT)/scripts
 CC = $(CROSS_COMPILE)gcc
 CFLAGS += -O2
@@ -31,16 +31,15 @@ $(LINUX_SRC):
 	@echo "Unpacking $(ML_SOURCES)/linux-$(ML_LINUX_VERSION).tar.xz."
 	mkdir -p $(BUILD)
 	cd $(BUILD) && \
-	tar xJf $(ML_SOURCES)/linux-$(ML_LINUX_VERSION).tar.xz
+	tar xf $(ML_SOURCES)/linux-$(ML_LINUX_VERSION).tar.xz
 
-$(BUILD)/linux/.config: $(ML_LINUX_CONFIG)
+$(LINUX_SRC)/.config: $(ML_LINUX_CONFIG) $(LINUX_SRC)
 	@echo "Copying Linux kernel config $^ to $@."
-	mkdir -p $(BUILD)/linux
-	cp $^ $@
+	cp $(ML_LINUX_CONFIG) $@
 
-kernel: $(BUILD)/linux/.config
+kernel: $(LINUX_SRC)/.config
 	@echo "Building the Linux kernel."
-	$(MAKE) -C $(LINUX_SRC) O=$(BUILD)/linux
+	$(MAKE) -C $(LINUX_SRC)
 
 $(INITRAMFS): $(EXE)
 	@echo "Creating the initramfs."

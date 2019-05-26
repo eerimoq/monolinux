@@ -136,8 +136,40 @@ This is the file tree of the Monolinux repository.
    ├── examples/            - example applications
    ├── LICENSE              - license
    ├── make/                - build system
+   │   └── packages/        - packages build specifications
    ├── ml/                  - the Monolinux C library
    └── setup.sh             - development environment setup script
+
+Distro file tree before build.
+
+.. code-block:: text
+
+   my-dist/                 - my distribution
+   ├── main.c               - application entry point
+   └── Makefile             - build configuration
+
+Distro file tree after build.
+
+.. code-block:: text
+
+   my-dist/                     - my distribution
+   ├── build/                   - all build output
+   │   ├── app                  - the only executable
+   │   ├── initramfs/           - unpacked ramfs
+   │   ├── initramfs.cpio       - packed ramfs
+   │   ├── linux-5.1.3/         - Linux source and build output
+   │   ├── packages/            - packages source and objects
+   │   │   └── curl-7.65.0/
+   │   └── root/                - header and library container
+   │       ├── bin/
+   │       ├── include/         - include files
+   │       │    └── curl/
+   │       │        └── curl.h
+   │       ├── lib/             - static libraries
+   │       │    └── libcurl.a
+   │       └── share/
+   ├── main.c                   - application entry point
+   └── Makefile                 - build configuration
 
 .. |buildstatus| image:: https://travis-ci.org/eerimoq/monolinux.svg
 .. _buildstatus: https://travis-ci.org/eerimoq/monolinux
