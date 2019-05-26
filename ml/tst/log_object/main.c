@@ -107,7 +107,7 @@ TEST(enable_disable)
     }
 
     ASSERT_SUBSTRING(output1, " DEBUG foo bar");
-    ASSERT(!unicorn_check_substring(output1, " INFO foo bar"));
+    ASSERT_NOT_SUBSTRING(output1, " INFO foo bar");
 
     /* Only info, no debug. */
     ml_log_object_set_mask(&log_object, ML_LOG_MASK(INFO));
@@ -120,7 +120,7 @@ TEST(enable_disable)
     }
 
     ASSERT_SUBSTRING(output2, " INFO foo bar");
-    ASSERT(!unicorn_check_substring(output2, " DEBUG foo bar"));
+    ASSERT_NOT_SUBSTRING(output2, " DEBUG foo bar");
 }
 
 int main()

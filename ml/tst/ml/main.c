@@ -85,6 +85,29 @@ TEST(hexdump_long)
         "00000060: 65 72 47                                        'erG'\n");
 }
 
+static ML_UID(m1);
+
+static struct ml_queue_t queue;
+
+TEST(bus)
+{
+    struct ml_uid_t *uid_p;
+    int *message_p;
+    int *rmessage_p;
+
+    ml_queue_init(&queue, 1);
+    ml_subscribe(&queue, &m1);
+
+    message_p = ml_message_alloc(&m1, sizeof(int));
+    *message_p = 9;
+    ml_broadcast(message_p);
+
+    uid_p = ml_queue_get(&queue, (void **)&rmessage_p);
+    ASSERT_EQ(ml_uid_str(uid_p), ml_uid_str(&m1));
+    ASSERT_EQ(*rmessage_p, 9);
+    ml_message_free(rmessage_p);
+}
+
 int main()
 {
     ml_init();
@@ -92,6 +115,7 @@ int main()
     return RUN_TESTS(
         strip,
         hexdump_short,
-        hexdump_long
+        hexdump_long,
+        bus
     );
 }
