@@ -201,6 +201,8 @@ Start using the default configuraiton.
 Cross compilation
 =================
 
+See `Monolinux Jiffy`_ for a real example project.
+
 ARM 32 bits with MUSL.
 
 .. code-block:: shell
