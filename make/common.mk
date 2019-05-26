@@ -26,7 +26,7 @@ define COMPILE_template
 $(patsubst %.c,$(BUILD)%.o,$(abspath $1)): $1
 	@echo "CC $1"
 	mkdir -p $(BUILD)$(abspath $(dir $1))
-	$(CC) $(CFLAGS) -c -o $$@ $$<
+	$$(CC) $$(CFLAGS) -c -o $$@ $$<
 endef
 $(foreach file,$(SRC),$(eval $(call COMPILE_template,$(file))))
 

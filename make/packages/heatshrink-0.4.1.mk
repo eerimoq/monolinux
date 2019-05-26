@@ -1,4 +1,5 @@
 LIBS += heatshrink_static
+CFLAGS += -DHEATSHRINK_DYNAMIC_ALLOC=0
 
 packages: $(PACKAGES)/heatshrink-0.4.1
 
