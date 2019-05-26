@@ -116,13 +116,17 @@ This is the file tree of the Monolinux repository.
 User project file tree before build. These files are normally under
 version control.
 
+See `Monolinux Jiffy`_ for a real example project.
+
 .. code-block:: text
 
    my-project/                  - my Monolinux project
    ├── app/
    │   ├── main.c               - application entry point
    │   └── Makefile             - project makefile
+   ├── Makefile                 - top level makefile
    ├── monolinux/               - Monolinux
+   ├── README.rst               - readme
    └── setup.sh                 - environment setup script
 
 User project file tree after build.
@@ -131,24 +135,26 @@ User project file tree after build.
 
    my-project/
    ├── app/
+   │   ├── build/                   - all build output
+   │   │   ├── app                  - the one and only executable
+   │   │   ├── initramfs/           - unpacked ramfs
+   │   │   ├── initramfs.cpio       - packed ramfs
+   │   │   ├── linux-5.1.3/         - Linux source and build output
+   │   │   ├── packages/            - packages source and objects
+   │   │   │   └── curl-7.65.0/
+   │   │   └── root/                - headers and libraries container
+   │   │       ├── bin/
+   │   │       ├── include/         - include files
+   │   │       │    └── curl/
+   │   │       │        └── curl.h
+   │   │       ├── lib/             - static libraries
+   │   │       │    └── libcurl.a
+   │   │       └── share/
    │   ├── main.c
    │   └── Makefile
-   ├── build/                   - all build output
-   │   ├── app                  - the one and only executable
-   │   ├── initramfs/           - unpacked ramfs
-   │   ├── initramfs.cpio       - packed ramfs
-   │   ├── linux-5.1.3/         - Linux source and build output
-   │   ├── packages/            - packages source and objects
-   │   │   └── curl-7.65.0/
-   │   └── root/                - headers and libraries container
-   │       ├── bin/
-   │       ├── include/         - include files
-   │       │    └── curl/
-   │       │        └── curl.h
-   │       ├── lib/             - static libraries
-   │       │    └── libcurl.a
-   │       └── share/
+   ├── Makefile
    ├── monolinux/
+   ├── README.rst
    └── setup.sh
 
 Configuration
@@ -216,3 +222,5 @@ ARM 64 bits.
 
 .. |codecov| image:: https://codecov.io/gh/eerimoq/monolinux/branch/master/graph/badge.svg
 .. _codecov: https://codecov.io/gh/eerimoq/monolinux
+
+.. _Monolinux Jiffy: https://github.com/eerimoq/monolinux-jiffy
