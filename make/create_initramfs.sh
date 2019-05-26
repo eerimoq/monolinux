@@ -6,7 +6,7 @@ BUILD=$1
 
 mkdir -p $BUILD/initramfs
 cd $BUILD/initramfs
-mkdir -p {bin,dev,sbin,etc,proc,sys/kernel/debug,usr/{bin,sbin},lib,lib64,mnt/root,root}
+mkdir -p {dev,proc,sys/kernel/debug}
 cp -a /dev/{null,console,tty,sda1} dev
 cp $BUILD/app init
 chmod +x init
