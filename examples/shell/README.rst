@@ -3,13 +3,13 @@ Sample output
 
 .. code-block:: text
 
-   username: erik
-   password: *
+   username: root
+   password:
    $ help
    Cursor movement
 
             LEFT   Go left one character.
-           RIGHT   Go right on character.
+           RIGHT   Go right one character.
      HOME/Ctrl+A   Go to the beginning of the line.
       END/Ctrl+E   Go to the end of the line.
 
@@ -39,21 +39,14 @@ Sample output
         ifconfig   Network interface management.
           logout   Shell logout.
               ls   List directory contents.
-             udp   UDP testing.
+        udp_recv   UDP receive.
+        udp_send   UDP send.
    $ ls
    ./
    ../
-   etc/
-   lib64/
    proc/
-   lib/
    init
-   sbin/
-   usr/
-   bin/
    sys/
-   mnt/
-   root/
    dev/
    OK
    $
@@ -81,8 +74,8 @@ Monolinux:
 
 .. code-block:: shell
 
-   $ udp send 192.168.0.4 9999 monolinux-to-pc
-   $ udp recv 10000
+   $ udp_send 192.168.0.4 9999 monolinux-to-pc
+   $ udp_recv 10000
 
 PC:
 
