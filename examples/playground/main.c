@@ -26,6 +26,9 @@
  * This file is part of the Monolinux project.
  */
 
+/* Needed by ftw. */
+#define _XOPEN_SOURCE 700
+
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -39,6 +42,9 @@
 #include <errno.h>
 #include <stdint.h>
 #include <syslog.h>
+#include <curl/curl.h>
+#include <heatshrink_encoder.h>
+#include <heatshrink_decoder.h>
 
 static int pmount(const char *source_p,
                   const char *target_p,
@@ -158,6 +164,17 @@ static void slog(void)
     closelog();
 }
 
+static void heatshrink_test(void)
+{
+    heatshrink_encoder hse;
+    heatshrink_decoder hsd;
+
+    printf("Heatshrink encode and decode.\n");
+    
+    heatshrink_encoder_reset(&hse);
+    heatshrink_decoder_reset(&hsd);
+}
+
 int main()
 {
     int res;
@@ -174,7 +191,8 @@ int main()
     print_banner();
     print_filesystem();
     slog();
-
+    heatshrink_test();
+    
     while (1) {
         res = read(STDIN_FILENO, &ch, sizeof(ch));
 

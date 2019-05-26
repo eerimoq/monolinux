@@ -1,4 +1,5 @@
 BUILD = $(shell readlink -f build)
+PACKAGES = $(BUILD)/packages
 EXE = $(BUILD)/app
 BZIMAGE ?= $(BUILD)/linux/arch/x86/boot/bzImage
 INITRAMFS = $(BUILD)/initramfs.cpio
@@ -8,11 +9,14 @@ CC = $(CROSS_COMPILE)gcc
 CFLAGS += -O2
 LDFLAGS += -static
 
-.PHONY: all unpack kernel initrd run build
+.PHONY: all unpack kernel initrd run build packages
 
 all: build
 
+packages:
+
 build:
+	$(MAKE) packages
 	$(MAKE) $(INITRAMFS)
 	$(MAKE) $(LINUX_SRC)
 	$(MAKE) kernel
@@ -29,10 +33,13 @@ $(LINUX_SRC):
 	cd $(BUILD) && \
 	tar xJf $(ML_SOURCES)/linux-$(ML_LINUX_VERSION).tar.xz
 
-kernel:
-	@echo "Building the Linux kernel."
+$(BUILD)/linux/.config: $(ML_LINUX_CONFIG)
+	@echo "Copying Linux kernel config $^ to $@."
 	mkdir -p $(BUILD)/linux
-	cp $(ML_LINUX_CONFIG) $(BUILD)/linux/.config
+	cp $^ $@
+
+kernel: $(BUILD)/linux/.config
+	@echo "Building the Linux kernel."
 	$(MAKE) -C $(LINUX_SRC) O=$(BUILD)/linux
 
 $(INITRAMFS): $(EXE)

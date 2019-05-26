@@ -11,3 +11,10 @@ export ML_LINUX_VERSION=5.1.3
 export ML_LINUX_CONFIG=$ML_ROOT/configs/x86_64-default.config
 
 export PATH=$PATH:$ML_ROOT/bin
+
+# Cross compilation.
+
+#export CROSS_COMPILE=arm-linux-musleabi-
+
+# autotools: The system where built programs and libraries will run.
+#export ML_AUTOTOOLS_HOST=--host=arm-linux-musleabi

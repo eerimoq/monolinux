@@ -1,4 +1,4 @@
-INC += $(ML_ROOT)/ml/include
+INC += $(ML_ROOT)/ml/include $(BUILD)/root/include
 SRC ?= \
 	main.c \
 	$(ML_ROOT)/ml/src/ml.c \
@@ -11,9 +11,11 @@ SRC ?= \
 OBJ = $(patsubst %,$(BUILD)%,$(abspath $(SRC:%.c=%.o)))
 CFLAGS += $(INC:%=-I%)
 CFLAGS += -ffunction-sections -fdata-sections
-LDFLAGS += -Wl,--gc-sections
+LDFLAGS += -Wl,--gc-sections -L$(BUILD)/root/lib $(LIBS:%=-l%)
 
 .PHONY: clean
+
+app: $(EXE)
 
 $(EXE): $(OBJ)
 	@echo "LD $@"

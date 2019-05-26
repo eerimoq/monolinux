@@ -108,6 +108,26 @@ TEST(bus)
     ml_message_free(rmessage_p);
 }
 
+int __wrap_mount(const char *source_p,
+                 const char *target_p,
+                 const char *type_p,
+                 unsigned long flags,
+                 const void *data_p)
+{
+    ASSERT_EQ(source_p, "a");
+    ASSERT_EQ(target_p, "b");
+    ASSERT_EQ(type_p, "c");
+    ASSERT_EQ(flags, 0);
+    ASSERT_EQ(memcmp(data_p, "", 1), 0);
+
+    return (0);
+}
+
+TEST(xmount_ok)
+{
+    xmount("a", "b", "c");
+}
+
 int main()
 {
     ml_init();
@@ -116,6 +136,7 @@ int main()
         strip,
         hexdump_short,
         hexdump_long,
-        bus
+        bus,
+        xmount_ok
     );
 }

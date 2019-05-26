@@ -32,7 +32,6 @@ directory. This is normally only done once.
 
 .. code-block:: shell
 
-   $ source setup.sh
    $ cd $ML_SOURCES
    $ wget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.1.3.tar.xz
    $ cd -
