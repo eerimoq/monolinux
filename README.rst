@@ -60,6 +60,61 @@ Execute all unit tests.
    $ make -s -j4
    ...
 
+File tree
+=========
+
+This is the file tree of the Monolinux repository.
+
+.. code-block:: text
+
+   monolinux/                   - this repository
+   ├── bin/                     - executables
+   ├── configs/                 - a few Linux kernel configs
+   ├── examples/                - example applications
+   ├── LICENSE                  - license
+   ├── make/                    - build system
+   │   └── packages/            - packages build specifications
+   ├── ml/                      - the Monolinux C library
+   └── setup.sh                 - development environment setup script
+
+User project file tree before build. These files are normally under
+version control.
+
+.. code-block:: text
+
+   my-project/                  - my Monolinux project
+   ├── app/
+   │   ├── main.c               - application entry point
+   │   └── Makefile             - project makefile
+   ├── monolinux/               - Monolinux
+   └── setup.sh                 - environment setup script
+
+User project file tree after build.
+
+.. code-block:: text
+
+   my-project/
+   ├── app/
+   │   ├── main.c
+   │   └── Makefile
+   ├── build/                   - all build output
+   │   ├── app                  - the one and only executable
+   │   ├── initramfs/           - unpacked ramfs
+   │   ├── initramfs.cpio       - packed ramfs
+   │   ├── linux-5.1.3/         - Linux source and build output
+   │   ├── packages/            - packages source and objects
+   │   │   └── curl-7.65.0/
+   │   └── root/                - headers and libraries container
+   │       ├── bin/
+   │       ├── include/         - include files
+   │       │    └── curl/
+   │       │        └── curl.h
+   │       ├── lib/             - static libraries
+   │       │    └── libcurl.a
+   │       └── share/
+   ├── monolinux/
+   └── setup.sh
+
 Configuration
 =============
 
@@ -72,6 +127,7 @@ Environment variables exported in setup.sh. Change at will.
    ML_LINUX_CONFIG=/home/erik/workspace/monolinux/configs/x86_64-default.config
    ML_SOURCES=/home/erik/workspace/monolinux/../sources
    ML_ROOT=/home/erik/workspace/monolinux
+   ML_AUTOTOOLS_HOST=
 
 Linux kernel
 ------------
@@ -122,60 +178,6 @@ ARM 64 bits.
 
    $ sudo apt install gcc-aarch64-linux-gnu
    $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- ML_LINUX_CONFIG=$ML_ROOT/configs/arm64-all-no.config
-
-File tree
-=========
-
-This is the file tree of the Monolinux repository.
-
-.. code-block:: text
-
-   monolinux/                   - this repository
-   ├── bin/                     - executables
-   ├── configs/                 - a few Linux kernel configs
-   ├── examples/                - example applications
-   ├── LICENSE                  - license
-   ├── make/                    - build system
-   │   └── packages/            - packages build specifications
-   ├── ml/                      - the Monolinux C library
-   └── setup.sh                 - development environment setup script
-
-User project file tree before build.
-
-.. code-block:: text
-
-   my-project/                  - my Monolinux project
-   ├── app/
-   │   ├── main.c               - application entry point
-   │   └── Makefile             - project makefile
-   ├── monolinux/               - Monolinux
-   └── setup.sh                 - environment setup script
-
-User project file tree after build.
-
-.. code-block:: text
-
-   my-project/
-   ├── app/
-   │   ├── main.c
-   │   └── Makefile
-   ├── build/                   - all build output
-   │   ├── app                  - the only executable
-   │   ├── initramfs/           - unpacked ramfs
-   │   ├── initramfs.cpio       - packed ramfs
-   │   ├── linux-5.1.3/         - Linux source and build output
-   │   ├── packages/            - packages source and objects
-   │   │   └── curl-7.65.0/
-   │   └── root/                - headers and libraries container
-   │       ├── bin/
-   │       ├── include/         - include files
-   │       │    └── curl/
-   │       │        └── curl.h
-   │       ├── lib/             - static libraries
-   │       │    └── libcurl.a
-   │       └── share/
-   ├── monolinux/
-   └── setup.sh
 
 .. |buildstatus| image:: https://travis-ci.org/eerimoq/monolinux.svg
 .. _buildstatus: https://travis-ci.org/eerimoq/monolinux

@@ -14,7 +14,11 @@ export PATH=$PATH:$ML_ROOT/bin
 
 # Cross compilation.
 
-#export CROSS_COMPILE=arm-linux-musleabi-
-
+export CROSS_COMPILE=
 # autotools: The system where built programs and libraries will run.
-#export ML_AUTOTOOLS_HOST=--host=arm-linux-musleabi
+export ML_AUTOTOOLS_HOST=
+
+# For ARM.
+# export ARCH=arm
+# export CROSS_COMPILE=arm-linux-musleabi-
+# export ML_AUTOTOOLS_HOST=--host=arm-linux-musleabi
