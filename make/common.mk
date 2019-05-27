@@ -21,6 +21,7 @@ $(EXE): $(OBJ)
 	@echo "LD $@"
 	mkdir -p $(BUILD)
 	$(CC) $(CFLAGS) $^ $(LDFLAGS) -lpthread -o $@
+	$(CROSS_COMPILE)strip $@
 
 define COMPILE_template
 $(patsubst %.c,$(BUILD)%.o,$(abspath $1)): $1
