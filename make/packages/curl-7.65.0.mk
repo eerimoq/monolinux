@@ -3,6 +3,7 @@ LIBS += curl
 packages: $(PACKAGES)/curl-7.65.0
 
 $(PACKAGES)/curl-7.65.0: $(ML_SOURCES)/curl-7.65.0.tar.xz
+	@echo "Building curl-7.65.0."
 	mkdir -p $(PACKAGES)
 	cd $(PACKAGES) && \
 	tar xf $(ML_SOURCES)/curl-7.65.0.tar.xz && \

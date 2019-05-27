@@ -46,6 +46,7 @@
 #include <heatshrink_encoder.h>
 #include <heatshrink_decoder.h>
 #include <lzma.h>
+#include <detools.h>
 #include "ml/ml.h"
 
 extern int command_lzma_compress(int argc, const char *argv[]);
@@ -175,13 +176,10 @@ static void slog(void)
 
 static void heatshrink_test(void)
 {
-    heatshrink_encoder hse;
-    heatshrink_decoder hsd;
-
     printf("Heatshrink encode and decode.\n");
 
-    heatshrink_encoder_reset(&hse);
-    heatshrink_decoder_reset(&hsd);
+    (void)heatshrink_encoder_alloc(8, 4);
+    (void)heatshrink_decoder_alloc(512, 8, 4);
 }
 
 static void lzma_test(void)
@@ -197,6 +195,24 @@ static void lzma_test(void)
         printf("LZMA decoder init failed.\n");
     } else {
         printf("LZMA decoder init successful.\n");
+    }
+}
+
+static void detools_test(void)
+{
+    int res;
+
+    printf("Applying patch 'patch' to 'from' to create 'to'.\n");
+
+    res = detools_apply_patch_filenames("from", "patch", "to");
+
+    if (res >= 0) {
+        printf("detools: OK!\n");
+    } else {
+        res *= -1;
+        printf("error: detools: %s (error code %d)\n",
+               detools_error_as_string(res),
+               res);
     }
 }
 
@@ -218,6 +234,7 @@ int main()
     slog();
     heatshrink_test();
     lzma_test();
+    detools_test();
 
     while (1) {
         sleep(10);

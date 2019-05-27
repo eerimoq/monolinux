@@ -41,6 +41,10 @@ TEST(strip)
     ASSERT_EQ(begin_p, "1");
     ASSERT_EQ(begin_p, string1);
 
+    begin_p = ml_strip(string1, "1");
+    ASSERT_EQ(begin_p, "");
+    ASSERT_EQ(begin_p, string1);
+
     begin_p = ml_strip(string2, NULL);
     ASSERT_EQ(begin_p, "1");
     ASSERT_EQ(begin_p, &string2[1]);
@@ -52,6 +56,49 @@ TEST(strip)
     begin_p = ml_strip(string4, NULL);
     ASSERT_EQ(begin_p, "");
     ASSERT_EQ(begin_p, &string4[3]);
+}
+
+TEST(lstrip)
+{
+    char string1[] = "1 ";
+    char string2[] = " 1";
+    char string3[] = "  ";
+    char *begin_p;
+
+    begin_p = ml_lstrip(string1, NULL);
+    ASSERT_EQ(begin_p, "1 ");
+    ASSERT_EQ(begin_p, string1);
+
+    begin_p = ml_lstrip(string1, "1");
+    ASSERT_EQ(begin_p, " ");
+    ASSERT_EQ(begin_p, &string1[1]);
+
+    begin_p = ml_lstrip(string2, NULL);
+    ASSERT_EQ(begin_p, "1");
+    ASSERT_EQ(begin_p, &string2[1]);
+
+    begin_p = ml_lstrip(string3, NULL);
+    ASSERT_EQ(begin_p, "");
+    ASSERT_EQ(begin_p, &string3[2]);
+}
+
+TEST(rstrip)
+{
+    char string1[] = "1 ";
+    char string2[] = " 1";
+    char string3[] = "  ";
+
+    ml_rstrip(string1, NULL);
+    ASSERT_EQ(string1, "1");
+
+    ml_rstrip(string2, NULL);
+    ASSERT_EQ(string2, " 1");
+
+    ml_rstrip(string2, "1");
+    ASSERT_EQ(string2, " ");
+
+    ml_rstrip(string3, NULL);
+    ASSERT_EQ(string3, "");
 }
 
 TEST(hexdump_short)
@@ -134,6 +181,8 @@ int main()
 
     return RUN_TESTS(
         strip,
+        lstrip,
+        rstrip,
         hexdump_short,
         hexdump_long,
         bus,

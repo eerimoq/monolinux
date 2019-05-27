@@ -27,6 +27,7 @@
  */
 
 #include <stdio.h>
+#include <stdint.h>
 #include <sys/mount.h>
 #include <ctype.h>
 #include "ml/ml.h"
@@ -91,9 +92,13 @@ void ml_subscribe(struct ml_queue_t *queue_p, struct ml_uid_t *uid_p)
 
 char *ml_strip(char *str_p, const char *strip_p)
 {
-    char *begin_p;
-    size_t length;
+    ml_rstrip(str_p, strip_p);
 
+    return (ml_lstrip(str_p, strip_p));
+}
+
+char *ml_lstrip(char *str_p, const char *strip_p)
+{
     /* Strip whitespace characters by default. */
     if (strip_p == NULL) {
         strip_p = "\t\n\x0b\x0c\r ";
@@ -102,6 +107,19 @@ char *ml_strip(char *str_p, const char *strip_p)
     /* String leading characters. */
     while ((*str_p != '\0') && char_in_string(*str_p, strip_p)) {
         str_p++;
+    }
+
+    return (str_p);
+}
+
+void ml_rstrip(char *str_p, const char *strip_p)
+{
+    char *begin_p;
+    size_t length;
+
+    /* Strip whitespace characters by default. */
+    if (strip_p == NULL) {
+        strip_p = "\t\n\x0b\x0c\r ";
     }
 
     begin_p = str_p;
@@ -114,8 +132,6 @@ char *ml_strip(char *str_p, const char *strip_p)
         *str_p = '\0';
         str_p--;
     }
-
-    return (begin_p);
 }
 
 void ml_hexdump(const void *buf_p, size_t size)
@@ -146,6 +162,32 @@ void ml_hexdump(const void *buf_p, size_t size)
     printf("\n");
 }
 
+void ml_print_file(const char *name_p)
+{
+    FILE *fin_p;
+    uint8_t buf[256];
+    size_t size;
+
+    fin_p = fopen(name_p, "rb");
+
+    if (fin_p != NULL) {
+        while ((size = fread(&buf[0], 1, membersof(buf), fin_p)) > 0) {
+            if (fwrite(&buf[0], 1, size, stdout) != size) {
+                break;
+            }
+        }
+
+        fclose(fin_p);
+    }
+}
+
+void ml_print_uptime(void)
+{
+    printf("Uptime: ");
+    ml_print_file("/proc/uptime");
+    printf("\n");
+}
+
 void *xmalloc(size_t size)
 {
     void *buf_p;
@@ -170,9 +212,9 @@ void *xrealloc(void *buf_p, size_t size)
     return (buf_p);
 }
 
-int xmount(const char *source_p,
-           const char *target_p,
-           const char *type_p)
+void xmount(const char *source_p,
+            const char *target_p,
+            const char *type_p)
 {
     int res;
 
@@ -182,6 +224,4 @@ int xmount(const char *source_p,
         perror("error: mount: ");
         exit(1);
     }
-
-    return (res);
 }

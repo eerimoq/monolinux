@@ -125,6 +125,7 @@ TEST(various_commands)
               "      history   List comand history.\n"
               "       logout   Shell logout.\n"
               "           ls   List directory contents.\n"
+              "       reboot   Reboot.\n"
               "$ history\n"
               "1: help\n"
               "2: history\n"

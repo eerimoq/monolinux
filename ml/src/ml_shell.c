@@ -32,6 +32,7 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <sys/param.h>
+#include <sys/reboot.h>
 #include <termios.h>
 #include <dirent.h>
 #include "ml/ml.h"
@@ -585,6 +586,14 @@ static int command_cat(int argc, const char *argv[])
     }
 
     return (res);
+}
+
+static int command_reboot(int argc, const char *argv[])
+{
+    (void)argc;
+    (void)argv;
+
+    return(reboot(RB_AUTOBOOT));
 }
 
 static void history_init(void)
@@ -1348,6 +1357,9 @@ void ml_shell_init(void)
     ml_shell_register_command("cat",
                               "Print a file.",
                               command_cat);
+    ml_shell_register_command("reboot",
+                              "Reboot.",
+                              command_reboot);
 }
 
 void ml_shell_start(void)

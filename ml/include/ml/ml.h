@@ -73,6 +73,8 @@
 
 #define PRINT_FILE_LINE() printf("%s:%d\n", __FILE__, __LINE__);
 
+#define membersof(array) (sizeof(array) / sizeof((array)[0]))
+
 typedef int (*ml_shell_command_callback_t)(int argc, const char *argv[]);
 
 struct ml_uid_t {
@@ -205,8 +207,16 @@ void ml_log_object_print(struct ml_log_object_t *self_p,
                          const char *fmt_p,
                          ...);
 
+/**
+ * Initialize the shell. Commands may be registered after this
+ * function has been called.
+ */
 void ml_shell_init(void);
 
+/**
+ * Start the shell. No commands may be registered after this function
+ * has been called.
+ */
 void ml_shell_start(void);
 
 /**
@@ -216,28 +226,68 @@ void ml_shell_register_command(const char *name_p,
                                const char *description_p,
                                ml_shell_command_callback_t callback);
 
+/**
+ * Initialize the motwork module.
+ */
 void ml_network_init(void);
 
+/**
+ * Configure given network interface.
+ */
 void ml_network_interface_configure(const char *name_p,
                                     const char *ipv4_address_p,
                                     const char *ipv4_netmask_p);
 
+/**
+ * Bring up given network interface.
+ */
 void ml_network_interface_up(const char *name_p);
 
+/**
+ * Take down given network interface.
+ */
 void ml_network_interface_down(const char *name_p);
 
+/**
+ * Strip leading and trailing characters from given string and return
+ * a pointer to the beginning of the new string.
+ */
 char *ml_strip(char *str_p, const char *strip_p);
 
+/**
+ * Strip leading characters from given string and return a pointer to
+ * the beginning of the new string.
+ */
+char *ml_lstrip(char *str_p, const char *strip_p);
+
+/**
+ * Strip trailing characters from given string.
+ */
+void ml_rstrip(char *str_p, const char *strip_p);
+
+/**
+ * Print a hexdump of given buffer.
+ */
 void ml_hexdump(const void *buf_p, size_t size);
+
+/**
+ * Print given file.
+ */
+void ml_print_file(const char *name_p);
+
+/**
+ * Print system uptime.
+ */
+void ml_print_uptime(void);
+
+/* Exits on failure. Use with care. */
 
 void *xmalloc(size_t size);
 
 void *xrealloc(void *buf_p, size_t size);
 
-int xmount(const char *source_p,
-           const char *target_p,
-           const char *type_p);
-
-#define membersof(array) (sizeof(array) / sizeof((array)[0]))
+void xmount(const char *source_p,
+            const char *target_p,
+            const char *type_p);
 
 #endif
