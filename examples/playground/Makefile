@@ -5,3 +5,4 @@ include $(ML_ROOT)/make/packages/curl-7.65.0.mk
 include $(ML_ROOT)/make/packages/heatshrink-0.4.1.mk
 include $(ML_ROOT)/make/packages/xz-5.2.4.mk
 include $(ML_ROOT)/make/packages/detools-0.29.0.mk
+include $(ML_ROOT)/make/packages/openssl-1.1.1b.mk

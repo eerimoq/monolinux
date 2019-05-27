@@ -47,6 +47,7 @@
 #include <heatshrink_decoder.h>
 #include <lzma.h>
 #include <detools.h>
+#include <openssl/aes.h>
 #include "ml/ml.h"
 
 extern int command_lzma_compress(int argc, const char *argv[]);
@@ -216,6 +217,11 @@ static void detools_test(void)
     }
 }
 
+static void openssl_test(void)
+{
+    printf("openssl AES options: '%s'\n", AES_options());
+}
+
 int main()
 {
     int res;
@@ -235,6 +241,7 @@ int main()
     heatshrink_test();
     lzma_test();
     detools_test();
+    openssl_test();
 
     while (1) {
         sleep(10);
