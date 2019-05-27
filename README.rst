@@ -20,6 +20,10 @@ Install all prerequisites:
    $ git clone https://github.com/eerimoq/unicorn
    $ (cd unicorn && make && sudo make install)
    $ sudo pip3 install pyinotify
+   $ cd ..
+   $ wget https://musl.cc/x86_64-linux-musl-cross.tgz
+   $ tar xf x86_64-linux-musl-cross.tgz
+   $ cd -
 
 Source the development environment setup script.
 

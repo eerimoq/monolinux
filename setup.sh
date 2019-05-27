@@ -11,12 +11,13 @@ export ML_LINUX_VERSION=5.1.3
 export ML_LINUX_CONFIG=$ML_ROOT/configs/x86_64-default.config
 
 export PATH=$PATH:$ML_ROOT/bin
+export PATH=$(readlink -f ../x86_64-linux-musl-cross/bin):$PATH
 
 # Cross compilation.
 
-export CROSS_COMPILE=
+export CROSS_COMPILE=x86_64-linux-musl-
 # autotools: The system where built programs and libraries will run.
-export ML_AUTOTOOLS_HOST=
+export ML_AUTOTOOLS_HOST=x86_64-linux-musl
 
 # For ARM.
 # export ARCH=arm

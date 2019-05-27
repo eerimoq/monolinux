@@ -12,6 +12,7 @@ OBJ = $(patsubst %,$(BUILD)%,$(abspath $(SRC:%.c=%.o)))
 CFLAGS += $(INC:%=-I%)
 CFLAGS += -ffunction-sections -fdata-sections
 LDFLAGS += -Wl,--gc-sections -L$(BUILD)/root/lib $(LIBS:%=-l%)
+STRIP ?= no
 
 .PHONY: clean
 
@@ -21,7 +22,9 @@ $(EXE): $(OBJ)
 	@echo "LD $@"
 	mkdir -p $(BUILD)
 	$(CC) $(CFLAGS) $^ $(LDFLAGS) -lpthread -o $@
+ifeq ($(STRIP), yes)
 	$(CROSS_COMPILE)strip $@
+endif
 
 define COMPILE_template
 $(patsubst %.c,$(BUILD)%.o,$(abspath $1)): $1

@@ -47,6 +47,7 @@
 #include <heatshrink_decoder.h>
 #include <lzma.h>
 #include <detools.h>
+#include <openssl/ssl.h>
 #include <openssl/aes.h>
 #include "ml/ml.h"
 
@@ -79,6 +80,14 @@ static void make_stdin_unbuffered(void)
 static int init(void)
 {
     int res;
+
+    res = OPENSSL_init_ssl(0, NULL);
+
+    if (res == 1) {
+        printf("SSL init OK!\n");
+    } else {
+        printf("SSL init failed!\n");
+    }
 
     ml_init();
     ml_shell_init();
@@ -157,11 +166,6 @@ int print_info(const char *fpath,
     return (0);
 }
 
-static void print_filesystem(void)
-{
-    nftw("/", print_info, 20, FTW_PHYS);
-}
-
 static void slog(void)
 {
     printf("writing log\n");
@@ -236,7 +240,6 @@ int main()
     }
 
     print_banner();
-    print_filesystem();
     slog();
     heatshrink_test();
     lzma_test();
