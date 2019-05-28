@@ -87,17 +87,25 @@ static void http_get(const char *url_p)
         curl_easy_setopt(curl_p, CURLOPT_URL, url_p);
         curl_easy_setopt(curl_p, CURLOPT_WRITEFUNCTION, on_write);
 
+        /* WARNING: Makes the connection unsecure! */
+        curl_easy_setopt(curl_p, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_easy_setopt(curl_p, CURLOPT_SSL_VERIFYHOST, 0);
+
         res = curl_easy_perform(curl_p);
 
         if (res == CURLE_OK) {
             curl_easy_getinfo(curl_p, CURLINFO_RESPONSE_CODE, &response_code);
             printf("<<< HTTP GET response code %ld. <<<\n", response_code);
         } else {
-            printf("<<< HTTP GET CURL error %d. <<<\n", res);
+            printf("<<< HTTP GET CURL error code %d: %s. <<<\n",
+                   res,
+                   curl_easy_strerror(res));
         }
 
         curl_easy_cleanup(curl_p);
     }
+
+    curl_global_cleanup();
 }
 
 static int command_http_get(int argc, const char *argv[])
@@ -117,16 +125,11 @@ static int init(void)
 {
     int res;
 
-    res = OPENSSL_init_ssl(0, NULL);
-
-    if (res == 1) {
-        printf("SSL init OK!\n");
-    } else {
-        printf("SSL init failed!\n");
-    }
+    curl_global_init(CURL_GLOBAL_DEFAULT);
 
     ml_init();
     ml_shell_init();
+    ml_network_init();
     ml_shell_register_command("lzmac",
                               "LZMA compress.",
                               command_lzma_compress);
@@ -262,8 +265,13 @@ int main()
     detools_test();
     openssl_test();
 
+    ml_network_interface_configure("eth0", "10.0.2.15", "255.255.255.0");
+    ml_network_interface_up("eth0");
+
     while (1) {
-        sleep(10);
+        http_get("http://10.0.2.2:8001/");
+        http_get("https://10.0.2.2:4443/");
+        sleep(30);
     }
 
     return (0);

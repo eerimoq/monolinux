@@ -23,7 +23,11 @@ $(PACKAGES)/curl-7.65.0: $(ML_SOURCES)/curl-7.65.0.tar.xz
 	    --disable-ftp --disable-ldap --disable-telnet --disable-dict \
 	    --disable-file --disable-tftp --disable-imap --disable-pop3 \
 	    --disable-smtp --disable-rtsp --disable-gopher \
-	    --disable-verbose --disable-curldebug \
-	    --with-random=/dev/urandom && \
+	    --with-random=/dev/urandom --enable-curldebug && \
+	$(MAKE) && \
+	$(MAKE) install
+
+curl-7.65.0-build:
+	cd $(PACKAGES)/curl-7.65.0 && \
 	$(MAKE) && \
 	$(MAKE) install

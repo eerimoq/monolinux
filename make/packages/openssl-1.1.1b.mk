@@ -1,3 +1,6 @@
+# ToDo: getrandom() currently blocks forever in QEMU. Fix, and remove
+# --with-rand-seed=devrandom.
+
 LIBS += ssl crypto
 
 packages: $(PACKAGES)/openssl-1.1.1b
@@ -17,7 +20,12 @@ $(PACKAGES)/openssl-1.1.1b: $(ML_SOURCES)/openssl-1.1.1b.tar.gz
 	    CPPFLAGS="-I$(SYSROOT)/include" \
 	    LDFLAGS="-L$(SYSROOT)/lib" \
 	    --prefix=$(SYSROOT) \
+	    --with-rand-seed=devrandom \
 	    no-tests no-fuzz-libfuzzer no-fuzz-afl no-shared no-pic && \
-	sed -i "s| install_docs| # install_docs|g" Makefile && \
+	sed -i "s| install_docs| # install_docs|g" Makefile
+	$(MAKE) openssl-1.1.1b-build
+
+openssl-1.1.1b-build:
+	cd $(PACKAGES)/openssl-1.1.1b && \
 	$(MAKE) && \
 	$(MAKE) install

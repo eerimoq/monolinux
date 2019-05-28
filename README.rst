@@ -223,6 +223,19 @@ ARM 64 bits.
    $ sudo apt install gcc-aarch64-linux-gnu
    $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- ML_LINUX_CONFIG=$ML_ROOT/configs/arm64-all-no.config
 
+Useful
+======
+
+Configure eth0 in Monolinux in QEMU and send a UDP packet.
+
+.. code-block:: shell
+
+   $ ifconfig eth0 10.0.2.15 255.255.255.0
+   $ ifconfig eth0 up
+   $ udp_send 10.0.2.2 9999 hej
+   $ http_get http://10.0.2.2:9999/
+   $ http_get https://10.0.2.2/
+   
 .. |buildstatus| image:: https://travis-ci.org/eerimoq/monolinux.svg
 .. _buildstatus: https://travis-ci.org/eerimoq/monolinux
 
