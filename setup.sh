@@ -22,4 +22,4 @@ export ML_AUTOTOOLS_HOST=x86_64-linux-musl
 # For ARM.
 # export ARCH=arm
 # export CROSS_COMPILE=arm-linux-musleabi-
-# export ML_AUTOTOOLS_HOST=--host=arm-linux-musleabi
+# export ML_AUTOTOOLS_HOST=arm-linux-musleabi

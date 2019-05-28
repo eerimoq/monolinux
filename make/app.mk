@@ -8,6 +8,7 @@ SCRIPTS_DIR = $(ML_ROOT)/scripts
 CC = $(CROSS_COMPILE)gcc
 CFLAGS += -O2
 LDFLAGS += -static
+SYSROOT = $(BUILD)/root
 
 .PHONY: all unpack kernel initrd run build packages
 

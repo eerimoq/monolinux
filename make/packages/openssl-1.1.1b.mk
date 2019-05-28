@@ -10,8 +10,10 @@ $(PACKAGES)/openssl-1.1.1b: $(ML_SOURCES)/openssl-1.1.1b.tar.gz
 	cd openssl-1.1.1b && \
 	./Configure \
 	    linux-generic32 \
-	    CFLAGS="-ffunction-sections -fdata-sections -O2 -I$(BUILD)/root/include -L$(BUILD)/root/lib" \
-	    --prefix=$(BUILD)/root \
+	    CFLAGS="-ffunction-sections -fdata-sections -O2" \
+	    CPPFLAGS="-I$(SYSROOT)/include" \
+	    LDFLAGS="-L$(SYSROOT)/lib" \
+	    --prefix=$(SYSROOT) \
 	    no-tests no-fuzz-libfuzzer no-fuzz-afl no-shared no-pic && \
 	sed -i "s| install_docs| # install_docs|g" Makefile && \
 	$(MAKE) && \
