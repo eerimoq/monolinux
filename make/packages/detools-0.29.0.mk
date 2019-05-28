@@ -2,6 +2,9 @@ LIBS += detools
 
 packages: $(PACKAGES)/detools-0.29.0
 
+$(ML_SOURCES)/detools-0.29.0.tar.gz:
+	wget -O $@ https://github.com/eerimoq/detools/archive/0.29.0.tar.gz
+
 $(PACKAGES)/detools-0.29.0: $(PACKAGES)/xz-5.2.4
 $(PACKAGES)/detools-0.29.0: $(PACKAGES)/heatshrink-0.4.1
 $(PACKAGES)/detools-0.29.0: $(ML_SOURCES)/detools-0.29.0.tar.gz

@@ -2,6 +2,9 @@ LIBS += curl
 
 packages: $(PACKAGES)/curl-7.65.0
 
+$(ML_SOURCES)/curl-7.65.0.tar.xz:
+	wget -O $@ https://curl.haxx.se/download/curl-7.65.0.tar.xz
+
 $(PACKAGES)/curl-7.65.0: $(PACKAGES)/openssl-1.1.1b
 $(PACKAGES)/curl-7.65.0: $(PACKAGES)/zlib-1.2.11
 $(PACKAGES)/curl-7.65.0: $(ML_SOURCES)/curl-7.65.0.tar.xz

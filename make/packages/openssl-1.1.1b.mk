@@ -2,6 +2,9 @@ LIBS += ssl crypto
 
 packages: $(PACKAGES)/openssl-1.1.1b
 
+$(ML_SOURCES)/openssl-1.1.1b.tar.gz:
+	wget -O $@ https://www.openssl.org/source/openssl-1.1.1b.tar.gz
+
 $(PACKAGES)/openssl-1.1.1b: $(ML_SOURCES)/openssl-1.1.1b.tar.gz
 	@echo "Building openssl-1.1.1b."
 	mkdir -p $(PACKAGES)

@@ -2,6 +2,9 @@ LIBS += heatshrink_dynamic
 
 packages: $(PACKAGES)/heatshrink-0.4.1
 
+$(ML_SOURCES)/heatshrink-0.4.1.tar.gz:
+	wget -O $@ https://github.com/atomicobject/heatshrink/archive/v0.4.1.tar.gz
+
 $(PACKAGES)/heatshrink-0.4.1: $(ML_SOURCES)/heatshrink-0.4.1.tar.gz
 	@echo "Building heatshrink-0.4.1."
 	mkdir -p $(SYSROOT)/bin
