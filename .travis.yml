@@ -11,7 +11,7 @@ before_install:
   - cd unicorn && make && sudo make install && cd ..
   - wget https://musl.cc/x86_64-linux-musl-cross.tgz
   - tar xf x86_64-linux-musl-cross.tgz
-  - export PATH=$(readlink -f x86_64-linux-musl-cross/bin):$PATH
+  - export PATH=$(readlink -f x86_64-linux-musl-cross/bin)$PATH
   - echo $PATH
 
 script:
