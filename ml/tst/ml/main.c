@@ -126,8 +126,11 @@ TEST(hexdump_long)
     CAPTURE_OUTPUT(output) {
         ml_hexdump(
             "110238\x00\x21h0112039jiajsFEWAFWE@#%!45eeeeeeeeeeeeeeeeeeeeeee"
-            "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\x01\x0ageeeeerG",
-            99);
+            "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\x01\x0ageeeeerG012345678901234"
+            "567890123456789012345678901234567890123456789012345678901234567"
+            "890123456789012345678901234567890123456789012345678901234567890"
+            "12345678901234567",
+            257);
     }
 
     ASSERT_EQ(
@@ -138,7 +141,17 @@ TEST(hexdump_long)
         "00000030: 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 'eeeeeeeeeeeeeeee'\n"
         "00000040: 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 'eeeeeeeeeeeeeeee'\n"
         "00000050: 65 65 65 65 65 65 65 65 65 01 0a 67 65 65 65 65 'eeeeeeeee..geeee'\n"
-        "00000060: 65 72 47                                        'erG'\n");
+        "00000060: 65 72 47 30 31 32 33 34 35 36 37 38 39 30 31 32 'erG0123456789012'\n"
+        "00000070: 33 34 35 36 37 38 39 30 31 32 33 34 35 36 37 38 '3456789012345678'\n"
+        "00000080: 39 30 31 32 33 34 35 36 37 38 39 30 31 32 33 34 '9012345678901234'\n"
+        "00000090: 35 36 37 38 39 30 31 32 33 34 35 36 37 38 39 30 '5678901234567890'\n"
+        "000000a0: 31 32 33 34 35 36 37 38 39 30 31 32 33 34 35 36 '1234567890123456'\n"
+        "000000b0: 37 38 39 30 31 32 33 34 35 36 37 38 39 30 31 32 '7890123456789012'\n"
+        "000000c0: 33 34 35 36 37 38 39 30 31 32 33 34 35 36 37 38 '3456789012345678'\n"
+        "000000d0: 39 30 31 32 33 34 35 36 37 38 39 30 31 32 33 34 '9012345678901234'\n"
+        "000000e0: 35 36 37 38 39 30 31 32 33 34 35 36 37 38 39 30 '5678901234567890'\n"
+        "000000f0: 31 32 33 34 35 36 37 38 39 30 31 32 33 34 35 36 '1234567890123456'\n"
+        "00000100: 37                                              '7'\n");
 }
 
 TEST(hexdump_file_0_0)
@@ -233,6 +246,25 @@ TEST(hexdump_file_1_m1)
         "00000021: 33 34 35 36 37 38 39                            '3456789'\n");
 }
 
+TEST(print_file)
+{
+    CAPTURE_OUTPUT(output) {
+        ml_print_file("hexdump.in");
+    }
+
+    ASSERT_EQ(output, "0123456789012345678901234567890123456789");
+}
+
+TEST(print_uptime)
+{
+    CAPTURE_OUTPUT(output) {
+        ml_print_uptime();
+    }
+
+    ASSERT_SUBSTRING(output, "Uptime:");
+    ASSERT_SUBSTRING(output, "\n");
+}
+
 static ML_UID(m1);
 
 static struct ml_queue_t queue;
@@ -292,6 +324,8 @@ int main()
         hexdump_file_1_16,
         hexdump_file_0_m1,
         hexdump_file_1_m1,
+        print_file,
+        print_uptime,
         bus,
         xmount_ok
     );
