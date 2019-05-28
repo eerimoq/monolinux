@@ -26,9 +26,6 @@
  * This file is part of the Monolinux project.
  */
 
-/* Needed by ftw. */
-#define _XOPEN_SOURCE 700
-
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -37,7 +34,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <termios.h>
-#include <ftw.h>
 #include <time.h>
 #include <errno.h>
 #include <stdint.h>
@@ -184,29 +180,6 @@ static void print_banner(void)
            "Uptime: %s\n"
            "\n",
            &buf[0]);
-}
-
-int print_info(const char *fpath,
-               const struct stat *sb,
-               const int tflag,
-               struct FTW *ftwbuf)
-{
-    printf("%-3s %2d ",
-           (tflag == FTW_D) ?   "d"   : (tflag == FTW_DNR) ? "dnr" :
-           (tflag == FTW_DP) ?  "dp"  : (tflag == FTW_F) ?   "f" :
-           (tflag == FTW_NS) ?  "ns"  : (tflag == FTW_SL) ?  "sl" :
-           (tflag == FTW_SLN) ? "sln" : "???",
-           ftwbuf->level);
-
-    if (tflag == FTW_NS) {
-        printf("-------");
-    } else {
-        printf("%7jd", (intmax_t) sb->st_size);
-    }
-
-    printf("   %-40s %d %s\n", fpath, ftwbuf->base, fpath + ftwbuf->base);
-
-    return (0);
 }
 
 static void slog(void)

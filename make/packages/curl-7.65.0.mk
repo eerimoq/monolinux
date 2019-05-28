@@ -14,11 +14,13 @@ $(PACKAGES)/curl-7.65.0: $(ML_SOURCES)/curl-7.65.0.tar.xz
 	    CFLAGS="-ffunction-sections -fdata-sections" \
 	    CPPFLAGS="-I$(SYSROOT)/include" \
 	    LDFLAGS="-L$(SYSROOT)/lib" \
-	    --prefix=$(SYSROOT) --host=$(ML_AUTOTOOLS_HOST) \
+	    --prefix=$(SYSROOT) \
+	    --host=$(ML_AUTOTOOLS_HOST) --build=i586-pc-linux-gnu \
 	    --with-ssl --with-zlib --disable-shared --disable-manual \
 	    --disable-ftp --disable-ldap --disable-telnet --disable-dict \
 	    --disable-file --disable-tftp --disable-imap --disable-pop3 \
 	    --disable-smtp --disable-rtsp --disable-gopher \
-	    --disable-verbose && \
+	    --disable-verbose --disable-curldebug \
+	    --with-random=/dev/urandom && \
 	$(MAKE) && \
 	$(MAKE) install

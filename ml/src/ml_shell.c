@@ -588,6 +588,60 @@ static int command_cat(int argc, const char *argv[])
     return (res);
 }
 
+static int hexdump(const char *name_p, size_t offset, ssize_t size)
+{
+    int res;
+    FILE *file_p;
+
+    res = 0;
+    file_p = fopen(name_p, "rb");
+
+    if (file_p != NULL) {
+        res = ml_hexdump_file(file_p, offset, size);
+        fclose(file_p);
+    } else {
+        res = -1;
+    }
+
+    return (res);
+}
+
+static int command_hexdump(int argc, const char *argv[])
+{
+    int res;
+    ssize_t offset;
+    ssize_t size;
+
+    res = -1;
+
+    if (argc == 2) {
+        res = hexdump(argv[1], 0, -1);
+    } else if (argc == 3) {
+        size = atoi(argv[1]);
+
+        if (size >= 0) {
+            res = hexdump(argv[2], 0, size);
+        } else {
+            res = -1;
+        }
+    } else if (argc == 4) {
+        offset = atoi(argv[1]);
+        size = atoi(argv[2]);
+
+        if ((offset >= 0 ) && (size >= 0)) {
+            res = hexdump(argv[3], offset, size);
+        } else {
+            res = -1;
+        }
+    }
+
+    if (res != 0) {
+        printf("hexdump: [[<offset>] <size>] <file>\n");
+    }
+
+    return (res);
+}
+
 static int command_reboot(int argc, const char *argv[])
 {
     (void)argc;
@@ -1357,6 +1411,9 @@ void ml_shell_init(void)
     ml_shell_register_command("cat",
                               "Print a file.",
                               command_cat);
+    ml_shell_register_command("hexdump",
+                              "Hexdump a file.",
+                              command_hexdump);
     ml_shell_register_command("reboot",
                               "Reboot.",
                               command_reboot);

@@ -52,7 +52,7 @@ static inline bool char_in_string(char c, const char *str_p)
     return (false);
 }
 
-static void print_ascii(const char *buf_p, size_t size)
+static void print_ascii(const uint8_t *buf_p, size_t size)
 {
     size_t i;
 
@@ -67,6 +67,34 @@ static void print_ascii(const char *buf_p, size_t size)
     }
 
     printf("'");
+}
+
+static void hexdump(const uint8_t *buf_p, size_t size, int offset)
+{
+    int pos;
+
+    pos = 0;
+
+    while (size > 0) {
+        if ((pos % 16) == 0) {
+            printf("%08x: ", offset + pos);
+        }
+
+        printf("%02x ", buf_p[pos] & 0xff);
+
+        if ((pos % 16) == 15) {
+            print_ascii(&buf_p[pos - 15], 16);
+            printf("\n");
+        }
+
+        pos++;
+        size--;
+    }
+
+    if ((pos % 16) != 0) {
+        print_ascii(&buf_p[pos - (pos % 16)], pos % 16);
+        printf("\n");
+    }
 }
 
 void ml_init(void)
@@ -136,30 +164,41 @@ void ml_rstrip(char *str_p, const char *strip_p)
 
 void ml_hexdump(const void *buf_p, size_t size)
 {
-    const char *b_p;
-    int pos;
+    hexdump(buf_p, size, 0);
+}
 
-    pos = 0;
-    b_p = buf_p;
+int ml_hexdump_file(FILE *fin_p, size_t offset, ssize_t size)
+{
+    uint8_t buf[256];
+    size_t chunk_size;
 
-    while (size > 0) {
-        if ((pos % 16) == 0) {
-            printf("%08x: ", pos);
-        }
-
-        printf("%02x ", b_p[pos] & 0xff);
-
-        if ((pos % 16) == 15) {
-            print_ascii(&b_p[pos - 15], 16);
-            printf("\n");
-        }
-
-        pos++;
-        size--;
+    if (fseek(fin_p, offset, SEEK_SET) != 0) {
+        return (-1);
     }
 
-    print_ascii(&b_p[pos - (pos % 16)], pos % 16);
-    printf("\n");
+    while (true) {
+        if (size == -1) {
+            chunk_size = sizeof(buf);
+        } else {
+            if ((size_t)size < sizeof(buf)) {
+                chunk_size = size;
+            } else {
+                chunk_size = sizeof(buf);
+            }
+        }
+
+        chunk_size = fread(&buf[0], 1, chunk_size, fin_p);
+        hexdump(&buf[0], chunk_size, offset);
+
+        if (chunk_size < sizeof(buf)) {
+            break;
+        }
+
+        offset += chunk_size;
+        size -= chunk_size;
+    }
+
+    return (0);
 }
 
 void ml_print_file(const char *name_p)

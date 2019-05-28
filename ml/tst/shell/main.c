@@ -122,6 +122,7 @@ TEST(various_commands)
               "          cat   Print a file.\n"
               "        hello   My command.\n"
               "         help   Print this help.\n"
+              "      hexdump   Hexdump a file.\n"
               "      history   List comand history.\n"
               "       logout   Shell logout.\n"
               "           ls   List directory contents.\n"
@@ -188,6 +189,49 @@ TEST(cat)
         "OK\n"
         "$ cat foobar\n"
         "ERROR(-1)\n"
+        "$ ");
+}
+
+TEST(hexdump)
+{
+    int fd;
+
+    ml_shell_init();
+
+    CAPTURE_OUTPUT(output) {
+        fd = stdin_pipe();
+        ml_shell_start();
+        input(fd, "root\n");
+        input(fd, "\n");
+        input(fd, "hexdump\n");
+        input(fd, "hexdump hexdump.in\n");
+        input(fd, "hexdump 0 hexdump.in\n");
+        input(fd, "hexdump 1 hexdump.in\n");
+        input(fd, "hexdump 0 1 hexdump.in\n");
+        /* ToDo: Should wait until output is available, but how?. */
+        usleep(50000);
+    }
+
+    ASSERT_EQ(
+        output,
+        "username: root\n"
+        "password: \n"
+        "$ hexdump\n"
+        "hexdump: [[<offset>] <size>] <file>\n"
+        "ERROR(-1)\n"
+        "$ hexdump hexdump.in\n"
+        "00000000: 30 31 32 33 34 35 36 37 38 39 30 31 32 33 34 35 '0123456789012345'\n"
+        "00000010: 36 37 38 39 30 31 32 33 34 35 36 37 38 39 30 31 '6789012345678901'\n"
+        "00000020: 32 33 34 35 36 37 38 39                         '23456789'\n"
+        "OK\n"
+        "$ hexdump 0 hexdump.in\n"
+        "OK\n"
+        "$ hexdump 1 hexdump.in\n"
+        "00000000: 30                                              '0'\n"
+        "OK\n"
+        "$ hexdump 0 1 hexdump.in\n"
+        "00000000: 30                                              '0'\n"
+        "OK\n"
         "$ ");
 }
 
@@ -340,6 +384,7 @@ int main()
         various_commands,
         ls,
         cat,
+        hexdump,
         command_editing,
         quotes,
         history

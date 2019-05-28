@@ -30,6 +30,7 @@
 #define ML_ML_H
 
 #include <stdbool.h>
+#include <stdio.h>
 #include <pthread.h>
 
 /**
@@ -269,6 +270,11 @@ void ml_rstrip(char *str_p, const char *strip_p);
  * Print a hexdump of given buffer.
  */
 void ml_hexdump(const void *buf_p, size_t size);
+
+/**
+ * Print a hexdump of given file to given file.
+ */
+int ml_hexdump_file(FILE *fin_p, size_t offset, ssize_t size);
 
 /**
  * Print given file.

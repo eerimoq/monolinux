@@ -101,6 +101,15 @@ TEST(rstrip)
     ASSERT_EQ(string3, "");
 }
 
+TEST(hexdump_empty)
+{
+    CAPTURE_OUTPUT(output) {
+        ml_hexdump("", 0);
+    }
+
+    ASSERT_EQ(output, "");
+}
+
 TEST(hexdump_short)
 {
     CAPTURE_OUTPUT(output) {
@@ -130,6 +139,98 @@ TEST(hexdump_long)
         "00000040: 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 'eeeeeeeeeeeeeeee'\n"
         "00000050: 65 65 65 65 65 65 65 65 65 01 0a 67 65 65 65 65 'eeeeeeeee..geeee'\n"
         "00000060: 65 72 47                                        'erG'\n");
+}
+
+TEST(hexdump_file_0_0)
+{
+    FILE *fin_p;
+
+    fin_p = fopen("hexdump.in", "rb");
+    ASSERT(fin_p != NULL);
+
+    CAPTURE_OUTPUT(output) {
+        ml_hexdump_file(fin_p, 0, 0);
+    }
+
+    fclose(fin_p);
+
+    ASSERT_EQ(output, "");
+}
+
+TEST(hexdump_file_0_16)
+{
+    FILE *fin_p;
+
+    fin_p = fopen("hexdump.in", "rb");
+    ASSERT(fin_p != NULL);
+
+    CAPTURE_OUTPUT(output) {
+        ml_hexdump_file(fin_p, 0, 16);
+    }
+
+    fclose(fin_p);
+
+    ASSERT_EQ(
+        output,
+        "00000000: 30 31 32 33 34 35 36 37 38 39 30 31 32 33 34 35 '0123456789012345'\n");
+}
+
+TEST(hexdump_file_1_16)
+{
+    FILE *fin_p;
+
+    fin_p = fopen("hexdump.in", "rb");
+    ASSERT(fin_p != NULL);
+
+    CAPTURE_OUTPUT(output) {
+        ml_hexdump_file(fin_p, 1, 16);
+    }
+
+    fclose(fin_p);
+
+    ASSERT_EQ(
+        output,
+        "00000001: 31 32 33 34 35 36 37 38 39 30 31 32 33 34 35 36 '1234567890123456'\n");
+}
+
+TEST(hexdump_file_0_m1)
+{
+    FILE *fin_p;
+
+    fin_p = fopen("hexdump.in", "rb");
+    ASSERT(fin_p != NULL);
+
+    CAPTURE_OUTPUT(output) {
+        ml_hexdump_file(fin_p, 0, -1);
+    }
+
+    fclose(fin_p);
+
+    ASSERT_EQ(
+        output,
+        "00000000: 30 31 32 33 34 35 36 37 38 39 30 31 32 33 34 35 '0123456789012345'\n"
+        "00000010: 36 37 38 39 30 31 32 33 34 35 36 37 38 39 30 31 '6789012345678901'\n"
+        "00000020: 32 33 34 35 36 37 38 39                         '23456789'\n");
+}
+
+TEST(hexdump_file_1_m1)
+{
+    FILE *fin_p;
+
+    fin_p = fopen("hexdump.in", "rb");
+    ASSERT(fin_p != NULL);
+
+    CAPTURE_OUTPUT(output) {
+        ml_hexdump_file(fin_p, 1, -1);
+    }
+
+    fclose(fin_p);
+
+    ASSERT_EQ(
+        output,
+        "00000001: 31 32 33 34 35 36 37 38 39 30 31 32 33 34 35 36 '1234567890123456'\n"
+        "00000011: 37 38 39 30 31 32 33 34 35 36 37 38 39 30 31 32 '7890123456789012'\n"
+        "00000021: 33 34 35 36 37 38 39                            '3456789'\n");
 }
 
 static ML_UID(m1);
@@ -183,8 +284,14 @@ int main()
         strip,
         lstrip,
         rstrip,
+        hexdump_empty,
         hexdump_short,
         hexdump_long,
+        hexdump_file_0_0,
+        hexdump_file_0_16,
+        hexdump_file_1_16,
+        hexdump_file_0_m1,
+        hexdump_file_1_m1,
         bus,
         xmount_ok
     );
