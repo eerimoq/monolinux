@@ -28,6 +28,12 @@ run: build
 	    -initrd $(INITRAMFS) \
 	    -nographic -append "console=ttyS0"
 
+# Does this even work?
+#\
+#	    -object iothread,id=io1 \
+#	    -device virtio-blk-pci,drive=disk0,iothread=io1 \
+#	    -drive if=none,id=disk0,cache=none,format=raw,aio=threads,file=mldisk.img
+
 $(LINUX_SRC):
 	@echo "Unpacking $(ML_SOURCES)/linux-$(ML_LINUX_VERSION).tar.xz."
 	mkdir -p $(BUILD)
