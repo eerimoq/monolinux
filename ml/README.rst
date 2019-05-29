@@ -11,4 +11,4 @@ Features:
 
 - A simple shell.
 
-- Networking.
+- Network configuration.

@@ -7,6 +7,34 @@ Monolinux
 An embedded Linux distro with a single statically linked executable,
 because smaller is better!
 
+Monolinux is primarily targeting the `C` programming language.
+
+Features:
+
+- Everything the `Linux kernel`_ provides.
+
+  - File systems.
+
+  - Networking.
+
+  - Device drivers.
+
+  - ...
+
+- Libraries to statically link with your application.
+
+  - `ml`_ (the Monolinux library)
+
+  - `curl`_ (HTTP, FTP, ...)
+
+  - `OpenSSL`_ (TLS, SSL, crypto, ...)
+
+  - `zlib`_
+
+  - `xz`_ (LZMA)
+
+  - `detools`_ (delta encoding)
+
 Build and run
 =============
 
@@ -235,7 +263,7 @@ Configure eth0 in Monolinux in QEMU and send a UDP packet.
    $ udp_send 10.0.2.2 9999 hej
    $ http_get http://10.0.2.2:9999/
    $ http_get https://10.0.2.2/
-   
+
 .. |buildstatus| image:: https://travis-ci.org/eerimoq/monolinux.svg
 .. _buildstatus: https://travis-ci.org/eerimoq/monolinux
 
@@ -243,3 +271,17 @@ Configure eth0 in Monolinux in QEMU and send a UDP packet.
 .. _codecov: https://codecov.io/gh/eerimoq/monolinux
 
 .. _Monolinux Jiffy: https://github.com/eerimoq/monolinux-jiffy
+
+.. _Linux kernel: https://www.kernel.org/
+
+.. _ml: https://github.com/eerimoq/monolinux/tree/master/ml
+
+.. _curl: https://curl.haxx.se/
+
+.. _OpenSSL: https://www.openssl.org/
+
+.. _zlib: https://zlib.net/
+
+.. _xz: https://tukaani.org/xz/
+
+.. _detools: https://github.com/eerimoq/detools
