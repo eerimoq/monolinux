@@ -2,31 +2,33 @@
 # --with-rand-seed=devrandom.
 
 LIBS += ssl crypto
+OPENSSL = openssl-1.1.1b
 
-packages: $(PACKAGES)/openssl-1.1.1b
+packages: $(PACKAGES)/$(OPENSSL)
 
-$(PACKAGES)/openssl-1.1.1b: $(ML_SOURCES)/openssl-1.1.1b.tar.gz
-	$(MAKE) openssl-1.1.1b-all
+$(PACKAGES)/$(OPENSSL): $(ML_SOURCES)/$(OPENSSL).tar.gz
+	$(MAKE) $(OPENSSL)-all
 
-openssl-1.1.1b-all:
-	@echo "Building openssl-1.1.1b."
-	$(MAKE) openssl-1.1.1b-unpack
-	$(MAKE) openssl-1.1.1b-configure
-	$(MAKE) openssl-1.1.1b-build
+$(OPENSSL)-all:
+	@echo "Building $(OPENSSL)."
+	$(MAKE) $(OPENSSL)-unpack
+	$(MAKE) $(OPENSSL)-configure
+	$(MAKE) $(OPENSSL)-build
 
-openssl-1.1.1b-clean:
-	rm -rf $(PACKAGES)/openssl-1.1.1b
+$(OPENSSL)-clean:
+	rm -rf $(PACKAGES)/$(OPENSSL)
 
-$(ML_SOURCES)/openssl-1.1.1b.tar.gz:
-	wget -O $@ https://www.openssl.org/source/openssl-1.1.1b.tar.gz
+$(ML_SOURCES)/$(OPENSSL).tar.gz:
+	mkdir -p $(dir $@)
+	wget -O $@ https://www.openssl.org/source/$(OPENSSL).tar.gz
 
-openssl-1.1.1b-unpack:
+$(OPENSSL)-unpack:
 	mkdir -p $(PACKAGES)
 	cd $(PACKAGES) && \
-	tar xf $(ML_SOURCES)/openssl-1.1.1b.tar.gz
+	tar xf $(ML_SOURCES)/$(OPENSSL).tar.gz
 
-openssl-1.1.1b-configure:
-	cd $(PACKAGES)/openssl-1.1.1b && \
+$(OPENSSL)-configure:
+	cd $(PACKAGES)/$(OPENSSL) && \
 	./Configure \
 	    linux-generic32 \
 	    CFLAGS="-ffunction-sections -fdata-sections -O2" \
@@ -37,7 +39,7 @@ openssl-1.1.1b-configure:
 	    no-tests no-fuzz-libfuzzer no-fuzz-afl no-shared no-pic && \
 	sed -i "s| install_docs| # install_docs|g" Makefile
 
-openssl-1.1.1b-build:
-	cd $(PACKAGES)/openssl-1.1.1b && \
+$(OPENSSL)-build:
+	cd $(PACKAGES)/$(OPENSSL) && \
 	$(MAKE) && \
 	$(MAKE) install

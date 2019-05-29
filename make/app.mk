@@ -9,6 +9,7 @@ CC = $(CROSS_COMPILE)gcc
 CFLAGS += -O2
 LDFLAGS += -static
 SYSROOT = $(BUILD)/root
+LINUX = linux-$(ML_LINUX_VERSION)
 
 .PHONY: all unpack kernel initrd run build packages
 
@@ -17,10 +18,8 @@ all: build
 packages:
 
 build:
-	$(MAKE) packages
+	$(MAKE) $(LINUX_SRC) packages
 	$(MAKE) $(INITRAMFS)
-	$(MAKE) $(LINUX_SRC)
-	$(MAKE) kernel
 
 run: build
 	qemu-system-x86_64 \
@@ -34,18 +33,31 @@ run: build
 #	    -device virtio-blk-pci,drive=disk0,iothread=io1 \
 #	    -drive if=none,id=disk0,cache=none,format=raw,aio=threads,file=mldisk.img
 
-$(LINUX_SRC):
-	@echo "Unpacking $(ML_SOURCES)/linux-$(ML_LINUX_VERSION).tar.xz."
+$(LINUX_SRC): $(ML_SOURCES)/$(LINUX).tar.xz
+	$(MAKE) $(LINUX)-all
+
+$(LINUX)-all:
+	@echo "Building the Linux kernel."
+	$(MAKE) $(LINUX)-unpack
+	$(MAKE) $(LINUX)-configure
+	$(MAKE) $(LINUX)-build
+
+$(LINUX)-clean:
+	rm -rf $(LINUX_SRC)
+
+$(ML_SOURCES)/$(LINUX).tar.xz:
+	mkdir -p $(dir $@)
+	wget -O $@ $(ML_LINUX_URL)
+
+$(LINUX)-unpack:
 	mkdir -p $(BUILD)
 	cd $(BUILD) && \
-	tar xf $(ML_SOURCES)/linux-$(ML_LINUX_VERSION).tar.xz
+	tar xf $(ML_SOURCES)/$(LINUX).tar.xz
 
-$(LINUX_SRC)/.config: $(ML_LINUX_CONFIG) $(LINUX_SRC)
-	@echo "Copying Linux kernel config $^ to $@."
-	cp $(ML_LINUX_CONFIG) $@
+$(LINUX)-configure:
+	cp $(ML_LINUX_CONFIG) $(LINUX_SRC)/.config
 
-kernel: $(LINUX_SRC)/.config
-	@echo "Building the Linux kernel."
+$(LINUX)-build:
 	$(MAKE) -C $(LINUX_SRC)
 
 $(INITRAMFS): $(EXE)

@@ -1,31 +1,33 @@
 LIBS += curl
+CURL = curl-7.65.0
 
-packages: $(PACKAGES)/curl-7.65.0
+packages: $(PACKAGES)/$(CURL)
 
-$(PACKAGES)/curl-7.65.0: $(PACKAGES)/openssl-1.1.1b
-$(PACKAGES)/curl-7.65.0: $(PACKAGES)/zlib-1.2.11
-$(PACKAGES)/curl-7.65.0: $(ML_SOURCES)/curl-7.65.0.tar.xz
-	$(MAKE) curl-7.65.0-all
+$(PACKAGES)/$(CURL): $(PACKAGES)/openssl-1.1.1b
+$(PACKAGES)/$(CURL): $(PACKAGES)/zlib-1.2.11
+$(PACKAGES)/$(CURL): $(ML_SOURCES)/$(CURL).tar.xz
+	$(MAKE) $(CURL)-all
 
-curl-7.65.0-all:
-	@echo "Building curl-7.65.0."
-	$(MAKE) curl-7.65.0-unpack
-	$(MAKE) curl-7.65.0-configure
-	$(MAKE) curl-7.65.0-build
+$(CURL)-all:
+	@echo "Building $(CURL)."
+	$(MAKE) $(CURL)-unpack
+	$(MAKE) $(CURL)-configure
+	$(MAKE) $(CURL)-build
 
-curl-7.65.0-clean:
-	rm -rf $(PACKAGES)/curl-7.65.0
+$(CURL)-clean:
+	rm -rf $(PACKAGES)/$(CURL)
 
-$(ML_SOURCES)/curl-7.65.0.tar.xz:
-	wget -O $@ https://curl.haxx.se/download/curl-7.65.0.tar.xz
+$(ML_SOURCES)/$(CURL).tar.xz:
+	mkdir -p $(dir $@)
+	wget -O $@ https://curl.haxx.se/download/$(CURL).tar.xz
 
-curl-7.65.0-unpack:
-	mkdir -p $(PACKAGES)/curl-7.65.0
+$(CURL)-unpack:
+	mkdir -p $(PACKAGES)/$(CURL)
 	cd $(PACKAGES) && \
-	tar xf $(ML_SOURCES)/curl-7.65.0.tar.xz
+	tar xf $(ML_SOURCES)/$(CURL).tar.xz
 
-curl-7.65.0-configure:
-	cd $(PACKAGES)/curl-7.65.0 && \
+$(CURL)-configure:
+	cd $(PACKAGES)/$(CURL) && \
 	./configure \
 	    CFLAGS="-ffunction-sections -fdata-sections" \
 	    CPPFLAGS="-I$(SYSROOT)/include" \
@@ -38,7 +40,7 @@ curl-7.65.0-configure:
 	    --disable-smtp --disable-rtsp --disable-gopher \
 	    --with-random=/dev/urandom --enable-curldebug
 
-curl-7.65.0-build:
-	cd $(PACKAGES)/curl-7.65.0 && \
+$(CURL)-build:
+	cd $(PACKAGES)/$(CURL) && \
 	$(MAKE) && \
 	$(MAKE) install

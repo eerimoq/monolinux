@@ -1,29 +1,31 @@
 LIBS += lzma
+XZ = xz-5.2.4
 
-packages: $(PACKAGES)/xz-5.2.4
+packages: $(PACKAGES)/$(XZ)
 
-$(PACKAGES)/xz-5.2.4: $(ML_SOURCES)/xz-5.2.4.tar.xz
-	$(MAKE) xz-5.2.4-all
+$(PACKAGES)/$(XZ): $(ML_SOURCES)/$(XZ).tar.xz
+	$(MAKE) $(XZ)-all
 
-xz-5.2.4-all:
-	@echo "Building xz-5.2.4."
-	$(MAKE) xz-5.2.4-unpack
-	$(MAKE) xz-5.2.4-configure
-	$(MAKE) xz-5.2.4-build
+$(XZ)-all:
+	@echo "Building $(XZ)."
+	$(MAKE) $(XZ)-unpack
+	$(MAKE) $(XZ)-configure
+	$(MAKE) $(XZ)-build
 
-xz-5.2.4-clean:
-	rm -rf $(PACKAGES)/xz-5.2.4
+$(XZ)-clean:
+	rm -rf $(PACKAGES)/$(XZ)
 
-$(ML_SOURCES)/xz-5.2.4.tar.xz:
-	wget -O $@ https://tukaani.org/xz/xz-5.2.4.tar.xz
+$(ML_SOURCES)/$(XZ).tar.xz:
+	mkdir -p $(dir $@)
+	wget -O $@ https://tukaani.org/xz/$(XZ).tar.xz
 
-xz-5.2.4-unpack:
+$(XZ)-unpack:
 	mkdir -p $(PACKAGES)
 	cd $(PACKAGES) && \
-	tar xf $(ML_SOURCES)/xz-5.2.4.tar.xz
+	tar xf $(ML_SOURCES)/$(XZ).tar.xz
 
-xz-5.2.4-configure:
-	cd $(PACKAGES)/xz-5.2.4 && \
+$(XZ)-configure:
+	cd $(PACKAGES)/$(XZ) && \
 	./configure \
 	    CFLAGS="-ffunction-sections -fdata-sections -O2" \
 	    --prefix=$(SYSROOT) \
@@ -32,7 +34,7 @@ xz-5.2.4-configure:
 	    --disable-lzmainfo --disable-lzma-links --disable-scripts \
 	    --disable-doc --disable-shared --disable-largefile
 
-xz-5.2.4-build:
-	cd $(PACKAGES)/xz-5.2.4 && \
+$(XZ)-build:
+	cd $(PACKAGES)/$(XZ) && \
 	$(MAKE) && \
 	$(MAKE) install

@@ -1,32 +1,34 @@
 LIBS += detools
+DETOOLS = detools-0.29.0
 
-packages: $(PACKAGES)/detools-0.29.0
+packages: $(PACKAGES)/$(DETOOLS)
 
-$(PACKAGES)/detools-0.29.0: $(PACKAGES)/xz-5.2.4
-$(PACKAGES)/detools-0.29.0: $(PACKAGES)/heatshrink-0.4.1
-$(PACKAGES)/detools-0.29.0: $(ML_SOURCES)/detools-0.29.0.tar.gz
-	$(MAKE) detools-0.29.0-all
+$(PACKAGES)/$(DETOOLS): $(PACKAGES)/xz-5.2.4
+$(PACKAGES)/$(DETOOLS): $(PACKAGES)/heatshrink-0.4.1
+$(PACKAGES)/$(DETOOLS): $(ML_SOURCES)/$(DETOOLS).tar.gz
+	$(MAKE) $(DETOOLS)-all
 
-detools-0.29.0-all:
-	@echo "Building detools-0.29.0."
-	$(MAKE) detools-0.29.0-unpack
-	$(MAKE) detools-0.29.0-build
+$(DETOOLS)-all:
+	@echo "Building $(DETOOLS)."
+	$(MAKE) $(DETOOLS)-unpack
+	$(MAKE) $(DETOOLS)-build
 
-detools-0.29.0-clean:
-	cd $(PACKAGES)/detools-0.29.0
+$(DETOOLS)-clean:
+	cd $(PACKAGES)/$(DETOOLS)
 
-$(ML_SOURCES)/detools-0.29.0.tar.gz:
+$(ML_SOURCES)/$(DETOOLS).tar.gz:
+	mkdir -p $(dir $@)
 	wget -O $@ https://github.com/eerimoq/detools/archive/0.29.0.tar.gz
 
-detools-0.29.0-unpack:
+$(DETOOLS)-unpack:
 	mkdir -p $(PACKAGES)
 	cd $(PACKAGES) && \
-	tar xf $(ML_SOURCES)/detools-0.29.0.tar.gz
+	tar xf $(ML_SOURCES)/$(DETOOLS).tar.gz
 
-detools-0.29.0-build:
+$(DETOOLS)-build:
 	mkdir -p $(SYSROOT)
 	cd $(PACKAGES) && \
-	touch detools-0.29.0 && \
-	cd detools-0.29.0 && \
+	touch $(DETOOLS) && \
+	cd $(DETOOLS) && \
 	$(MAKE) -C src/c library CFLAGS_EXTRA=-I$(SYSROOT)/include && \
 	$(MAKE) -C src/c install PREFIX=$(SYSROOT)

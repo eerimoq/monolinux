@@ -35,6 +35,10 @@ Features:
 
   - `detools`_ (delta encoding)
 
+ToDo:
+
+- ...
+
 Build and run
 =============
 
@@ -48,26 +52,14 @@ Install all prerequisites:
    $ git clone https://github.com/eerimoq/unicorn
    $ (cd unicorn && make && sudo make install)
    $ sudo pip3 install pyinotify
-   $ cd ..
    $ wget https://musl.cc/x86_64-linux-musl-cross.tgz
    $ tar xf x86_64-linux-musl-cross.tgz
-   $ cd -
 
 Source the development environment setup script.
 
 .. code-block:: shell
 
    $ source setup.sh
-
-Download the Linux kernel sources to the ``$ML_SOURCES``
-directory. This is normally only done once.
-
-.. code-block:: shell
-
-   $ mkdir $ML_SOURCES
-   $ cd $ML_SOURCES
-   $ wget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.1.3.tar.xz
-   $ cd -
 
 Run the commands below to create a file system, build the Linux kernel
 and run everything in QEMU.

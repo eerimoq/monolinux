@@ -1,33 +1,35 @@
 LIBS += z
+ZLIB = zlib-1.2.11
 
-packages: $(PACKAGES)/zlib-1.2.11
+packages: $(PACKAGES)/$(ZLIB)
 
-$(PACKAGES)/zlib-1.2.11: $(ML_SOURCES)/zlib-1.2.11.tar.xz
-	$(MAKE) zlib-1.2.11-all
+$(PACKAGES)/$(ZLIB): $(ML_SOURCES)/$(ZLIB).tar.xz
+	$(MAKE) $(ZLIB)-all
 
-zlib-1.2.11-all:
-	@echo "Building zlib-1.2.11."
-	$(MAKE) zlib-1.2.11-unpack
-	$(MAKE) zlib-1.2.11-configure
-	$(MAKE) zlib-1.2.11-build
+$(ZLIB)-all:
+	@echo "Building $(ZLIB)."
+	$(MAKE) $(ZLIB)-unpack
+	$(MAKE) $(ZLIB)-configure
+	$(MAKE) $(ZLIB)-build
 
-zlib-1.2.11-clean:
-	rm -rf $(PACKAGES)/zlib-1.2.11
+$(ZLIB)-clean:
+	rm -rf $(PACKAGES)/$(ZLIB)
 
-$(ML_SOURCES)/zlib-1.2.11.tar.xz:
-	wget -O $@ https://zlib.net/zlib-1.2.11.tar.xz
+$(ML_SOURCES)/$(ZLIB).tar.xz:
+	mkdir -p $(dir $@)
+	wget -O $@ https://zlib.net/$(ZLIB).tar.xz
 
-zlib-1.2.11-unpack:
+$(ZLIB)-unpack:
 	mkdir -p $(PACKAGES)
 	cd $(PACKAGES) && \
-	tar xf $(ML_SOURCES)/zlib-1.2.11.tar.xz
+	tar xf $(ML_SOURCES)/$(ZLIB).tar.xz
 
-zlib-1.2.11-configure:
-	cd $(PACKAGES)/zlib-1.2.11 && \
+$(ZLIB)-configure:
+	cd $(PACKAGES)/$(ZLIB) && \
 	CHOST=$(ML_AUTOTOOLS_HOST) ./configure \
 	    --prefix=$(SYSROOT) --static
 
-zlib-1.2.11-build:
-	cd $(PACKAGES)/zlib-1.2.11 && \
+$(ZLIB)-build:
+	cd $(PACKAGES)/$(ZLIB) && \
 	$(MAKE) && \
 	$(MAKE) install

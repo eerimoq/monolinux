@@ -1,30 +1,32 @@
 LIBS += heatshrink_dynamic
+HEATSHRINK = heatshrink-0.4.1
 
-packages: $(PACKAGES)/heatshrink-0.4.1
+packages: $(PACKAGES)/$(HEATSHRINK)
 
-$(PACKAGES)/heatshrink-0.4.1: $(ML_SOURCES)/heatshrink-0.4.1.tar.gz
-	$(MAKE) heatshrink-0.4.1-all
+$(PACKAGES)/$(HEATSHRINK): $(ML_SOURCES)/$(HEATSHRINK).tar.gz
+	$(MAKE) $(HEATSHRINK)-all
 
-heatshrink-0.4.1-all:
-	@echo "Building heatshrink-0.4.1."
-	$(MAKE) heatshrink-0.4.1-unpack
-	$(MAKE) heatshrink-0.4.1-build
+$(HEATSHRINK)-all:
+	@echo "Building $(HEATSHRINK)."
+	$(MAKE) $(HEATSHRINK)-unpack
+	$(MAKE) $(HEATSHRINK)-build
 
-heatshrink-0.4.1-clean:
-	rm -rf $(PACKAGES)/heatshrink-0.4.1
+$(HEATSHRINK)-clean:
+	rm -rf $(PACKAGES)/$(HEATSHRINK)
 
-$(ML_SOURCES)/heatshrink-0.4.1.tar.gz:
+$(ML_SOURCES)/$(HEATSHRINK).tar.gz:
+	mkdir -p $(dir $@)
 	wget -O $@ https://github.com/atomicobject/heatshrink/archive/v0.4.1.tar.gz
 
-heatshrink-0.4.1-unpack:
+$(HEATSHRINK)-unpack:
 	mkdir -p $(PACKAGES)
 	cd $(PACKAGES) && \
-	tar xf $(ML_SOURCES)/heatshrink-0.4.1.tar.gz
+	tar xf $(ML_SOURCES)/$(HEATSHRINK).tar.gz
 
-heatshrink-0.4.1-build:
+$(HEATSHRINK)-build:
 	mkdir -p $(SYSROOT)/bin
 	mkdir -p $(SYSROOT)/include
 	mkdir -p $(SYSROOT)/lib
-	cd $(PACKAGES)/heatshrink-0.4.1 && \
+	cd $(PACKAGES)/$(HEATSHRINK) && \
 	$(MAKE) CC=$(CROSS_COMPILE)gcc && \
 	$(MAKE) install PREFIX=$(SYSROOT)
