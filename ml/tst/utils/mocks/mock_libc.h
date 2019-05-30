@@ -33,6 +33,15 @@
 #include <net/if.h>
 #include <sys/ioctl.h>
 
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
+#include <arpa/inet.h>
+#include "ml/ml.h"
+
 void mock_push_mount(const char *source_p,
                      const char *target_p,
                      const char *type_p,
@@ -54,5 +63,11 @@ void mock_push_ioctl(int fd,
 void mock_push_ioctl_ifreq_ok(int fd,
                               unsigned long request,
                               struct ifreq *ifreq_p);
+
+void mock_push_sendto(int fd,
+                      const void *buf_p,
+                      size_t len,
+                      const struct sockaddr_in *dest_addr_p,
+                      ssize_t res);
 
 #endif

@@ -305,6 +305,65 @@ TEST(command_udp_send_open_socket_failure)
     mock_finalize();
 }
 
+TEST(command_udp_send_sendto_failure)
+{
+    int fd;
+    ml_shell_command_callback_t command_udp_send;
+    const char *argv[] = { "udp_send", "1.2.3.4", "1234", "Hello!" };
+    struct sockaddr_in other;
+
+    mock_push_ml_network_init();
+    ml_network_init();
+
+    command_udp_send = mock_get_callback("udp_send");
+    fd = 9;
+
+    CAPTURE_OUTPUT(output) {
+        mock_push_socket(AF_INET, SOCK_DGRAM, 0, fd);
+        memset(&other, 0, sizeof(other));
+        other.sin_family = AF_INET;
+        other.sin_port = htons(1234);
+        inet_aton("1.2.3.4", &other.sin_addr);
+        mock_push_sendto(fd, "Hello!", 6, &other, -1);
+        mock_push_close(fd, 0);
+        ASSERT_EQ(command_udp_send(membersof(argv), argv), -1);
+    }
+
+    ASSERT_SUBSTRING(output, "sendto failed:");
+    ASSERT_SUBSTRING(output, "udp_send <ip-address> <port> <data>\n");
+
+    mock_finalize();
+}
+
+TEST(command_udp_send)
+{
+    int fd;
+    ml_shell_command_callback_t command_udp_send;
+    const char *argv[] = { "udp_send", "1.2.3.4", "1234", "Hello!" };
+    struct sockaddr_in other;
+
+    mock_push_ml_network_init();
+    ml_network_init();
+
+    command_udp_send = mock_get_callback("udp_send");
+    fd = 9;
+
+    CAPTURE_OUTPUT(output) {
+        mock_push_socket(AF_INET, SOCK_DGRAM, 0, fd);
+        memset(&other, 0, sizeof(other));
+        other.sin_family = AF_INET;
+        other.sin_port = htons(1234);
+        inet_aton("1.2.3.4", &other.sin_addr);
+        mock_push_sendto(fd, "Hello!", 6, &other, 6);
+        mock_push_close(fd, 0);
+        ASSERT_EQ(command_udp_send(membersof(argv), argv), 0);
+    }
+
+    ASSERT_EQ(output, "");
+
+    mock_finalize();
+}
+
 TEST(command_udp_recv_no_args)
 {
     ml_shell_command_callback_t command_udp_recv;
@@ -362,6 +421,8 @@ int main()
         command_udp_send_no_args,
         command_udp_send_bad_ip_address,
         command_udp_send_open_socket_failure,
+        command_udp_send_sendto_failure,
+        command_udp_send,
         command_udp_recv_no_args,
         command_udp_recv_open_socket_failure
     );

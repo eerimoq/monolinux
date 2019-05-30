@@ -27,6 +27,10 @@
  */
 
 #include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <unicorn/unicorn.h>
 #include "mock.h"
 #include "mock_libc.h"
 
@@ -133,6 +137,39 @@ int __wrap_ioctl(int fd,
     mock_pop_assert("ioctl(request)", &request);
     mock_pop_assert("ioctl(data_p)", data_p);
     mock_pop("ioctl(): return (res)", &res);
+
+    return (res);
+}
+
+void mock_push_sendto(int fd,
+                      const void *buf_p,
+                      size_t len,
+                      const struct sockaddr_in *dest_addr_p,
+                      ssize_t res)
+{
+    mock_push("sendto(fd)", &fd, sizeof(fd));
+    mock_push("sendto(buf_p)", buf_p, len);
+    mock_push("sendto(len)", &len, sizeof(len));
+    mock_push("sendto(dest_addr_p)", dest_addr_p, sizeof(*dest_addr_p));
+    mock_push("sendto(): return (res)", &res, sizeof(res));
+}
+
+ssize_t __wrap_sendto(int fd,
+                      const void *buf_p,
+                      size_t len,
+                      int flags,
+                      const struct sockaddr *dest_addr_p,
+                      socklen_t addrlen)
+{
+    ssize_t res;
+
+    mock_pop_assert("sendto(fd)", &fd);
+    mock_pop_assert("sendto(buf_p)", buf_p);
+    mock_pop_assert("sendto(len)", &len);
+    ASSERT_EQ(flags, 0);
+    ASSERT_EQ(addrlen, sizeof(*dest_addr_p));
+    mock_pop_assert("sendto(dest_addr_p)", dest_addr_p);
+    mock_pop("sendto(): return (res)", &res);
 
     return (res);
 }
