@@ -33,6 +33,7 @@
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <arpa/inet.h>
+#include <poll.h>
 #include "ml/ml.h"
 
 static void xioctl(int fd, unsigned long request, void *data_p)
@@ -181,7 +182,38 @@ static int udp_send(const char *ip_address_p,
     return (res);
 }
 
-static int udp_recv(const char *port_p)
+static bool wait_for_packet(int sockfd, int timeout)
+{
+    bool ok;
+    struct pollfd fds[1];
+
+    ok = false;
+
+    fds[0].fd = sockfd;
+    fds[0].events = POLLIN;
+
+    printf("Waiting for an UDP packet with %d second(s) timeout.\n",
+           timeout);
+
+    switch (poll(&fds[0], membersof(fds), 1000 * timeout)) {
+
+    case -1:
+        perror("poll failed");
+        break;
+
+    case 0:
+        printf("Timeout waiting for an UDP packet.\n");
+        break;
+
+    default:
+        ok = true;
+        break;
+    }
+
+    return (ok);
+}
+
+static int udp_recv(const char *port_p, int timeout)
 {
     int res;
     ssize_t size;
@@ -201,24 +233,27 @@ static int udp_recv(const char *port_p)
         me.sin_addr.s_addr = htonl(INADDR_ANY);
 
         if (bind(sockfd, (struct sockaddr *)&me, sizeof(me)) != -1) {
-            len = sizeof(other);
-            size = recvfrom(sockfd,
-                            &buf[0],
-                            sizeof(buf) - 1,
-                            0,
-                            (struct sockaddr *)&other,
-                            &len);
+            if (wait_for_packet(sockfd, timeout)) {
+                len = sizeof(other);
 
-            if (size != -1) {
-                buf[size] = '\0';
-                printf("Received packet from %s:%d\n"
-                       "Data: %s\n",
-                       inet_ntoa(other.sin_addr),
-                       ntohs(other.sin_port),
-                       &buf[0]);
-                res = 0;
-            } else {
-                perror("recvfrom failed");
+                size = recvfrom(sockfd,
+                                &buf[0],
+                                sizeof(buf) - 1,
+                                0,
+                                (struct sockaddr *)&other,
+                                &len);
+
+                if (size != -1) {
+                    buf[size] = '\0';
+                    printf("Received packet from %s:%d\n"
+                           "Data: %s\n",
+                           inet_ntoa(other.sin_addr),
+                           ntohs(other.sin_port),
+                           &buf[0]);
+                    res = 0;
+                } else {
+                    perror("recvfrom failed");
+                }
             }
         } else {
             perror("bind failed");
@@ -252,15 +287,22 @@ static int command_udp_send(int argc, const char *argv[])
 static int command_udp_recv(int argc, const char *argv[])
 {
     int res;
+    int timeout;
+
+    res = -1;
 
     if (argc == 2) {
-        res = udp_recv(argv[1]);
-    } else {
-        res = -1;
+        res = udp_recv(argv[1], 5);
+    } else if (argc == 3) {
+        timeout = atoi(argv[2]);
+
+        if (timeout > 0) {
+            res = udp_recv(argv[1], timeout);
+        }
     }
 
     if (res != 0) {
-        printf("udp_recv <port>\n");
+        printf("udp_recv <port> [<timeout in seconds>]\n");
     }
 
     return (res);

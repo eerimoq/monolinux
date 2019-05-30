@@ -378,7 +378,7 @@ TEST(command_udp_recv_no_args)
         ASSERT_EQ(command_udp_recv(membersof(argv), argv), -1);
     }
 
-    ASSERT_EQ(output, "udp_recv <port>\n");
+    ASSERT_EQ(output, "udp_recv <port> [<timeout in seconds>]\n");
 
     mock_finalize();
 }
@@ -399,7 +399,7 @@ TEST(command_udp_recv_open_socket_failure)
     }
 
     ASSERT_SUBSTRING(output, "socket creation failed:");
-    ASSERT_SUBSTRING(output, "udp_recv <port>\n");
+    ASSERT_SUBSTRING(output, "udp_recv <port> [<timeout in seconds>]\n");
 
     mock_finalize();
 }
