@@ -9,11 +9,13 @@ CFLAGS += -DUNIT_TEST
 LDFLAGS += -lunicorn
 COVERAGE_FILTERS +=
 
-.PHONY: all coverage
+.PHONY: all run coverage
 
-all: $(EXE)
-	$(EXE)
+all: run
 	$(MAKE) coverage
+
+run: $(EXE)
+	$(EXE)
 
 coverage:
 	gcovr --root ../.. \
@@ -21,5 +23,8 @@ coverage:
 	    --html-details --output index.html build
 	mkdir -p $(BUILD)/coverage
 	mv index.* $(BUILD)/coverage
+	@echo
+	@echo "Code coverage report: $$(readlink -f build/coverage/index.html)"
+	@echo
 
 include $(ML_ROOT)/make/common.mk
