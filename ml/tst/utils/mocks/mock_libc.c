@@ -30,6 +30,10 @@
 #include "mock.h"
 #include "mock_libc.h"
 
+/* socket() and close() may be used by unicorn. Should not use wrap,
+   but instead only replace symbols in tested files. Possibly examine
+   the backtrace. Both variants are dirty. */
+
 void mock_push_mount(const char *source_p,
                      const char *target_p,
                      const char *type_p,
@@ -80,6 +84,22 @@ int __wrap_socket(int domain, int type, int protocol)
     mock_pop_assert("socket(type)", &type);
     mock_pop_assert("socket(protocol)", &protocol);
     mock_pop("socket(): return (res)", &res);
+
+    return (res);
+}
+
+void mock_push_close(int fd, int res)
+{
+    mock_push("close(fd)", &fd, sizeof(fd));
+    mock_push("close(): return (res)", &res, sizeof(res));
+}
+
+int __wrap_close(int fd)
+{
+    int res;
+
+    mock_pop_assert("close(fd)", &fd);
+    mock_pop("close(): return (res)", &res);
 
     return (res);
 }

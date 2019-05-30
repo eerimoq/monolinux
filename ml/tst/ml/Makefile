@@ -1,6 +1,6 @@
 LDFLAGS += -Wl,--wrap=mount
-INC += ../mocks
-SRC += ../mocks/mock.c
-SRC += ../mocks/mock_libc.c
+INC += ..
+SRC += ../utils/mocks/mock.c
+SRC += ../utils/mocks/mock_libc.c
 
 include $(ML_ROOT)/make/suite.mk

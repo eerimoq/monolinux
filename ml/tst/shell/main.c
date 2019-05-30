@@ -28,6 +28,7 @@
 
 #include <unistd.h>
 #include <unicorn/unicorn.h>
+#include "utils/utils.h"
 #include "ml/ml.h"
 
 #define ESC "\x1b"
@@ -45,25 +46,6 @@ static int command_hello(int argc, const char *argv[])
     printf("Hello %s!\n", name_p);
 
     return (0);
-}
-
-static int stdin_pipe(void)
-{
-    int fds[2];
-
-    ASSERT_EQ(pipe(fds), 0);
-    dup2(fds[0], STDIN_FILENO);
-
-    return (fds[1]);
-}
-
-static void input(int fd, const char *string_p)
-{
-    size_t length;
-
-    length = strlen(string_p);
-
-    ASSERT_EQ(write(fd, string_p, length), length);
 }
 
 TEST(various_commands)

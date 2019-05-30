@@ -28,7 +28,7 @@
 
 #include <unicorn/unicorn.h>
 #include "ml/ml.h"
-#include "mock_libc.h"
+#include "utils/mocks/mock_libc.h"
 
 TEST(strip)
 {

@@ -26,31 +26,17 @@
  * This file is part of the Monolinux project.
  */
 
-#ifndef MOCK_LIBC_H
-#define MOCK_LIBC_H
+#ifndef MOCK_H
+#define MOCK_H
 
-#include <string.h>
-#include <net/if.h>
-#include <sys/ioctl.h>
+#include <stddef.h>
 
-void mock_push_mount(const char *source_p,
-                     const char *target_p,
-                     const char *type_p,
-                     unsigned long flags,
-                     const void *data_p,
-                     size_t data_size,
-                     int res);
+void mock_push(const char *name_p, const void *buf_p, size_t size);
 
-void mock_push_socket(int domain, int type, int protocol, int res);
+void mock_pop(const char *name_p, void *buf_p);
 
-void mock_push_ioctl(int fd,
-                     unsigned long request,
-                     void *data_p,
-                     size_t data_size,
-                     int res);
+void mock_pop_assert(const char *name_p, const void *buf_p);
 
-void mock_push_ioctl_ifreq_ok(int fd,
-                              unsigned long request,
-                              struct ifreq *ifreq_p);
+void mock_finalize(void);
 
 #endif
