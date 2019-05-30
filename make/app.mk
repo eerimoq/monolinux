@@ -4,6 +4,7 @@ EXE = $(BUILD)/app
 LINUX_SRC = $(BUILD)/linux-$(ML_LINUX_VERSION)
 BZIMAGE ?= $(LINUX_SRC)/arch/x86/boot/bzImage
 INITRAMFS = $(BUILD)/initramfs.cpio
+INITRAMFS_FILES ?=
 SCRIPTS_DIR = $(ML_ROOT)/scripts
 CC = $(CROSS_COMPILE)gcc
 CFLAGS += -O2
@@ -62,6 +63,6 @@ $(LINUX)-build:
 
 $(INITRAMFS): $(EXE)
 	@echo "Creating the initramfs."
-	fakeroot $(ML_ROOT)/make/create_initramfs.sh $(BUILD)
+	fakeroot $(ML_ROOT)/make/create_initramfs.sh $(BUILD) "$(INITRAMFS_FILES)"
 
 include $(ML_ROOT)/make/common.mk

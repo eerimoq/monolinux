@@ -27,9 +27,13 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
-#include <sys/mount.h>
 #include <ctype.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/mount.h>
+#include <sys/syscall.h>
 #include "ml/ml.h"
 #include "internal.h"
 
@@ -225,6 +229,22 @@ void ml_print_uptime(void)
     printf("Uptime: ");
     ml_print_file("/proc/uptime");
     printf("\n");
+}
+
+int ml_insert_module(const char *path_p, const char *params_p)
+{
+    int res;
+    int fd;
+
+    res = -1;
+    fd = open(path_p, O_RDONLY);
+
+    if (fd != -1) {
+        res = syscall(SYS_finit_module, fd, params_p, 0);
+        close(fd);
+    }
+
+    return (res);
 }
 
 void *xmalloc(size_t size)

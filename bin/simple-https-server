@@ -21,4 +21,7 @@ httpd = HTTPServer(('', port), SimpleHTTPRequestHandler)
 httpd.socket = ssl.wrap_socket(httpd.socket,
                                certfile=certfile,
                                server_side=True)
+
+print('Listening for clients on port {}...'.format(port))
+
 httpd.serve_forever()

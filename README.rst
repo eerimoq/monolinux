@@ -194,6 +194,15 @@ Cross compilation
 
 See `Monolinux Jiffy`_ for an example project.
 
+Tips and tricks
+===============
+
+cat /proc/net/arp
+cat /proc/net/dev
+cat /proc/meminfo
+cat /proc/version
+cat /proc/uptime
+
 .. |buildstatus| image:: https://travis-ci.org/eerimoq/monolinux.svg
 .. _buildstatus: https://travis-ci.org/eerimoq/monolinux
 

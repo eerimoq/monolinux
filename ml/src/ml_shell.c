@@ -636,7 +636,7 @@ static int command_hexdump(int argc, const char *argv[])
     }
 
     if (res != 0) {
-        printf("hexdump: [[<offset>] <size>] <file>\n");
+        printf("hexdump [[<offset>] <size>] <file>\n");
     }
 
     return (res);
@@ -648,6 +648,25 @@ static int command_reboot(int argc, const char *argv[])
     (void)argv;
 
     return(reboot(RB_AUTOBOOT));
+}
+
+static int command_insmod(int argc, const char *argv[])
+{
+    int res;
+
+    res = -1;
+
+    if (argc == 2) {
+        res = ml_insert_module(argv[1], "");
+    } else if (argc == 3) {
+        res = ml_insert_module(argv[1], argv[2]);
+    }
+
+    if (res != 0) {
+        printf("insmod <file> [<params>]\n");
+    }
+
+    return (res);
 }
 
 static void history_init(void)
@@ -1417,6 +1436,9 @@ void ml_shell_init(void)
     ml_shell_register_command("reboot",
                               "Reboot.",
                               command_reboot);
+    ml_shell_register_command("insmod",
+                              "Insert a kernel module.",
+                              command_insmod);
 }
 
 void ml_shell_start(void)

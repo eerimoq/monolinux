@@ -286,6 +286,11 @@ void ml_print_file(const char *name_p);
  */
 void ml_print_uptime(void);
 
+/**
+ * Insert given kernel module.
+ */
+int ml_insert_module(const char *path_p, const char *params_p);
+
 /* Exits on failure. Use with care. */
 
 void *xmalloc(size_t size);
