@@ -171,7 +171,7 @@ TEST(cat)
         input(fd, "root\n");
         input(fd, "\n");
         input(fd, "cat\n");
-        input(fd, "cat Makefile\n");
+        input(fd, "cat hexdump.in\n");
         input(fd, "cat foobar\n");
         /* ToDo: Should wait until output is available, but how?. */
         usleep(50000);
@@ -184,8 +184,8 @@ TEST(cat)
         "$ cat\n"
         "No file given\n"
         "ERROR(-1)\n"
-        "$ cat Makefile\n"
-        "include $(ML_ROOT)/make/suite.mk\n"
+        "$ cat hexdump.in\n"
+        "0123456789012345678901234567890123456789"
         "OK\n"
         "$ cat foobar\n"
         "ERROR(-1)\n"

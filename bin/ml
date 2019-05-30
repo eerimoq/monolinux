@@ -10,7 +10,7 @@ __version__ = '0.1.0'
 
 
 def on_modify(s):
-    print(80 * '=')
+    print(60 * '=')
     run(['make', '-s', '-j4'])
 
 def suite_paths_to_watch():

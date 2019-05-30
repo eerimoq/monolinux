@@ -1,4 +1,4 @@
-|buildstatus|_
+|buildstatus|_..
 |codecov|_
 
 Monolinux
@@ -51,7 +51,7 @@ Install all prerequisites:
    # Only required for unit testing:
    $ git clone https://github.com/eerimoq/unicorn
    $ (cd unicorn && make && sudo make install)
-   $ sudo pip3 install pyinotify
+   $ sudo pip3 install pyinotify gcovr
    $ wget https://musl.cc/x86_64-linux-musl-cross.tgz
    $ tar xf x86_64-linux-musl-cross.tgz
 
@@ -231,7 +231,7 @@ ARM 32 bits with MUSL.
 
 .. code-block:: shell
 
-   $ wget https://musl.cc/arm-linux-musleabi-cross.tgz
+$ wget https://musl.cc/arm-linux-musleabi-cross.tgz..
    $ tar xf https://musl.cc/arm-linux-musleabi-cross.tgz
    $ export PATH=$PATH:$(readlink -f arm-linux-musleabi-cross/bin)
    $ make ARCH=arm CROSS_COMPILE=arm-linux-musleabi- ML_LINUX_CONFIG=$ML_ROOT/configs/arm-all-no.config
