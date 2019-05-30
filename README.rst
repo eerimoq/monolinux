@@ -231,7 +231,7 @@ ARM 32 bits with MUSL.
 
 .. code-block:: shell
 
-$ wget https://musl.cc/arm-linux-musleabi-cross.tgz..
+   $ wget https://musl.cc/arm-linux-musleabi-cross.tgz
    $ tar xf https://musl.cc/arm-linux-musleabi-cross.tgz
    $ export PATH=$PATH:$(readlink -f arm-linux-musleabi-cross/bin)
    $ make ARCH=arm CROSS_COMPILE=arm-linux-musleabi- ML_LINUX_CONFIG=$ML_ROOT/configs/arm-all-no.config
