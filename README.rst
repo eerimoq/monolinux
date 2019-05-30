@@ -1,4 +1,4 @@
-|buildstatus|_..
+|buildstatus|_
 |codecov|_
 
 Monolinux
@@ -93,7 +93,7 @@ been modified.
    $ cd ml/tst/shell
    $ ml test
    ...
-   ================================================================================
+   ============================================================
    CC main.c
    LD /home/erik/workspace/monolinux/ml/tst/shell/build/suite
 
@@ -112,7 +112,7 @@ been modified.
 
    Tests: 6 passed, 6 total
    Time:  352.57ms
-   ================================================================================
+   ============================================================
    CC main.c
    LD /home/erik/workspace/monolinux/ml/tst/shell/build/suite
 
