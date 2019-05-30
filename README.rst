@@ -46,12 +46,12 @@ Install all prerequisites:
 
 .. code-block:: shell
 
-   $ sudo apt install curl qemu-system-x86 flex bison
+   $ sudo apt install curl qemu-system-x86 flex bison gcovr
 
    # Only required for unit testing:
    $ git clone https://github.com/eerimoq/unicorn
    $ (cd unicorn && make && sudo make install)
-   $ sudo pip3 install pyinotify gcovr
+   $ sudo pip3 install pyinotify
    $ wget https://musl.cc/x86_64-linux-musl-cross.tgz
    $ tar xf x86_64-linux-musl-cross.tgz
 
