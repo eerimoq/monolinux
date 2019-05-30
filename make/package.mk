@@ -1,6 +1,6 @@
 # A package.
 
-SUITES ?= $(shell ls tst)
+SUITES ?= $(filter-out mocks,$(shell ls tst))
 
 .PHONY: test clean
 

@@ -38,7 +38,7 @@ $(CURL)-configure:
 	    --disable-ftp --disable-ldap --disable-telnet --disable-dict \
 	    --disable-file --disable-tftp --disable-imap --disable-pop3 \
 	    --disable-smtp --disable-rtsp --disable-gopher \
-	    --with-random=/dev/urandom --enable-curldebug
+	    --with-random=/dev/urandom
 
 $(CURL)-build:
 	cd $(PACKAGES)/$(CURL) && \

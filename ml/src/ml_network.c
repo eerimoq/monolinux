@@ -59,6 +59,7 @@ static int net_open(const char *name_p,
         exit(1);
     }
 
+    memset(ifreq_p, 0, sizeof(*ifreq_p));
     strncpy(&ifreq_p->ifr_name[0], name_p, sizeof(ifreq_p->ifr_name) - 1);
     ifreq_p->ifr_name[sizeof(ifreq_p->ifr_name) - 1] = '\0';
 

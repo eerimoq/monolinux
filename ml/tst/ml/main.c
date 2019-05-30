@@ -28,6 +28,7 @@
 
 #include <unicorn/unicorn.h>
 #include "ml/ml.h"
+#include "mock_libc.h"
 
 TEST(strip)
 {
@@ -288,23 +289,10 @@ TEST(bus)
     ml_message_free(rmessage_p);
 }
 
-int __wrap_mount(const char *source_p,
-                 const char *target_p,
-                 const char *type_p,
-                 unsigned long flags,
-                 const void *data_p)
-{
-    ASSERT_EQ(source_p, "a");
-    ASSERT_EQ(target_p, "b");
-    ASSERT_EQ(type_p, "c");
-    ASSERT_EQ(flags, 0);
-    ASSERT_EQ(memcmp(data_p, "", 1), 0);
-
-    return (0);
-}
-
 TEST(xmount_ok)
 {
+    mock_push_mount("a", "b", "c", 0, "", 1, 0);
+
     xmount("a", "b", "c");
 }
 

@@ -1,4 +1,4 @@
-LDFLAGS += -Wl,--wrap=mount
+LDFLAGS += -Wl,--wrap=ioctl -Wl,--wrap=socket
 INC += ../mocks
 SRC += ../mocks/mock.c
 SRC += ../mocks/mock_libc.c
