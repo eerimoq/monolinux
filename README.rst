@@ -184,77 +184,15 @@ User project file tree after build.
 Configuration
 =============
 
-Environment variables exported in setup.sh. Change at will.
+In general, just modify any files in this repository to match your
+project's needs.
 
-.. code-block:: shell
-
-   $ env | grep ML_
-   ML_LINUX_VERSION=5.1.3
-   ML_LINUX_CONFIG=/home/erik/workspace/monolinux/configs/x86_64-default.config
-   ML_SOURCES=/home/erik/workspace/monolinux/../sources
-   ML_ROOT=/home/erik/workspace/monolinux
-   ML_AUTOTOOLS_HOST=
-
-``ARCH`` and ``CROSS_COMPILE`` are also used when cross-compiling.
-
-Linux kernel
-------------
-
-Unpack the Linux kernel archive.
-
-.. code-block:: shell
-
-   $ cd examples/hello_world
-   $ make unpack
-   $ cd build/linux-$ML_LINUX_VERSION
-
-Create a new Linux kernel configuration based on the all-no
-configuration.
-
-.. code-block:: shell
-
-   $ make allnoconfig
-   $ make nconfig
-
-Start using the default configuraiton.
-
-.. code-block:: shell
-
-   $ cp .config $ML_LINUX_CONFIG
+There are a few environment variables exported in ``setup.sh``.
 
 Cross compilation
 =================
 
-See `Monolinux Jiffy`_ for a real example project.
-
-ARM 32 bits with MUSL.
-
-.. code-block:: shell
-
-   $ wget https://musl.cc/arm-linux-musleabi-cross.tgz
-   $ tar xf https://musl.cc/arm-linux-musleabi-cross.tgz
-   $ export PATH=$PATH:$(readlink -f arm-linux-musleabi-cross/bin)
-   $ make ARCH=arm CROSS_COMPILE=arm-linux-musleabi- ML_LINUX_CONFIG=$ML_ROOT/configs/arm-all-no.config
-
-ARM 64 bits.
-
-.. code-block:: shell
-
-   $ sudo apt install gcc-aarch64-linux-gnu
-   $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- ML_LINUX_CONFIG=$ML_ROOT/configs/arm64-all-no.config
-
-Useful
-======
-
-Configure eth0 in Monolinux in QEMU and send a UDP packet.
-
-.. code-block:: shell
-
-   $ ifconfig eth0 10.0.2.15 255.255.255.0
-   $ ifconfig eth0 up
-   $ udp_send 10.0.2.2 9999 hej
-   $ http_get http://10.0.2.2:9999/
-   $ http_get https://10.0.2.2/
+See `Monolinux Jiffy`_ for an example project.
 
 .. |buildstatus| image:: https://travis-ci.org/eerimoq/monolinux.svg
 .. _buildstatus: https://travis-ci.org/eerimoq/monolinux
