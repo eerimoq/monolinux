@@ -37,7 +37,6 @@
 #include <time.h>
 #include <errno.h>
 #include <stdint.h>
-#include <syslog.h>
 #include <curl/curl.h>
 #include <heatshrink_encoder.h>
 #include <heatshrink_decoder.h>
@@ -58,7 +57,7 @@ static int pmount(const char *source_p,
     res = mount(source_p, target_p, type_p, 0, "");
 
     if (res != 0) {
-        perror("error: mount: ");
+        perror("error: mount");
     }
 
     return (res);
@@ -79,7 +78,7 @@ static void http_get(const char *url_p)
     long response_code;
     int res;
 
-    printf("\n>>> HTTP GET %s. >>>\n", url_p);
+    printf(">>> HTTP GET %s. >>>\n", url_p);
 
     curl_p = curl_easy_init();
 
@@ -121,7 +120,7 @@ static int command_http_get(int argc, const char *argv[])
     return (0);
 }
 
-static int init(void)
+static void init(void)
 {
     int res;
 
@@ -138,19 +137,10 @@ static int init(void)
                               command_http_get);
     ml_shell_start();
 
-    res = pmount("none", "/proc", "proc");
-
-    if (res != 0) {
-        return (res);
-    }
-
-    res = pmount("none", "/sys", "sysfs");
-
-    if (res != 0) {
-        return (res);
-    }
-
-    return (pmount("none", "/sys/kernel/debug", "debugfs"));
+    pmount("none", "/proc", "proc");
+    pmount("none", "/sys", "sysfs");
+    pmount("none", "/sys/kernel/debug", "debugfs");
+    pmount("/dev/sda1", "/mnt/disk", "ext4");
 }
 
 static void print_banner(void)
@@ -185,31 +175,32 @@ static void print_banner(void)
            &buf[0]);
 }
 
-static void slog(void)
+static void disk_test(void)
 {
-    printf("writing log\n");
-    openlog("apa", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_USER);
-
-    syslog(LOG_MAKEPRI(LOG_USER, LOG_NOTICE),
-           "Program started by user %d",
-           getuid());
-    syslog(LOG_INFO, "A tree falls in a forest");
-
-    closelog();
+    printf("================ disk test begin ===============\n");
+    ml_print_file_systems_space_usage();
+    ml_print_file("/mnt/disk/README");
+    printf("================= disk test end ================\n\n");
 }
 
 static void heatshrink_test(void)
 {
+    printf("============= heatshrink test begin ============\n");
+
     printf("Heatshrink encode and decode.\n");
 
     (void)heatshrink_encoder_alloc(8, 4);
     (void)heatshrink_decoder_alloc(512, 8, 4);
+
+    printf("============= heatshrink test end ==============\n\n");
 }
 
 static void lzma_test(void)
 {
     lzma_ret ret;
     lzma_stream stream;
+
+    printf("================ lzma test begin ===============\n");
 
     memset(&stream, 0, sizeof(stream));
 
@@ -220,17 +211,30 @@ static void lzma_test(void)
     } else {
         printf("LZMA decoder init successful.\n");
     }
+
+    printf("================= lzma test end ================\n\n");
 }
 
 static void detools_test(void)
 {
     int res;
+    const char from[] = "/mnt/disk/detools/v1.txt";
+    const char patch[] = "/mnt/disk/detools/v1-v2.patch";
+    const char to[] = "/mnt/disk/detools/v2.txt";
 
-    printf("Applying patch 'patch' to 'from' to create 'to'.\n");
+    printf("============== detools test begin ==============\n");
+    printf("Applying patch '%s' to '%s' to create '%s'.\n",
+           patch,
+           from,
+           to);
 
-    res = detools_apply_patch_filenames("from", "patch", "to");
+    res = detools_apply_patch_filenames(from, patch, to);
 
     if (res >= 0) {
+        printf("Before patching:\n");
+        ml_print_file(from);
+        printf("After patching:\n");
+        ml_print_file(to);
         printf("detools: OK!\n");
     } else {
         res *= -1;
@@ -238,40 +242,63 @@ static void detools_test(void)
                detools_error_as_string(res),
                res);
     }
+
+    printf("=============== detools test end ===============\n\n");
 }
 
 static void openssl_test(void)
 {
+    printf("============== openssl test begin ==============\n");
     printf("openssl AES options: '%s'\n", AES_options());
+    printf("=============== openssl test end ===============\n\n");
+}
+
+static void insert_module_test(void)
+{
+    int res;
+    const char module[] = "/root/i2c-i801.ko";
+
+    printf("=============== insmod test begin ==============\n");
+
+    res = ml_insert_module(&module[0], "");
+
+    if (res == 0) {
+        printf("Successfully inserted '%s'.\n", &module[0]);
+    } else {
+        printf("Failed to insert '%s'.\n", &module[0]);
+    }
+
+    printf("Loaded modules:\n");
+    ml_print_file("/proc/modules");
+
+    printf("================ insmod test end ===============\n\n");
+}
+
+static void http_test(void)
+{
+    printf("================ http test begin ===============\n");
+    http_get("http://10.0.2.2:8001/");
+    http_get("https://10.0.2.2:4443/");
+    printf("================= http test end ================\n\n");
 }
 
 int main()
 {
-    int res;
-    char ch;
-
-    res = init();
-
-    if (res != 0) {
-        printf("error: Init failed. Aborting.\n");
-
-        return (res);
-    }
+    init();
 
     print_banner();
-    slog();
+    disk_test();
     heatshrink_test();
     lzma_test();
     detools_test();
     openssl_test();
-
+    insert_module_test();
     ml_network_interface_configure("eth0", "10.0.2.15", "255.255.255.0");
     ml_network_interface_up("eth0");
+    http_test();
 
     while (1) {
-        http_get("http://10.0.2.2:8001/");
-        http_get("https://10.0.2.2:4443/");
-        sleep(30);
+        sleep(10);
     }
 
     return (0);

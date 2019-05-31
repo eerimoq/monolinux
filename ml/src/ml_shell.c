@@ -26,13 +26,16 @@
  * This file is part of the Monolinux project.
  */
 
+#include <sys/sysmacros.h>
 #include <stdint.h>
-#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/mount.h>
+#include <sys/param.h>
+#include <sys/reboot.h>
 #include <ctype.h>
 #include <termios.h>
 #include <unistd.h>
-#include <sys/param.h>
-#include <sys/reboot.h>
 #include <dirent.h>
 #include "ml/ml.h"
 #include "internal.h"
@@ -648,6 +651,61 @@ static int command_insmod(int argc, const char *argv[])
     }
 
     return (res);
+}
+
+static int command_mknod(int argc, const char *argv[])
+{
+    int res;
+    mode_t mode;
+    dev_t dev;
+
+    res = -1;
+    mode = 0666;
+
+    if (argc == 3) {
+        if (strcmp(argv[2], "p") == 0) {
+            res = mknod(argv[1], S_IFIFO | mode, 0);
+        }
+    } else if (argc == 5) {
+        dev = makedev(atoi(argv[3]), atoi(argv[4]));
+
+        if (strcmp(argv[2], "c") == 0) {
+            res = mknod(argv[1], S_IFCHR | mode, dev);
+        } else if (strcmp(argv[2], "b") == 0) {
+            res = mknod(argv[1], S_IFBLK | mode, dev);
+        }
+    }
+
+    if (res != 0) {
+        printf("mknod <path> <type> [<major>] [<minor>]\n");
+    }
+
+    return (res);
+}
+
+static int command_mount(int argc, const char *argv[])
+{
+    int res;
+
+    res = -1;
+
+    if (argc == 4) {
+        res = mount(argv[2], argv[3], argv[1], 0, "");
+    }
+
+    if (res != 0) {
+        printf("mount <type> <device> <dir>\n");
+    }
+
+    return (res);
+}
+
+static int command_df(int argc, const char *argv[])
+{
+    (void)argc;
+    (void)argv;
+
+    return (ml_print_file_systems_space_usage());
 }
 
 static void history_init(void)
@@ -1426,6 +1484,15 @@ void ml_shell_init(void)
     ml_shell_register_command("insmod",
                               "Insert a kernel module.",
                               command_insmod);
+    ml_shell_register_command("mknod",
+                              "Create a node.",
+                              command_mknod);
+    ml_shell_register_command("mount",
+                              "Mount a filesystem.",
+                              command_mount);
+    ml_shell_register_command("df",
+                              "Disk space usage.",
+                              command_df);
 }
 
 void ml_shell_start(void)

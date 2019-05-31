@@ -296,6 +296,19 @@ void ml_print_uptime(void);
  */
 int ml_insert_module(const char *path_p, const char *params_p);
 
+/**
+ * Get file system space usage.
+ */
+int ml_file_system_space_usage(const char *path_p,
+                               unsigned long *total_p,
+                               unsigned long *used_p,
+                               unsigned long *free_p);
+
+/**
+ * Print file systems space usage.
+ */
+int ml_print_file_systems_space_usage(void);
+
 /* Exits on failure. Use with care. */
 
 void *xmalloc(size_t size);

@@ -40,7 +40,7 @@ endef
 $(foreach file,$(SRC),$(eval $(call COMPILE_template,$(file))))
 
 clean:
-	rm -rf $(BUILD)
+	rm -rf $(BUILD) $(CLEAN)
 
 print-%:
 	@echo $($*)

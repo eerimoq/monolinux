@@ -8,7 +8,7 @@ INITRAMFS_FILES=$2
 rm -rf $BUILD/initramfs
 mkdir -p $BUILD/initramfs
 cd $BUILD/initramfs
-mkdir -p {dev,proc,root,sys/kernel/debug}
+mkdir -p {dev,mnt/disk,proc,root,sys/kernel/debug}
 cp -a /dev/{null,console,tty,sda1,urandom} dev
 cp $BUILD/app init
 chmod +x init

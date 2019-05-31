@@ -26,9 +26,11 @@
  * This file is part of the Monolinux project.
  */
 
+#include <mntent.h>
 #include <stdint.h>
 #include <ctype.h>
 #include <fcntl.h>
+#include <sys/statvfs.h>
 #include <sys/mount.h>
 #include "ml/ml.h"
 #include "internal.h"
@@ -238,6 +240,71 @@ int ml_insert_module(const char *path_p, const char *params_p)
     if (fd != -1) {
         res = ml_finit_module(fd, params_p, 0);
         ml_close(fd);
+    }
+
+    return (res);
+}
+
+int ml_file_system_space_usage(const char *path_p,
+                               unsigned long *total_p,
+                               unsigned long *used_p,
+                               unsigned long *free_p)
+{
+    int res;
+    struct statvfs stat;
+    unsigned long long total;
+    unsigned long long used;
+
+    res = statvfs(path_p, &stat);
+
+    if (res != 0) {
+        return (res);
+    }
+
+    total = (stat.f_bsize * stat.f_blocks);
+    *total_p = (total / (1024 * 1024));
+    used = (stat.f_bsize * (stat.f_blocks - stat.f_bfree));
+    *used_p = (used / (1024 * 1024));
+    *free_p = (*total_p - *used_p);
+
+    return (0);
+}
+
+int ml_print_file_systems_space_usage(void)
+{
+    int res;
+    FILE *fin_p;
+    struct mntent *mntent_p;
+    unsigned long total;
+    unsigned long available;
+    unsigned long used;
+
+    res = -1;
+
+    /* Find all mounted file systems. */
+    fin_p = setmntent("/proc/mounts", "r");
+
+    if (fin_p != NULL) {
+        printf("MOUNTED ON               TOTAL      USED      FREE\n");
+
+        while ((mntent_p = getmntent(fin_p)) != NULL) {
+            res = ml_file_system_space_usage(mntent_p->mnt_dir,
+                                             &total,
+                                             &used,
+                                             &available);
+
+            if (res != 0) {
+                break;
+            }
+
+            printf("%-20s %6lu MB %6lu MB %6lu MB\n",
+                   mntent_p->mnt_dir,
+                   total,
+                   used,
+                   available);
+        }
+
+        endmntent(fin_p);
     }
 
     return (res);

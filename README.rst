@@ -201,12 +201,22 @@ See ``man procfs`` for details of the following commands.
 
 .. code-block:: shell
 
-   $ cat /proc/net/arp
-   $ cat /proc/net/dev
+   $ cat /proc/devices
    $ cat /proc/meminfo
    $ cat /proc/modules
+   $ cat /proc/net/arp
+   $ cat /proc/net/dev
    $ cat /proc/uptime
    $ cat /proc/version
+
+Disk commands.
+
+.. code-block:: shell
+
+   $ ls /sys/block
+   $ mount ext4 /dev/sda1 /root
+   $ ls /root
+   $ cat /root/README
 
 .. |buildstatus| image:: https://travis-ci.org/eerimoq/monolinux.svg
 .. _buildstatus: https://travis-ci.org/eerimoq/monolinux

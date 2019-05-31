@@ -11,6 +11,7 @@ CFLAGS += -O2
 LDFLAGS += -static
 SYSROOT = $(BUILD)/root
 LINUX = linux-$(ML_LINUX_VERSION)
+QEMU_DISK ?= # mldisk.img
 
 .PHONY: all unpack kernel initrd run build packages
 
@@ -26,13 +27,8 @@ run: build
 	qemu-system-x86_64 \
 	    -kernel $(BZIMAGE) \
 	    -initrd $(INITRAMFS) \
-	    -nographic -append "console=ttyS0"
-
-# Does this even work?
-#\
-#	    -object iothread,id=io1 \
-#	    -device virtio-blk-pci,drive=disk0,iothread=io1 \
-#	    -drive if=none,id=disk0,cache=none,format=raw,aio=threads,file=mldisk.img
+	    -nographic -append "console=ttyS0" \
+	    $(QEMU_DISK:%=-drive format=raw,file=%,media=disk,index=0)
 
 $(LINUX_SRC): $(ML_SOURCES)/$(LINUX).tar.xz
 	$(MAKE) $(LINUX)-all

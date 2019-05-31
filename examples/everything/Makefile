@@ -1,5 +1,14 @@
 SRC += lzma.c
 INITRAMFS_FILES = build/linux-5.1.3/drivers/i2c/busses/i2c-i801.ko
+QEMU_DISK = build/mldisk.img
+CLEAN = $(QEMU_DISK)
+
+default: $(QEMU_DISK)
+	$(MAKE) all
+
+$(QEMU_DISK):
+	mkdir -p build
+	create_file_storage.sh $@ detools
 
 include $(ML_ROOT)/make/app.mk
 include $(ML_ROOT)/make/packages/curl-7.65.0.mk
