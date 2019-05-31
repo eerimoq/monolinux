@@ -169,10 +169,10 @@ User project file tree after build.
    │   │   └── root/                - headers and libraries container
    │   │       ├── bin/
    │   │       ├── include/         - include files
-   │   │       │    └── curl/
-   │   │       │        └── curl.h
+   │   │       │   └── curl/
+   │   │       │       └── curl.h
    │   │       ├── lib/             - static libraries
-   │   │       │    └── libcurl.a
+   │   │       │   └── libcurl.a
    │   │       └── share/
    │   ├── main.c
    │   └── Makefile
@@ -197,11 +197,16 @@ See `Monolinux Jiffy`_ for an example project.
 Tips and tricks
 ===============
 
-cat /proc/net/arp
-cat /proc/net/dev
-cat /proc/meminfo
-cat /proc/version
-cat /proc/uptime
+See ``man procfs`` for details of the following commands.
+
+.. code-block:: shell
+
+   $ cat /proc/net/arp
+   $ cat /proc/net/dev
+   $ cat /proc/meminfo
+   $ cat /proc/modules
+   $ cat /proc/uptime
+   $ cat /proc/version
 
 .. |buildstatus| image:: https://travis-ci.org/eerimoq/monolinux.svg
 .. _buildstatus: https://travis-ci.org/eerimoq/monolinux
