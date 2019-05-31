@@ -173,3 +173,60 @@ ssize_t __wrap_sendto(int fd,
 
     return (res);
 }
+
+void mock_push_ml_open(const char *path_p, int flags, int res)
+{
+    mock_push("ml_open(path_p)", path_p, strlen(path_p) + 1);
+    mock_push("ml_open(flags)", &flags, sizeof(flags));
+    mock_push("ml_open(): return (res)", &res, sizeof(res));
+}
+
+int __wrap_ml_open(const char *path_p, int flags)
+{
+    int res;
+
+    mock_pop_assert("ml_open(path_p)", path_p);
+    mock_pop_assert("ml_open(flags)", &flags);
+    mock_pop("ml_open(): return (res)", &res);
+
+    return (res);
+}
+
+void mock_push_ml_close(int fd, int res)
+{
+    mock_push("ml_close(fd)", &fd, sizeof(fd));
+    mock_push("ml_close(): return (res)", &res, sizeof(res));
+}
+
+int __wrap_ml_close(int fd)
+{
+    int res;
+
+    mock_pop_assert("ml_close(fd)", &fd);
+    mock_pop("ml_close(): return (res)", &res);
+
+    return (res);
+}
+
+void mock_push_ml_finit_module(int fd,
+                               const char *params_p,
+                               int flags,
+                               int res)
+{
+    mock_push("ml_finit_module(fd)", &fd, sizeof(fd));
+    mock_push("ml_finit_module(params_p)", params_p, strlen(params_p) + 1);
+    mock_push("ml_finit_module(flags)", &flags, sizeof(flags));
+    mock_push("ml_finit_module(): return (res)", &res, sizeof(res));
+}
+
+int __wrap_ml_finit_module(int fd, const char *params_p, int flags)
+{
+    int res;
+
+    mock_pop_assert("ml_finit_module(fd)", &fd);
+    mock_pop_assert("ml_finit_module(params_p)", params_p);
+    mock_pop_assert("ml_finit_module(flags)", &flags);
+    mock_pop("ml_finit_module(): return (res)", &res);
+
+    return (res);
+}

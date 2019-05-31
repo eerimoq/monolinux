@@ -301,4 +301,14 @@ void xmount(const char *source_p,
             const char *target_p,
             const char *type_p);
 
+int finit_module(int fd, const char *params_p, int flags);
+
+/* For mocking. */
+
+int ml_open(const char *path_p, int flags);
+
+int ml_close(int fd);
+
+int ml_finit_module(int fd, const char *params_p, int flags);
+
 #endif

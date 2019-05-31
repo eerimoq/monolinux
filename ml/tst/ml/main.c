@@ -26,9 +26,11 @@
  * This file is part of the Monolinux project.
  */
 
+#include <fcntl.h>
 #include <unicorn/unicorn.h>
 #include "ml/ml.h"
 #include "utils/mocks/mock_libc.h"
+#include "utils/mocks/mock.h"
 
 TEST(strip)
 {
@@ -57,6 +59,8 @@ TEST(strip)
     begin_p = ml_strip(string4, NULL);
     ASSERT_EQ(begin_p, "");
     ASSERT_EQ(begin_p, &string4[3]);
+
+    mock_finalize();
 }
 
 TEST(lstrip)
@@ -81,6 +85,8 @@ TEST(lstrip)
     begin_p = ml_lstrip(string3, NULL);
     ASSERT_EQ(begin_p, "");
     ASSERT_EQ(begin_p, &string3[2]);
+
+    mock_finalize();
 }
 
 TEST(rstrip)
@@ -100,6 +106,8 @@ TEST(rstrip)
 
     ml_rstrip(string3, NULL);
     ASSERT_EQ(string3, "");
+
+    mock_finalize();
 }
 
 TEST(hexdump_empty)
@@ -109,6 +117,8 @@ TEST(hexdump_empty)
     }
 
     ASSERT_EQ(output, "");
+
+    mock_finalize();
 }
 
 TEST(hexdump_short)
@@ -120,6 +130,8 @@ TEST(hexdump_short)
     ASSERT_EQ(
         output,
         "00000000: 31                                              '1'\n");
+
+    mock_finalize();
 }
 
 TEST(hexdump_long)
@@ -153,6 +165,8 @@ TEST(hexdump_long)
         "000000e0: 35 36 37 38 39 30 31 32 33 34 35 36 37 38 39 30 '5678901234567890'\n"
         "000000f0: 31 32 33 34 35 36 37 38 39 30 31 32 33 34 35 36 '1234567890123456'\n"
         "00000100: 37                                              '7'\n");
+
+    mock_finalize();
 }
 
 TEST(hexdump_file_0_0)
@@ -169,6 +183,8 @@ TEST(hexdump_file_0_0)
     fclose(fin_p);
 
     ASSERT_EQ(output, "");
+
+    mock_finalize();
 }
 
 TEST(hexdump_file_0_16)
@@ -187,6 +203,8 @@ TEST(hexdump_file_0_16)
     ASSERT_EQ(
         output,
         "00000000: 30 31 32 33 34 35 36 37 38 39 30 31 32 33 34 35 '0123456789012345'\n");
+
+    mock_finalize();
 }
 
 TEST(hexdump_file_1_16)
@@ -205,6 +223,8 @@ TEST(hexdump_file_1_16)
     ASSERT_EQ(
         output,
         "00000001: 31 32 33 34 35 36 37 38 39 30 31 32 33 34 35 36 '1234567890123456'\n");
+
+    mock_finalize();
 }
 
 TEST(hexdump_file_0_m1)
@@ -225,6 +245,8 @@ TEST(hexdump_file_0_m1)
         "00000000: 30 31 32 33 34 35 36 37 38 39 30 31 32 33 34 35 '0123456789012345'\n"
         "00000010: 36 37 38 39 30 31 32 33 34 35 36 37 38 39 30 31 '6789012345678901'\n"
         "00000020: 32 33 34 35 36 37 38 39                         '23456789'\n");
+
+    mock_finalize();
 }
 
 TEST(hexdump_file_1_m1)
@@ -245,6 +267,8 @@ TEST(hexdump_file_1_m1)
         "00000001: 31 32 33 34 35 36 37 38 39 30 31 32 33 34 35 36 '1234567890123456'\n"
         "00000011: 37 38 39 30 31 32 33 34 35 36 37 38 39 30 31 32 '7890123456789012'\n"
         "00000021: 33 34 35 36 37 38 39                            '3456789'\n");
+
+    mock_finalize();
 }
 
 TEST(print_file)
@@ -254,6 +278,8 @@ TEST(print_file)
     }
 
     ASSERT_EQ(output, "0123456789012345678901234567890123456789");
+
+    mock_finalize();
 }
 
 TEST(print_uptime)
@@ -264,6 +290,8 @@ TEST(print_uptime)
 
     ASSERT_SUBSTRING(output, "Uptime:");
     ASSERT_SUBSTRING(output, "\n");
+
+    mock_finalize();
 }
 
 static ML_UID(m1);
@@ -287,6 +315,8 @@ TEST(bus)
     ASSERT_EQ(ml_uid_str(uid_p), ml_uid_str(&m1));
     ASSERT_EQ(*rmessage_p, 9);
     ml_message_free(rmessage_p);
+
+    mock_finalize();
 }
 
 TEST(xmount_ok)
@@ -294,6 +324,22 @@ TEST(xmount_ok)
     mock_push_mount("a", "b", "c", 0, "", 1, 0);
 
     xmount("a", "b", "c");
+
+    mock_finalize();
+}
+
+TEST(insmod)
+{
+    int fd;
+
+    fd = 99;
+    mock_push_ml_open("foo.ko", O_RDONLY, fd);
+    mock_push_ml_finit_module(fd, "", 0, 0);
+    mock_push_ml_close(fd, 0);
+
+    ASSERT_EQ(ml_insert_module("foo.ko", ""), 0);
+
+    mock_finalize();
 }
 
 int main()
@@ -315,6 +361,7 @@ int main()
         print_file,
         print_uptime,
         bus,
-        xmount_ok
+        xmount_ok,
+        insmod
     );
 }

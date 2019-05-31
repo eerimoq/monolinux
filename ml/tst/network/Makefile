@@ -1,6 +1,6 @@
 LDFLAGS += -Wl,--wrap=ioctl
 LDFLAGS += -Wl,--wrap=socket
-LDFLAGS += -Wl,--wrap=close
+LDFLAGS += -Wl,--wrap=ml_close
 LDFLAGS += -Wl,--wrap=ml_shell_register_command
 LDFLAGS += -Wl,--wrap=sendto
 INC += ..

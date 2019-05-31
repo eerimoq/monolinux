@@ -26,14 +26,12 @@
  * This file is part of the Monolinux project.
  */
 
-#include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
 #include <sys/param.h>
 #include <sys/reboot.h>
-#include <termios.h>
 #include <dirent.h>
 #include "ml/ml.h"
 #include "internal.h"

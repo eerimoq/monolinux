@@ -26,14 +26,10 @@
  * This file is part of the Monolinux project.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <stdint.h>
 #include <ctype.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include <sys/mount.h>
-#include <sys/syscall.h>
 #include "ml/ml.h"
 #include "internal.h"
 
@@ -237,11 +233,11 @@ int ml_insert_module(const char *path_p, const char *params_p)
     int fd;
 
     res = -1;
-    fd = open(path_p, O_RDONLY);
+    fd = ml_open(path_p, O_RDONLY);
 
     if (fd != -1) {
-        res = syscall(SYS_finit_module, fd, params_p, 0);
-        close(fd);
+        res = ml_finit_module(fd, params_p, 0);
+        ml_close(fd);
     }
 
     return (res);

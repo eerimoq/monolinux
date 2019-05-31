@@ -70,4 +70,13 @@ void mock_push_sendto(int fd,
                       const struct sockaddr_in *dest_addr_p,
                       ssize_t res);
 
+void mock_push_ml_open(const char *path_p, int flags, int res);
+
+void mock_push_ml_close(int fd, int res);
+
+void mock_push_ml_finit_module(int fd,
+                               const char *params_p,
+                               int flags,
+                               int res);
+
 #endif

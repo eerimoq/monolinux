@@ -27,9 +27,7 @@
  */
 
 #include <string.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <arpa/inet.h>
@@ -69,7 +67,7 @@ static int net_open(const char *name_p,
 
 static void net_close(int netfd)
 {
-    close(netfd);
+    ml_close(netfd);
 }
 
 static void create_address_request(struct ifreq *ifreq_p,
@@ -173,7 +171,7 @@ static int udp_send(const char *ip_address_p,
                 perror("sendto failed");
             }
 
-            close(sockfd);
+            ml_close(sockfd);
         } else {
             perror("socket creation failed");
         }
@@ -259,7 +257,7 @@ static int udp_recv(const char *port_p, int timeout)
             perror("bind failed");
         }
 
-        close(sockfd);
+        ml_close(sockfd);
     } else {
         perror("socket creation failed");
     }

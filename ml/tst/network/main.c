@@ -26,17 +26,11 @@
  * This file is part of the Monolinux project.
  */
 
-#include <unistd.h>
-#include <sys/socket.h>
-#include <net/if.h>
-#include <arpa/inet.h>
-#include <sys/ioctl.h>
 #include <unicorn/unicorn.h>
 #include "ml/ml.h"
 #include "utils/mocks/mock_libc.h"
 #include "utils/mocks/mock_ml_shell.h"
 #include "utils/mocks/mock.h"
-#include "utils/utils.h"
 
 static void mock_push_ml_network_init(void)
 {
@@ -73,7 +67,7 @@ static void mock_push_configure(const char *name_p)
     mock_push_ioctl_ifreq_ok(fd, SIOCSIFADDR, &ifreq);
     create_address_request(&ifreq, "255.255.255.0");
     mock_push_ioctl_ifreq_ok(fd, SIOCSIFNETMASK, &ifreq);
-    mock_push_close(fd, 0);
+    mock_push_ml_close(fd, 0);
 }
 
 static void mock_push_up(const char *name_p)
@@ -88,7 +82,7 @@ static void mock_push_up(const char *name_p)
     mock_push_ioctl_ifreq_ok(fd, SIOCGIFFLAGS, &ifreq);
     ifreq.ifr_flags = IFF_UP;
     mock_push_ioctl_ifreq_ok(fd, SIOCSIFFLAGS, &ifreq);
-    mock_push_close(fd, 0);
+    mock_push_ml_close(fd, 0);
 }
 
 static void mock_push_down(const char *name_p)
@@ -102,7 +96,7 @@ static void mock_push_down(const char *name_p)
     strcpy(&ifreq.ifr_name[0], name_p);
     mock_push_ioctl_ifreq_ok(fd, SIOCGIFFLAGS, &ifreq);
     mock_push_ioctl_ifreq_ok(fd, SIOCSIFFLAGS, &ifreq);
-    mock_push_close(fd, 0);
+    mock_push_ml_close(fd, 0);
 }
 
 TEST(network_interface_configure)
@@ -325,7 +319,7 @@ TEST(command_udp_send_sendto_failure)
         other.sin_port = htons(1234);
         inet_aton("1.2.3.4", &other.sin_addr);
         mock_push_sendto(fd, "Hello!", 6, &other, -1);
-        mock_push_close(fd, 0);
+        mock_push_ml_close(fd, 0);
         ASSERT_EQ(command_udp_send(membersof(argv), argv), -1);
     }
 
@@ -355,7 +349,7 @@ TEST(command_udp_send)
         other.sin_port = htons(1234);
         inet_aton("1.2.3.4", &other.sin_addr);
         mock_push_sendto(fd, "Hello!", 6, &other, 6);
-        mock_push_close(fd, 0);
+        mock_push_ml_close(fd, 0);
         ASSERT_EQ(command_udp_send(membersof(argv), argv), 0);
     }
 

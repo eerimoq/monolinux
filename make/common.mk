@@ -3,6 +3,7 @@ SRC += \
 	main.c \
 	$(ML_ROOT)/ml/src/ml.c \
 	$(ML_ROOT)/ml/src/ml_bus.c \
+	$(ML_ROOT)/ml/src/ml_libc.c \
 	$(ML_ROOT)/ml/src/ml_log_object.c \
 	$(ML_ROOT)/ml/src/ml_message.c \
 	$(ML_ROOT)/ml/src/ml_network.c \

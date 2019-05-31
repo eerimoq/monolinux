@@ -26,8 +26,10 @@
  * This file is part of the Monolinux project.
  */
 
-#include <unistd.h>
+#include <fcntl.h>
 #include <unicorn/unicorn.h>
+#include "utils/mocks/mock_libc.h"
+#include "utils/mocks/mock.h"
 #include "utils/utils.h"
 #include "ml/ml.h"
 
@@ -123,7 +125,7 @@ TEST(various_commands)
               "username: ");
 }
 
-TEST(ls)
+TEST(command_ls)
 {
     int fd;
 
@@ -142,7 +144,7 @@ TEST(ls)
     ASSERT_SUBSTRING(output, "OK\n$ ");
 }
 
-TEST(cat)
+TEST(command_cat)
 {
     int fd;
 
@@ -175,7 +177,7 @@ TEST(cat)
         "$ ");
 }
 
-TEST(hexdump)
+TEST(command_hexdump)
 {
     int fd;
 
@@ -359,17 +361,61 @@ TEST(history)
         "$ ");
 }
 
+TEST(command_insmod)
+{
+    int fd;
+
+    fd = 99;
+    mock_push_ml_open("foo.ko", O_RDONLY, fd);
+    mock_push_ml_finit_module(fd, "", 0, 0);
+    mock_push_ml_close(fd, 0);
+
+    fd = 98;
+    mock_push_ml_open("bar.ko", O_RDONLY, fd);
+    mock_push_ml_finit_module(fd, "fie=fum", 0, 0);
+    mock_push_ml_close(fd, 0);
+
+    ml_shell_init();
+
+    CAPTURE_OUTPUT(output) {
+        fd = stdin_pipe();
+        ml_shell_start();
+        input(fd, "root\n");
+        input(fd, "\n");
+        input(fd, "insmod\n");
+        input(fd, "insmod foo.ko\n");
+        input(fd, "insmod bar.ko fie=fum\n");
+        /* ToDo: Should wait until output is available, but how?. */
+        usleep(50000);
+    }
+
+    ASSERT_EQ(output,
+              "username: root\n"
+              "password: \n"
+              "$ insmod\n"
+              "insmod <file> [<params>]\n"
+              "ERROR(-1)\n"
+              "$ insmod foo.ko\n"
+              "OK\n"
+              "$ insmod bar.ko fie=fum\n"
+              "OK\n"
+              "$ ");
+
+    mock_finalize();
+}
+
 int main()
 {
     ml_init();
 
     return RUN_TESTS(
         various_commands,
-        ls,
-        cat,
-        hexdump,
+        command_ls,
+        command_cat,
+        command_hexdump,
         command_editing,
         quotes,
-        history
+        history,
+        command_insmod
     );
 }
