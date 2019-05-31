@@ -67,8 +67,10 @@ TEST(various_commands)
         input(fd, "hello\n");
         input(fd, "hello Foo\n");
         input(fd, "logout\n");
-        /* ToDo: Should wait until output is available, but how? */
-        usleep(50000);
+        input(fd, "root\n");
+        input(fd, "\n");
+        input(fd, "exit\n");
+        ml_shell_join();
     }
 
     ASSERT_EQ(output,
@@ -104,6 +106,7 @@ TEST(various_commands)
               "Commands\n"
               "\n"
               "          cat   Print a file.\n"
+              "         exit   Shell exit.\n"
               "        hello   My command.\n"
               "         help   Print this help.\n"
               "      hexdump   Hexdump a file.\n"
@@ -112,9 +115,11 @@ TEST(various_commands)
               "       logout   Shell logout.\n"
               "           ls   List directory contents.\n"
               "       reboot   Reboot.\n"
+              "OK\n"
               "$ history\n"
               "1: help\n"
               "2: history\n"
+              "OK\n"
               "$ hello\n"
               "Hello stranger!\n"
               "OK\n"
@@ -122,7 +127,9 @@ TEST(various_commands)
               "Hello Foo!\n"
               "OK\n"
               "$ logout\n"
-              "username: ");
+              "username: root\n"
+              "password: \n"
+              "$ exit\n");
 }
 
 TEST(command_ls)
@@ -137,8 +144,8 @@ TEST(command_ls)
         input(fd, "root\n");
         input(fd, "\n");
         input(fd, "ls\n");
-        /* ToDo: Should wait until output is available, but how?. */
-        usleep(50000);
+        input(fd, "exit\n");
+        ml_shell_join();
     }
 
     ASSERT_SUBSTRING(output, "OK\n$ ");
@@ -158,8 +165,8 @@ TEST(command_cat)
         input(fd, "cat\n");
         input(fd, "cat hexdump.in\n");
         input(fd, "cat foobar\n");
-        /* ToDo: Should wait until output is available, but how?. */
-        usleep(50000);
+        input(fd, "exit\n");
+        ml_shell_join();
     }
 
     ASSERT_EQ(
@@ -174,7 +181,7 @@ TEST(command_cat)
         "OK\n"
         "$ cat foobar\n"
         "ERROR(-1)\n"
-        "$ ");
+        "$ exit\n");
 }
 
 TEST(command_hexdump)
@@ -193,8 +200,8 @@ TEST(command_hexdump)
         input(fd, "hexdump 0 hexdump.in\n");
         input(fd, "hexdump 1 hexdump.in\n");
         input(fd, "hexdump 0 1 hexdump.in\n");
-        /* ToDo: Should wait until output is available, but how?. */
-        usleep(50000);
+        input(fd, "exit\n");
+        ml_shell_join();
     }
 
     ASSERT_EQ(
@@ -217,7 +224,7 @@ TEST(command_hexdump)
         "$ hexdump 0 1 hexdump.in\n"
         "00000000: 30                                              '0'\n"
         "OK\n"
-        "$ ");
+        "$ exit\n");
 }
 
 TEST(command_editing)
@@ -248,8 +255,8 @@ TEST(command_editing)
         input(fd, "12");
         input(fd, ESC"[D"ESC"[C""\n");
 
-        /* ToDo: Should wait until output is available, but how?. */
-        usleep(50000);
+        input(fd, "exit\n");
+        ml_shell_join();
     }
 
     ASSERT_EQ(
@@ -277,7 +284,7 @@ TEST(command_editing)
         "12: command not found\n"
         "ERROR(-1)\n"
 
-        "$ ");
+        "$ exit\n");
 }
 
 static int command_quotes(int argc, const char *argv[])
@@ -303,8 +310,8 @@ TEST(quotes)
         input(fd, "root\n");
         input(fd, "\n");
         input(fd, "quotes \"ba\\\" \\r\" \"\"\n");
-        /* ToDo: Should wait until output is available, but how?. */
-        usleep(50000);
+        input(fd, "exit\n");
+        ml_shell_join();
     }
 
     ASSERT_EQ(
@@ -313,7 +320,7 @@ TEST(quotes)
         "password: \n"
         "$ quotes \"ba\\\" \\r\" \"\"\n"
         "OK\n"
-        "$ ");
+        "$ exit\n");
 }
 
 TEST(history)
@@ -332,8 +339,8 @@ TEST(history)
         input(fd, "fie\n");
         input(fd, "history\n");
         input(fd, "\x12""fo\n");
-        /* ToDo: Should wait until output is available, but how?. */
-        usleep(50000);
+        input(fd, "exit\n");
+        ml_shell_join();
     }
 
     ASSERT_EQ(
@@ -354,11 +361,12 @@ TEST(history)
         "2: bar\n"
         "3: fie\n"
         "4: history\n"
+        "OK\n"
         "$ "ESC"[K(history-search)`': "ESC"[3D"ESC"[Kf': fie"ESC"[6D"
         ESC"[Ko': foo"ESC"[6D"ESC"[19D"ESC"[Kfoo\n"
         "foo: command not found\n"
         "ERROR(-1)\n"
-        "$ ");
+        "$ exit\n");
 }
 
 TEST(command_insmod)
@@ -385,8 +393,8 @@ TEST(command_insmod)
         input(fd, "insmod\n");
         input(fd, "insmod foo.ko\n");
         input(fd, "insmod bar.ko fie=fum\n");
-        /* ToDo: Should wait until output is available, but how?. */
-        usleep(50000);
+        input(fd, "exit\n");
+        ml_shell_join();
     }
 
     ASSERT_EQ(output,
@@ -399,7 +407,7 @@ TEST(command_insmod)
               "OK\n"
               "$ insmod bar.ko fie=fum\n"
               "OK\n"
-              "$ ");
+              "$ exit\n");
 
     mock_finalize();
 }

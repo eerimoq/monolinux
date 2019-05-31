@@ -221,6 +221,11 @@ void ml_shell_init(void);
 void ml_shell_start(void);
 
 /**
+ * Wait for the shell thread to terminate.
+ */
+void ml_shell_join(void);
+
+/**
  * Must be called before ml_shell_start().
  */
 void ml_shell_register_command(const char *name_p,

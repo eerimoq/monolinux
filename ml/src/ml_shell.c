@@ -292,39 +292,19 @@ static int execute_command(char *line_p)
     return (res);
 }
 
-static int shell_command_compare(const char *line_p,
-                                 const char *command_p,
-                                 size_t length)
-{
-    char chend;
-
-    chend = line_p[length];
-
-    return ((strncmp(command_p, line_p, length) == 0)
-            && ((chend == '\0') || (chend == ' ')));
-}
-
-/**
- * Check if given line is a comment.
- *
- * @return true(1) if given line is a comment, otherwise false(0).
- */
-static int is_comment(const char *line_p)
+static bool is_comment(const char *line_p)
 {
     return (*line_p == '#');
 }
 
-/**
- * Check if given line is a shell command.
- *
- * @return true(1) if given line is a shell command, otherwise
- *         false(0).
- */
-static int is_shell_command(const char *line_p)
+static bool is_logout(const char *line_p)
 {
-    return (shell_command_compare(line_p, "logout", 6)
-            || shell_command_compare(line_p, "history", 7)
-            || shell_command_compare(line_p, "help", 4));
+    return (strncmp(line_p, "logout", 7) == 0);
+}
+
+static bool is_exit(const char *line_p)
+{
+    return (strncmp(line_p, "exit", 5) == 0);
 }
 
 static void line_init(struct line_t *self_p)
@@ -480,8 +460,6 @@ static int command_help(int argc, const char *argv[])
                module.commands_p[i].description_p);
     }
 
-    print_prompt();
-
     return (0);
 }
 
@@ -505,8 +483,6 @@ static int command_history(int argc, const char *argv[])
         }
     }
 
-    print_prompt();
-
     return (0);
 }
 
@@ -515,7 +491,13 @@ static int command_logout(int argc, const char *argv[])
     (void)argc;
     (void)argv;
 
-    module.authenticated = false;
+    return (0);
+}
+
+static int command_exit(int argc, const char *argv[])
+{
+    (void)argc;
+    (void)argv;
 
     return (0);
 }
@@ -1383,8 +1365,11 @@ void *shell_main(void *arg_p)
 
             if (is_comment(stripped_line_p)) {
                 /* Just print a prompt. */
-            } else if (is_shell_command(stripped_line_p)) {
-                (void)execute_command(stripped_line_p);
+            } else if (is_exit(stripped_line_p)) {
+                break;
+            } else if (is_logout(stripped_line_p)) {
+                module.authenticated = false;
+
                 continue;
             } else {
                 res = execute_command(stripped_line_p);
@@ -1423,6 +1408,9 @@ void ml_shell_init(void)
     ml_shell_register_command("logout",
                               "Shell logout.",
                               command_logout);
+    ml_shell_register_command("exit",
+                              "Shell exit.",
+                              command_exit);
     ml_shell_register_command("ls",
                               "List directory contents.",
                               command_ls);
@@ -1446,6 +1434,11 @@ void ml_shell_start(void)
                    NULL,
                    (void *(*)(void *))shell_main,
                    NULL);
+}
+
+void ml_shell_join(void)
+{
+    pthread_join(module.pthread, NULL);
 }
 
 void ml_shell_register_command(const char *name_p,
