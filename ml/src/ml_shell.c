@@ -29,6 +29,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <ctype.h>
+#include <termios.h>
 #include <unistd.h>
 #include <sys/param.h>
 #include <sys/reboot.h>
