@@ -460,6 +460,52 @@ TEST(command_df)
     mock_finalize();
 }
 
+TEST(command_suicide_no_args)
+{
+    int fd;
+
+    ml_shell_init();
+
+    CAPTURE_OUTPUT(output) {
+        fd = stdin_pipe();
+        ml_shell_start();
+        input(fd, "suicide\n");
+        input(fd, "exit\n");
+        ml_shell_join();
+    }
+
+    ASSERT_EQ(output,
+              "suicide\n"
+              "suicide {exit,segfault}\n"
+              "ERROR(-1)\n"
+              "$ exit\n");
+
+    mock_finalize();
+}
+
+TEST(command_find_too_many_args)
+{
+    int fd;
+
+    ml_shell_init();
+
+    CAPTURE_OUTPUT(output) {
+        fd = stdin_pipe();
+        ml_shell_start();
+        input(fd, "find a b\n");
+        input(fd, "exit\n");
+        ml_shell_join();
+    }
+
+    ASSERT_EQ(output,
+              "find a b\n"
+              "find [<path>]\n"
+              "ERROR(-1)\n"
+              "$ exit\n");
+
+    mock_finalize();
+}
+
 int main()
 {
     ml_init();
@@ -474,6 +520,8 @@ int main()
         history,
         command_insmod,
         command_df_setmntent_failure,
-        command_df
+        command_df,
+        command_suicide_no_args,
+        command_find_too_many_args
     );
 }
