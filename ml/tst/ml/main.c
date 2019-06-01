@@ -319,11 +319,11 @@ TEST(bus)
     mock_finalize();
 }
 
-TEST(xmount_ok)
+TEST(ml_mount_ok)
 {
     mock_push_mount("a", "b", "c", 0, "", 1, 0);
 
-    xmount("a", "b", "c");
+    ASSERT_EQ(ml_mount("a", "b", "c"), 0);
 
     mock_finalize();
 }
@@ -361,7 +361,7 @@ int main()
         print_file,
         print_uptime,
         bus,
-        xmount_ok,
+        ml_mount_ok,
         insmod
     );
 }

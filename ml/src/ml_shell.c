@@ -690,7 +690,7 @@ static int command_mount(int argc, const char *argv[])
     res = -1;
 
     if (argc == 4) {
-        res = mount(argv[1], argv[2], argv[3], 0, "");
+        res = ml_mount(argv[1], argv[2], argv[3]);
     }
 
     if (res != 0) {

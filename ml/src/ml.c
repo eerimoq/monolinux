@@ -310,6 +310,21 @@ int ml_print_file_systems_space_usage(void)
     return (res);
 }
 
+int ml_mount(const char *source_p,
+             const char *target_p,
+             const char *type_p)
+{
+    int res;
+
+    res = mount(source_p, target_p, type_p, 0, "");
+
+    if (res != 0) {
+        perror("error: mount");
+    }
+
+    return (res);
+}
+
 void *xmalloc(size_t size)
 {
     void *buf_p;
@@ -332,18 +347,4 @@ void *xrealloc(void *buf_p, size_t size)
     }
 
     return (buf_p);
-}
-
-void xmount(const char *source_p,
-            const char *target_p,
-            const char *type_p)
-{
-    int res;
-
-    res = mount(source_p, target_p, type_p, 0, "");
-
-    if (res != 0) {
-        perror("error: mount: ");
-        exit(1);
-    }
 }

@@ -309,17 +309,17 @@ int ml_file_system_space_usage(const char *path_p,
  */
 int ml_print_file_systems_space_usage(void);
 
+int ml_mount(const char *source_p,
+             const char *target_p,
+             const char *type_p);
+
+int finit_module(int fd, const char *params_p, int flags);
+
 /* Exits on failure. Use with care. */
 
 void *xmalloc(size_t size);
 
 void *xrealloc(void *buf_p, size_t size);
-
-void xmount(const char *source_p,
-            const char *target_p,
-            const char *type_p);
-
-int finit_module(int fd, const char *params_p, int flags);
 
 /* For mocking. */
 
