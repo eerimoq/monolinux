@@ -214,9 +214,9 @@ Disk commands.
 .. code-block:: shell
 
    $ ls /sys/block
-   $ mount ext4 /dev/sda1 /root
-   $ ls /root
-   $ cat /root/README
+   $ mount ext4 /dev/sda1 /mnt/disk
+   $ ls /mnt/disk
+   $ cat /mnt/disk/README
 
 .. |buildstatus| image:: https://travis-ci.org/eerimoq/monolinux.svg
 .. _buildstatus: https://travis-ci.org/eerimoq/monolinux
