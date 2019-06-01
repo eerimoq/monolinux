@@ -506,6 +506,52 @@ TEST(command_find_too_many_args)
     mock_finalize();
 }
 
+TEST(command_mknod_no_args)
+{
+    int fd;
+
+    ml_shell_init();
+
+    CAPTURE_OUTPUT(output) {
+        fd = stdin_pipe();
+        ml_shell_start();
+        input(fd, "mknod\n");
+        input(fd, "exit\n");
+        ml_shell_join();
+    }
+
+    ASSERT_EQ(output,
+              "mknod\n"
+              "mknod <path> <type> [<major>] [<minor>]\n"
+              "ERROR(-1)\n"
+              "$ exit\n");
+
+    mock_finalize();
+}
+
+TEST(command_mount_no_args)
+{
+    int fd;
+
+    ml_shell_init();
+
+    CAPTURE_OUTPUT(output) {
+        fd = stdin_pipe();
+        ml_shell_start();
+        input(fd, "mount\n");
+        input(fd, "exit\n");
+        ml_shell_join();
+    }
+
+    ASSERT_EQ(output,
+              "mount\n"
+              "mount <device> <dir> <type>\n"
+              "ERROR(-1)\n"
+              "$ exit\n");
+
+    mock_finalize();
+}
+
 int main()
 {
     ml_init();
@@ -522,6 +568,8 @@ int main()
         command_df_setmntent_failure,
         command_df,
         command_suicide_no_args,
-        command_find_too_many_args
+        command_find_too_many_args,
+        command_mknod_no_args,
+        command_mount_no_args
     );
 }
