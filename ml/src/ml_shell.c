@@ -486,6 +486,29 @@ static int command_exit(int argc, const char *argv[])
     return (0);
 }
 
+static int command_suicide(int argc, const char *argv[])
+{
+    int res;
+    uint8_t *null_p;
+
+    res = -1;
+    null_p = NULL;
+
+    if (argc == 2) {
+        if (strcmp(argv[1], "exit") == 0) {
+            exit(1);
+        } else if (strcmp(argv[1], "segfault") == 0) {
+            *null_p = 0;
+        }
+    }
+
+    if (res != 0) {
+        printf("suicide {exit,segfault}\n");
+    }
+
+    return (res);
+}
+
 static int command_ls(int argc, const char *argv[])
 {
     int res;
@@ -1345,6 +1368,9 @@ void ml_shell_init(void)
     ml_shell_register_command("exit",
                               "Shell exit.",
                               command_exit);
+    ml_shell_register_command("suicide",
+                              "Process suicide.",
+                              command_suicide);
     ml_shell_register_command("ls",
                               "List directory contents.",
                               command_ls);

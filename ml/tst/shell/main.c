@@ -110,6 +110,7 @@ TEST(various_commands)
               "        mknod   Create a node.\n"
               "        mount   Mount a filesystem.\n"
               "       reboot   Reboot.\n"
+              "      suicide   Process suicide.\n"
               "OK\n"
               "$ history\n"
               "1: help\n"
