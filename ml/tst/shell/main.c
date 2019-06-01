@@ -415,6 +415,95 @@ TEST(command_insmod)
     mock_finalize();
 }
 
+TEST(command_df_setmntent_failure)
+{
+    int fd;
+
+    mock_push_setmntent("/proc/mounts", "r", NULL);
+
+    ml_shell_init();
+
+    CAPTURE_OUTPUT(output) {
+        fd = stdin_pipe();
+        ml_shell_start();
+        input(fd, "root\n");
+        input(fd, "\n");
+        input(fd, "df\n");
+        input(fd, "exit\n");
+        ml_shell_join();
+    }
+
+    ASSERT_EQ(output,
+              "username: root\n"
+              "password: \n"
+              "$ df\n"
+              "ERROR(-1)\n"
+              "$ exit\n");
+
+    mock_finalize();
+}
+
+TEST(command_df)
+{
+    int fd;
+    FILE *f_p;
+    struct mntent *mntent_root_p;
+    struct mntent *mntent_proc_p;
+    struct statvfs stat;
+
+    f_p = (FILE *)1;
+    mock_push_setmntent("/proc/mounts", "r", f_p);
+
+    /* /. */
+    mntent_root_p = xmalloc(sizeof(*mntent_root_p));
+    mntent_root_p->mnt_dir = "/";
+    mock_push_getmntent(f_p, mntent_root_p);
+    stat.f_bsize = 512;
+    stat.f_blocks = 20000;
+    stat.f_bfree = 15000;
+    mock_push_statvfs("/", &stat, 0);
+
+    /* /proc. */
+    mntent_proc_p = xmalloc(sizeof(*mntent_proc_p));
+    mntent_proc_p->mnt_dir = "/proc";
+    mock_push_getmntent(f_p, mntent_proc_p);
+    stat.f_bsize = 512;
+    stat.f_blocks = 40000;
+    stat.f_bfree = 10000;
+    mock_push_statvfs("/proc", &stat, 0);
+
+    /* No more mounted file systems. */
+    mock_push_getmntent(f_p, NULL);
+    mock_push_endmntent(f_p, 0);
+
+    ml_shell_init();
+
+    CAPTURE_OUTPUT(output) {
+        fd = stdin_pipe();
+        ml_shell_start();
+        input(fd, "root\n");
+        input(fd, "\n");
+        input(fd, "df\n");
+        input(fd, "exit\n");
+        ml_shell_join();
+    }
+
+    ASSERT_EQ(output,
+              "username: root\n"
+              "password: \n"
+              "$ df\n"
+              "MOUNTED ON               TOTAL      USED      FREE\n"
+              "/                         9 MB      2 MB      7 MB\n"
+              "/proc                    19 MB     14 MB      5 MB\n"
+              "OK\n"
+              "$ exit\n");
+
+    free(mntent_root_p);
+    free(mntent_proc_p);
+
+    mock_finalize();
+}
+
 int main()
 {
     ml_init();
@@ -427,6 +516,8 @@ int main()
         command_editing,
         quotes,
         history,
-        command_insmod
+        command_insmod,
+        command_df_setmntent_failure,
+        command_df
     );
 }

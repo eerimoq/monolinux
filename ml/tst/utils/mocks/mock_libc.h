@@ -29,6 +29,8 @@
 #ifndef MOCK_LIBC_H
 #define MOCK_LIBC_H
 
+#include <mntent.h>
+#include <sys/statvfs.h>
 #include <string.h>
 #include <net/if.h>
 #include <sys/ioctl.h>
@@ -51,8 +53,6 @@ void mock_push_mount(const char *source_p,
                      int res);
 
 void mock_push_socket(int domain, int type, int protocol, int res);
-
-void mock_push_close(int fd, int res);
 
 void mock_push_ioctl(int fd,
                      unsigned long request,
@@ -78,5 +78,15 @@ void mock_push_ml_finit_module(int fd,
                                const char *params_p,
                                int flags,
                                int res);
+
+void mock_push_setmntent(const char *filename_p,
+                         const char *type_p,
+                         FILE *res_p);
+
+void mock_push_getmntent(FILE *stream_p, struct mntent *res_p);
+
+void mock_push_endmntent(FILE *stream_p, int res);
+
+void mock_push_statvfs(const char *path_p, struct statvfs *buf_p, int res);
 
 #endif

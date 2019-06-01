@@ -26,6 +26,7 @@
  * This file is part of the Monolinux project.
  */
 
+#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -88,22 +89,6 @@ int __wrap_socket(int domain, int type, int protocol)
     mock_pop_assert("socket(type)", &type);
     mock_pop_assert("socket(protocol)", &protocol);
     mock_pop("socket(): return (res)", &res);
-
-    return (res);
-}
-
-void mock_push_close(int fd, int res)
-{
-    mock_push("close(fd)", &fd, sizeof(fd));
-    mock_push("close(): return (res)", &res, sizeof(res));
-}
-
-int __wrap_close(int fd)
-{
-    int res;
-
-    mock_pop_assert("close(fd)", &fd);
-    mock_pop("close(): return (res)", &res);
 
     return (res);
 }
@@ -227,6 +212,76 @@ int __wrap_ml_finit_module(int fd, const char *params_p, int flags)
     mock_pop_assert("ml_finit_module(params_p)", params_p);
     mock_pop_assert("ml_finit_module(flags)", &flags);
     mock_pop("ml_finit_module(): return (res)", &res);
+
+    return (res);
+}
+
+void mock_push_setmntent(const char *filename_p,
+                         const char *type_p,
+                         FILE *res_p)
+{
+    mock_push("setmntent(filename_p)", filename_p, strlen(filename_p) + 1);
+    mock_push("setmntent(type_p)", type_p, strlen(type_p) + 1);
+    mock_push("setmntent(): return (res)", &res_p, sizeof(res_p));
+}
+
+FILE *__wrap_setmntent(const char *filename_p, const char *type_p)
+{
+    FILE *res_p;
+
+    mock_pop_assert("setmntent(filename_p)", filename_p);
+    mock_pop_assert("setmntent(type_p)", type_p);
+    mock_pop("setmntent(): return (res)", &res_p);
+
+    return (res_p);
+}
+
+void mock_push_getmntent(FILE *stream_p, struct mntent *res_p)
+{
+    mock_push("getmntent(stream_p)", &stream_p, sizeof(stream_p));
+    mock_push("getmntent(): return (res)", &res_p, sizeof(res_p));
+}
+
+struct mntent *__wrap_getmntent(FILE *stream_p)
+{
+    struct mntent *res_p;
+
+    mock_pop_assert("getmntent(stream_p)", &stream_p);
+    mock_pop("getmntent(): return (res)", &res_p);
+
+    return (res_p);
+}
+
+void mock_push_endmntent(FILE *stream_p, int res)
+{
+    mock_push("endmntent(stream_p)", &stream_p, sizeof(stream_p));
+    mock_push("endmntent(): return (res)", &res, sizeof(res));
+}
+
+int __wrap_endmntent(FILE *stream_p)
+{
+    int res;
+
+    mock_pop_assert("endmntent(stream_p)", &stream_p);
+    mock_pop("endmntent(): return (res)", &res);
+
+    return (res);
+}
+
+void mock_push_statvfs(const char *path_p, struct statvfs *buf_p, int res)
+{
+    mock_push("statvfs(path_p)", path_p, strlen(path_p) + 1);
+    mock_push("statvfs(buf_p)", buf_p, sizeof(*buf_p));
+    mock_push("statvfs(): return (res)", &res, sizeof(res));
+}
+
+int __wrap_statvfs(const char *path_p, struct statvfs *buf_p)
+{
+    int res;
+
+    mock_pop_assert("statvfs(path_p)", path_p);
+    mock_pop("statvfs(buf_p)", buf_p);
+    mock_pop("statvfs(): return (res)", &res);
 
     return (res);
 }
