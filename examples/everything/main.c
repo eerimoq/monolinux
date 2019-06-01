@@ -237,10 +237,9 @@ static void detools_test(void)
     const char to[] = "/mnt/disk/detools/v2.txt";
 
     printf("============== detools test begin ==============\n");
-    printf("Applying patch '%s' to '%s' to create '%s'.\n",
-           patch,
-           from,
-           to);
+    printf("From:  %s\n", from);
+    printf("Patch: %s\n", patch);
+    printf("To:    %s\n", to);
 
     res = detools_apply_patch_filenames(from, patch, to);
 

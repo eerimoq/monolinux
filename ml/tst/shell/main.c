@@ -104,7 +104,7 @@ TEST(various_commands)
               "        hello   My command.\n"
               "         help   Print this help.\n"
               "      hexdump   Hexdump a file.\n"
-              "      history   List comand history.\n"
+              "      history   List command history.\n"
               "       insmod   Insert a kernel module.\n"
               "           ls   List directory contents.\n"
               "        mknod   Create a node.\n"

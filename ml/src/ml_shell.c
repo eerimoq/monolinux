@@ -1363,7 +1363,7 @@ void ml_shell_init(void)
                               "Print this help.",
                               command_help);
     ml_shell_register_command("history",
-                              "List comand history.",
+                              "List command history.",
                               command_history);
     ml_shell_register_command("exit",
                               "Shell exit.",
