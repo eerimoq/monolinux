@@ -40,9 +40,6 @@
 #include "ml/ml.h"
 #include "internal.h"
 
-#define USERNAME "root"
-#define PASSWORD ""
-
 #define PROMPT              "$ "
 
 #define COMMAND_MAX          256
@@ -80,13 +77,10 @@ struct line_t {
 };
 
 struct module_t {
-    const char *username_p;
-    const char *password_p;
     struct line_t line;
     struct line_t prev_line;
     bool carriage_return_received;
     bool newline_received;
-    bool authenticated;
     struct {
         struct history_elem_t *head_p;
         struct history_elem_t *tail_p;
@@ -300,11 +294,6 @@ static bool is_comment(const char *line_p)
     return (*line_p == '#');
 }
 
-static bool is_logout(const char *line_p)
-{
-    return (strncmp(line_p, "logout", 7) == 0);
-}
-
 static bool is_exit(const char *line_p)
 {
     return (strncmp(line_p, "exit", 5) == 0);
@@ -485,14 +474,6 @@ static int command_history(int argc, const char *argv[])
             history_init();
         }
     }
-
-    return (0);
-}
-
-static int command_logout(int argc, const char *argv[])
-{
-    (void)argc;
-    (void)argv;
 
     return (0);
 }
@@ -844,95 +825,6 @@ static char *history_reverse_search(const char *pattern_p)
     }
 
     return (NULL);
-}
-
-static void read_line(bool is_sensitive)
-{
-    int ch;
-
-    line_init(&module.line);
-    module.newline_received = false;
-
-    while (!module.newline_received) {
-        ch = xgetc();
-
-        switch (ch) {
-
-        case NEWLINE:
-            module.newline_received = true;
-            break;
-
-        case CARRIAGE_RETURN:
-            break;
-
-        case DELETE:
-        case BACKSPACE:
-            if (line_seek(&module.line, -1)) {
-                line_delete(&module.line);
-                printf("\x08 \x08");
-                fflush(stdout);
-            }
-
-            continue;
-
-        default:
-            line_insert(&module.line, ch);
-
-            if (is_sensitive) {
-                ch = '*';
-            }
-
-            break;
-        }
-
-        fputc(ch, stdout);
-        fflush(stdout);
-    }
-}
-
-/**
- * Let the user write its username and password and compare them to
- * the allowed shell credentials.
- */
-static void login(void)
-{
-    bool correct_username;
-    bool correct_password;
-
-    while (true) {
-        correct_username = false;
-        correct_password = false;
-
-        /* Read the username. */
-        printf("username: ");
-        fflush(stdout);
-        read_line(false);
-
-        /* Write 'username: ' on empty string. */
-        if (line_is_empty(&module.line)) {
-            continue;
-        }
-
-        correct_username = !strcmp(module.username_p,
-                                   line_get_buf(&module.line));
-
-        /* Read the password. */
-        printf("password: ");
-        fflush(stdout);
-        read_line(true);
-        correct_password = !strcmp(module.password_p,
-                                   line_get_buf(&module.line));
-
-        if (correct_username && correct_password) {
-            break;
-        } else {
-            printf("authentication failure\n");
-            sleep(2);
-        }
-    }
-
-    /* Print a prompt on successful login. */
-    print_prompt();
 }
 
 static void handle_tab(void)
@@ -1409,12 +1301,6 @@ void *shell_main(void *arg_p)
           compare_qsort);
 
     while (true) {
-        /* Authentication. */
-        if (!module.authenticated) {
-            login();
-            module.authenticated = true;
-        }
-
         /* Read command.*/
         res = read_command();
 
@@ -1425,10 +1311,6 @@ void *shell_main(void *arg_p)
                 /* Just print a prompt. */
             } else if (is_exit(stripped_line_p)) {
                 break;
-            } else if (is_logout(stripped_line_p)) {
-                module.authenticated = false;
-
-                continue;
             } else {
                 res = execute_command(stripped_line_p);
 
@@ -1450,11 +1332,8 @@ void ml_shell_init(void)
 {
     make_stdin_unbuffered();
 
-    module.username_p = USERNAME;
-    module.password_p = PASSWORD;
     module.number_of_commands = 0;
     module.commands_p = xmalloc(1);
-    module.authenticated = false;
     history_init();
 
     ml_shell_register_command("help",
@@ -1463,9 +1342,6 @@ void ml_shell_init(void)
     ml_shell_register_command("history",
                               "List comand history.",
                               command_history);
-    ml_shell_register_command("logout",
-                              "Shell logout.",
-                              command_logout);
     ml_shell_register_command("exit",
                               "Shell exit.",
                               command_exit);

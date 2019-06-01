@@ -3,8 +3,6 @@ Sample output
 
 .. code-block:: text
 
-   username: root
-   password:
    $ help
    Cursor movement
 
@@ -37,7 +35,6 @@ Sample output
             help   Print this help.
          history   List comand history.
         ifconfig   Network interface management.
-          logout   Shell logout.
               ls   List directory contents.
         udp_recv   UDP receive.
         udp_send   UDP send.

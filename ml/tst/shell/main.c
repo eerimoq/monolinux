@@ -60,23 +60,16 @@ TEST(various_commands)
     CAPTURE_OUTPUT(output) {
         fd = stdin_pipe();
         ml_shell_start();
-        input(fd, "root\n");
-        input(fd, "\n");
         input(fd, "help\n");
         input(fd, "history\n");
         input(fd, "hello\n");
         input(fd, "hello Foo\n");
-        input(fd, "logout\n");
-        input(fd, "root\n");
-        input(fd, "\n");
         input(fd, "exit\n");
         ml_shell_join();
     }
 
     ASSERT_EQ(output,
-              "username: root\n"
-              "password: \n"
-              "$ help\n"
+              "help\n"
               "Cursor movement\n"
               "\n"
               "         LEFT   Go left one character.\n"
@@ -113,7 +106,6 @@ TEST(various_commands)
               "      hexdump   Hexdump a file.\n"
               "      history   List comand history.\n"
               "       insmod   Insert a kernel module.\n"
-              "       logout   Shell logout.\n"
               "           ls   List directory contents.\n"
               "        mknod   Create a node.\n"
               "        mount   Mount a filesystem.\n"
@@ -129,9 +121,6 @@ TEST(various_commands)
               "$ hello Foo\n"
               "Hello Foo!\n"
               "OK\n"
-              "$ logout\n"
-              "username: root\n"
-              "password: \n"
               "$ exit\n");
 }
 
@@ -144,8 +133,6 @@ TEST(command_ls)
     CAPTURE_OUTPUT(output) {
         fd = stdin_pipe();
         ml_shell_start();
-        input(fd, "root\n");
-        input(fd, "\n");
         input(fd, "ls\n");
         input(fd, "exit\n");
         ml_shell_join();
@@ -163,8 +150,6 @@ TEST(command_cat)
     CAPTURE_OUTPUT(output) {
         fd = stdin_pipe();
         ml_shell_start();
-        input(fd, "root\n");
-        input(fd, "\n");
         input(fd, "cat\n");
         input(fd, "cat hexdump.in\n");
         input(fd, "cat foobar\n");
@@ -174,9 +159,7 @@ TEST(command_cat)
 
     ASSERT_EQ(
         output,
-        "username: root\n"
-        "password: \n"
-        "$ cat\n"
+        "cat\n"
         "No file given\n"
         "ERROR(-1)\n"
         "$ cat hexdump.in\n"
@@ -196,8 +179,6 @@ TEST(command_hexdump)
     CAPTURE_OUTPUT(output) {
         fd = stdin_pipe();
         ml_shell_start();
-        input(fd, "root\n");
-        input(fd, "\n");
         input(fd, "hexdump\n");
         input(fd, "hexdump hexdump.in\n");
         input(fd, "hexdump 0 hexdump.in\n");
@@ -209,9 +190,7 @@ TEST(command_hexdump)
 
     ASSERT_EQ(
         output,
-        "username: root\n"
-        "password: \n"
-        "$ hexdump\n"
+        "hexdump\n"
         "hexdump [[<offset>] <size>] <file>\n"
         "ERROR(-1)\n"
         "$ hexdump hexdump.in\n"
@@ -239,8 +218,6 @@ TEST(command_editing)
     CAPTURE_OUTPUT(output) {
         fd = stdin_pipe();
         ml_shell_start();
-        input(fd, "root\n");
-        input(fd, "\n");
 
         /* 1. Ctrl-A + Ctrl-D + Enter. */
         input(fd, "12");
@@ -264,11 +241,8 @@ TEST(command_editing)
 
     ASSERT_EQ(
         output,
-        "username: root\n"
-        "password: \n"
-
         /* 1. Ctrl-A + Ctrl-D + Enter. */
-        "$ 12"ESC"[2D"ESC"[K2"ESC"[1D\n"
+        "12"ESC"[2D"ESC"[K2"ESC"[1D\n"
         "2: command not found\n"
         "ERROR(-1)\n"
 
@@ -310,8 +284,6 @@ TEST(quotes)
     CAPTURE_OUTPUT(output) {
         fd = stdin_pipe();
         ml_shell_start();
-        input(fd, "root\n");
-        input(fd, "\n");
         input(fd, "quotes \"ba\\\" \\r\" \"\"\n");
         input(fd, "exit\n");
         ml_shell_join();
@@ -319,9 +291,7 @@ TEST(quotes)
 
     ASSERT_EQ(
         output,
-        "username: root\n"
-        "password: \n"
-        "$ quotes \"ba\\\" \\r\" \"\"\n"
+        "quotes \"ba\\\" \\r\" \"\"\n"
         "OK\n"
         "$ exit\n");
 }
@@ -335,8 +305,6 @@ TEST(history)
     CAPTURE_OUTPUT(output) {
         fd = stdin_pipe();
         ml_shell_start();
-        input(fd, "root\n");
-        input(fd, "\n");
         input(fd, "foo\n");
         input(fd, "bar\n");
         input(fd, "fie\n");
@@ -348,9 +316,7 @@ TEST(history)
 
     ASSERT_EQ(
         output,
-        "username: root\n"
-        "password: \n"
-        "$ foo\n"
+        "foo\n"
         "foo: command not found\n"
         "ERROR(-1)\n"
         "$ bar\n"
@@ -391,8 +357,6 @@ TEST(command_insmod)
     CAPTURE_OUTPUT(output) {
         fd = stdin_pipe();
         ml_shell_start();
-        input(fd, "root\n");
-        input(fd, "\n");
         input(fd, "insmod\n");
         input(fd, "insmod foo.ko\n");
         input(fd, "insmod bar.ko fie=fum\n");
@@ -401,9 +365,7 @@ TEST(command_insmod)
     }
 
     ASSERT_EQ(output,
-              "username: root\n"
-              "password: \n"
-              "$ insmod\n"
+              "insmod\n"
               "insmod <file> [<params>]\n"
               "ERROR(-1)\n"
               "$ insmod foo.ko\n"
@@ -426,17 +388,13 @@ TEST(command_df_setmntent_failure)
     CAPTURE_OUTPUT(output) {
         fd = stdin_pipe();
         ml_shell_start();
-        input(fd, "root\n");
-        input(fd, "\n");
         input(fd, "df\n");
         input(fd, "exit\n");
         ml_shell_join();
     }
 
     ASSERT_EQ(output,
-              "username: root\n"
-              "password: \n"
-              "$ df\n"
+              "df\n"
               "ERROR(-1)\n"
               "$ exit\n");
 
@@ -481,17 +439,13 @@ TEST(command_df)
     CAPTURE_OUTPUT(output) {
         fd = stdin_pipe();
         ml_shell_start();
-        input(fd, "root\n");
-        input(fd, "\n");
         input(fd, "df\n");
         input(fd, "exit\n");
         ml_shell_join();
     }
 
     ASSERT_EQ(output,
-              "username: root\n"
-              "password: \n"
-              "$ df\n"
+              "df\n"
               "MOUNTED ON               TOTAL      USED      FREE\n"
               "/                         9 MB      2 MB      7 MB\n"
               "/proc                    19 MB     14 MB      5 MB\n"
