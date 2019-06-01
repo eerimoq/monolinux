@@ -690,11 +690,11 @@ static int command_mount(int argc, const char *argv[])
     res = -1;
 
     if (argc == 4) {
-        res = mount(argv[2], argv[3], argv[1], 0, "");
+        res = mount(argv[1], argv[2], argv[3], 0, "");
     }
 
     if (res != 0) {
-        printf("mount <type> <device> <dir>\n");
+        printf("mount <device> <dir> <type>\n");
     }
 
     return (res);

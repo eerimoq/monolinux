@@ -214,7 +214,7 @@ Disk commands.
 .. code-block:: shell
 
    $ ls /sys/block
-   $ mount ext4 /dev/sda1 /mnt/disk
+   $ mount /dev/sda1 /mnt/disk ext4
    $ ls /mnt/disk
    $ cat /mnt/disk/README
 
