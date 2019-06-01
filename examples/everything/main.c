@@ -48,19 +48,32 @@
 
 extern int command_lzma_compress(int argc, const char *argv[]);
 
-static int pmount(const char *source_p,
-                  const char *target_p,
-                  const char *type_p)
+static void insert_modules(void)
 {
     int res;
+    int i;
+    const char *modules[] = {
+        "/root/jbd2.ko",
+        "/root/mbcache.ko",
+        "/root/ext4.ko"
+    };
 
-    res = mount(source_p, target_p, type_p, 0, "");
+    printf("================= insmod begin =================\n");
 
-    if (res != 0) {
-        perror("error: mount");
+    for (i = 0; i < membersof(modules); i++) {
+        res = ml_insert_module(modules[i], "");
+
+        if (res == 0) {
+            printf("Successfully inserted '%s'.\n", modules[i]);
+        } else {
+            printf("Failed to insert '%s'.\n", modules[i]);
+        }
     }
 
-    return (res);
+    printf("Loaded modules:\n");
+    ml_print_file("/proc/modules");
+
+    printf("=================== insmod end =================\n\n");
 }
 
 static size_t on_write(void *buf_p, size_t size, size_t nmemb, void *arg_p)
@@ -137,10 +150,11 @@ static void init(void)
                               command_http_get);
     ml_shell_start();
 
-    pmount("none", "/proc", "proc");
-    pmount("none", "/sys", "sysfs");
-    pmount("none", "/sys/kernel/debug", "debugfs");
-    pmount("/dev/sda1", "/mnt/disk", "ext4");
+    ml_mount("none", "/proc", "proc");
+    ml_mount("none", "/sys", "sysfs");
+    ml_mount("none", "/sys/kernel/debug", "debugfs");
+    insert_modules();
+    ml_mount("/dev/sda1", "/mnt/disk", "ext4");
 }
 
 static void print_banner(void)
@@ -253,27 +267,6 @@ static void openssl_test(void)
     printf("=============== openssl test end ===============\n\n");
 }
 
-static void insert_module_test(void)
-{
-    int res;
-    const char module[] = "/root/i2c-i801.ko";
-
-    printf("=============== insmod test begin ==============\n");
-
-    res = ml_insert_module(&module[0], "");
-
-    if (res == 0) {
-        printf("Successfully inserted '%s'.\n", &module[0]);
-    } else {
-        printf("Failed to insert '%s'.\n", &module[0]);
-    }
-
-    printf("Loaded modules:\n");
-    ml_print_file("/proc/modules");
-
-    printf("================ insmod test end ===============\n\n");
-}
-
 static void http_test(void)
 {
     printf("================ http test begin ===============\n");
@@ -292,7 +285,6 @@ int main()
     lzma_test();
     detools_test();
     openssl_test();
-    insert_module_test();
     ml_network_interface_configure("eth0", "10.0.2.15", "255.255.255.0");
     ml_network_interface_up("eth0");
     http_test();

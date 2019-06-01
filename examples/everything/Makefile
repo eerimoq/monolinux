@@ -1,5 +1,7 @@
 SRC += lzma.c
-INITRAMFS_FILES = build/linux-5.1.3/drivers/i2c/busses/i2c-i801.ko
+INITRAMFS_FILES += build/linux-5.1.3/fs/ext4/ext4.ko
+INITRAMFS_FILES += build/linux-5.1.3/fs/jbd2/jbd2.ko
+INITRAMFS_FILES += build/linux-5.1.3/fs/mbcache.ko
 QEMU_DISK = build/mldisk.img
 CLEAN = $(QEMU_DISK)
 
