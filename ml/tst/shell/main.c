@@ -101,6 +101,7 @@ TEST(various_commands)
               "          cat   Print a file.\n"
               "           df   Disk space usage.\n"
               "         exit   Shell exit.\n"
+              "         find   Find files and folders.\n"
               "        hello   My command.\n"
               "         help   Print this help.\n"
               "      hexdump   Hexdump a file.\n"

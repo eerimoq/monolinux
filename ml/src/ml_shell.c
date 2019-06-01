@@ -26,6 +26,10 @@
  * This file is part of the Monolinux project.
  */
 
+/* Needed by ftw. */
+#define _XOPEN_SOURCE 700
+#define _DEFAULT_SOURCE
+
 #include <sys/sysmacros.h>
 #include <stdint.h>
 #include <sys/types.h>
@@ -35,6 +39,7 @@
 #include <sys/reboot.h>
 #include <ctype.h>
 #include <termios.h>
+#include <ftw.h>
 #include <unistd.h>
 #include <dirent.h>
 #include "ml/ml.h"
@@ -531,7 +536,7 @@ static int command_ls(int argc, const char *argv[])
             if (dirent_p->d_type & DT_DIR) {
                 printf("%s/\n", dirent_p->d_name);
             } else {
-                printf("%s\n", dirent_p->d_name);
+                puts(dirent_p->d_name);
             }
         }
 
@@ -710,6 +715,42 @@ static int command_df(int argc, const char *argv[])
     (void)argv;
 
     return (ml_print_file_systems_space_usage());
+}
+
+static int print_info(const char *fpath,
+                      const struct stat *stat_p,
+                      const int tflag,
+                      struct FTW *ftwbuf_p)
+{
+    (void)tflag;
+    (void)ftwbuf_p;
+
+    if (stat_p->st_mode & S_IFDIR) {
+        printf("%s/\n", fpath);
+    } else {
+        puts(fpath);
+    }
+
+    return (0);
+}
+
+static int command_find(int argc, const char *argv[])
+{
+    int res;
+
+    res = -1;
+
+    if (argc == 1) {
+        res = nftw(".", print_info, 20, FTW_PHYS);
+    } else if (argc == 2) {
+        res = nftw(argv[1], print_info, 20, FTW_PHYS);
+    }
+
+    if (res != 0) {
+        printf("find [<path>]\n");
+    }
+
+    return (res);
 }
 
 static void history_init(void)
@@ -1395,6 +1436,9 @@ void ml_shell_init(void)
     ml_shell_register_command("df",
                               "Disk space usage.",
                               command_df);
+    ml_shell_register_command("find",
+                              "Find files and folders.",
+                              command_find);
 }
 
 void ml_shell_start(void)
