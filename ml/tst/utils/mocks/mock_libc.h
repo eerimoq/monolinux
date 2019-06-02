@@ -89,4 +89,14 @@ void mock_push_endmntent(FILE *stream_p, int res);
 
 void mock_push_statvfs(const char *path_p, struct statvfs *buf_p, int res);
 
+void mock_push_nftw(const char *dirpath_p,
+                    int nopenfd,
+                    int flags,
+                    const char *paths[],
+                    mode_t modes[],
+                    int length,
+                    int res);
+
+void mock_push_ml_mknod(const char *path_p, mode_t mode, dev_t dev, int res);
+
 #endif

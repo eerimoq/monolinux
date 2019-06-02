@@ -30,6 +30,7 @@
 #define ML_ML_H
 
 #include <stdbool.h>
+#include <sys/types.h>
 #include <stdio.h>
 #include <pthread.h>
 
@@ -328,5 +329,7 @@ int ml_open(const char *path_p, int flags);
 int ml_close(int fd);
 
 int ml_finit_module(int fd, const char *params_p, int flags);
+
+int ml_mknod(const char *path_p, mode_t mode, dev_t dev);
 
 #endif

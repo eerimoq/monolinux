@@ -26,6 +26,11 @@
  * This file is part of the Monolinux project.
  */
 
+/* Needed by ftw. */
+#define _XOPEN_SOURCE 700
+#define _DEFAULT_SOURCE
+
+#include <ftw.h>
 #include <fcntl.h>
 #include <unicorn/unicorn.h>
 #include "utils/mocks/mock_libc.h"
@@ -506,6 +511,72 @@ TEST(command_find_too_many_args)
     mock_finalize();
 }
 
+TEST(command_find_no_args)
+{
+    int fd;
+    const char *paths[] = {
+        "foo",
+        "foo/bar",
+        "fie"
+    };
+    mode_t modes[] = { S_IFDIR, 0, 0 };
+
+    mock_push_nftw(".", 20, FTW_PHYS, &paths[0], &modes[0], 3, 0);
+
+    ml_shell_init();
+
+    CAPTURE_OUTPUT(output) {
+        fd = stdin_pipe();
+        ml_shell_start();
+        input(fd, "find\n");
+        input(fd, "exit\n");
+        ml_shell_join();
+    }
+
+    ASSERT_EQ(output,
+              "find\n"
+              "foo/\n"
+              "foo/bar\n"
+              "fie\n"
+              "OK\n"
+              "$ exit\n");
+
+    mock_finalize();
+}
+
+TEST(command_find_in_dir)
+{
+    int fd;
+    const char *paths[] = {
+        "tmp/foo",
+        "tmp/foo/bar",
+        "tmp/fie"
+    };
+    mode_t modes[] = { S_IFDIR, 0, 0 };
+
+    mock_push_nftw("tmp", 20, FTW_PHYS, &paths[0], &modes[0], 3, 0);
+
+    ml_shell_init();
+
+    CAPTURE_OUTPUT(output) {
+        fd = stdin_pipe();
+        ml_shell_start();
+        input(fd, "find tmp\n");
+        input(fd, "exit\n");
+        ml_shell_join();
+    }
+
+    ASSERT_EQ(output,
+              "find tmp\n"
+              "tmp/foo/\n"
+              "tmp/foo/bar\n"
+              "tmp/fie\n"
+              "OK\n"
+              "$ exit\n");
+
+    mock_finalize();
+}
+
 TEST(command_mknod_no_args)
 {
     int fd;
@@ -524,6 +595,124 @@ TEST(command_mknod_no_args)
               "mknod\n"
               "mknod <path> <type> [<major>] [<minor>]\n"
               "ERROR(-1)\n"
+              "$ exit\n");
+
+    mock_finalize();
+}
+
+TEST(command_mknod_bad_type)
+{
+    int fd;
+
+    ml_shell_init();
+
+    CAPTURE_OUTPUT(output) {
+        fd = stdin_pipe();
+        ml_shell_start();
+        input(fd, "mknod /dev/foo g\n");
+        input(fd, "exit\n");
+        ml_shell_join();
+    }
+
+    ASSERT_EQ(output,
+              "mknod /dev/foo g\n"
+              "mknod <path> <type> [<major>] [<minor>]\n"
+              "ERROR(-1)\n"
+              "$ exit\n");
+
+    mock_finalize();
+}
+
+TEST(command_mknod_fifo)
+{
+    int fd;
+
+    mock_push_ml_mknod("/dev/foo", S_IFIFO | 0666, 0, 0);
+
+    ml_shell_init();
+
+    CAPTURE_OUTPUT(output) {
+        fd = stdin_pipe();
+        ml_shell_start();
+        input(fd, "mknod /dev/foo p\n");
+        input(fd, "exit\n");
+        ml_shell_join();
+    }
+
+    ASSERT_EQ(output,
+              "mknod /dev/foo p\n"
+              "OK\n"
+              "$ exit\n");
+
+    mock_finalize();
+}
+
+TEST(command_mknod_char)
+{
+    int fd;
+
+    mock_push_ml_mknod("/dev/bar", S_IFCHR | 0666, makedev(5, 6), 0);
+
+    ml_shell_init();
+
+    CAPTURE_OUTPUT(output) {
+        fd = stdin_pipe();
+        ml_shell_start();
+        input(fd, "mknod /dev/bar c 5 6\n");
+        input(fd, "exit\n");
+        ml_shell_join();
+    }
+
+    ASSERT_EQ(output,
+              "mknod /dev/bar c 5 6\n"
+              "OK\n"
+              "$ exit\n");
+
+    mock_finalize();
+}
+
+TEST(command_mknod_char_no_minor)
+{
+    int fd;
+
+    ml_shell_init();
+
+    CAPTURE_OUTPUT(output) {
+        fd = stdin_pipe();
+        ml_shell_start();
+        input(fd, "mknod /dev/bar c 5\n");
+        input(fd, "exit\n");
+        ml_shell_join();
+    }
+
+    ASSERT_EQ(output,
+              "mknod /dev/bar c 5\n"
+              "mknod <path> <type> [<major>] [<minor>]\n"
+              "ERROR(-1)\n"
+              "$ exit\n");
+
+    mock_finalize();
+}
+
+TEST(command_mknod_block)
+{
+    int fd;
+
+    mock_push_ml_mknod("/dev/sda1", S_IFBLK | 0666, makedev(8, 1), 0);
+
+    ml_shell_init();
+
+    CAPTURE_OUTPUT(output) {
+        fd = stdin_pipe();
+        ml_shell_start();
+        input(fd, "mknod /dev/sda1 b 8 1\n");
+        input(fd, "exit\n");
+        ml_shell_join();
+    }
+
+    ASSERT_EQ(output,
+              "mknod /dev/sda1 b 8 1\n"
+              "OK\n"
               "$ exit\n");
 
     mock_finalize();
@@ -552,6 +741,36 @@ TEST(command_mount_no_args)
     mock_finalize();
 }
 
+TEST(command_mount)
+{
+    int fd;
+
+    mock_push_mount("/dev/sda1",
+                    "/mnt/disk",
+                    "ext4",
+                    0,
+                    "",
+                    1,
+                    0);
+
+    ml_shell_init();
+
+    CAPTURE_OUTPUT(output) {
+        fd = stdin_pipe();
+        ml_shell_start();
+        input(fd, "mount /dev/sda1 /mnt/disk ext4\n");
+        input(fd, "exit\n");
+        ml_shell_join();
+    }
+
+    ASSERT_EQ(output,
+              "mount /dev/sda1 /mnt/disk ext4\n"
+              "OK\n"
+              "$ exit\n");
+
+    mock_finalize();
+}
+
 int main()
 {
     ml_init();
@@ -569,7 +788,15 @@ int main()
         command_df,
         command_suicide_no_args,
         command_find_too_many_args,
+        command_find_no_args,
+        command_find_in_dir,
         command_mknod_no_args,
-        command_mount_no_args
+        command_mknod_bad_type,
+        command_mknod_fifo,
+        command_mknod_char,
+        command_mknod_char_no_minor,
+        command_mknod_block,
+        command_mount_no_args,
+        command_mount
     );
 }

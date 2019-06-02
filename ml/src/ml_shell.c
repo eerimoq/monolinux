@@ -673,15 +673,15 @@ static int command_mknod(int argc, const char *argv[])
 
     if (argc == 3) {
         if (strcmp(argv[2], "p") == 0) {
-            res = mknod(argv[1], S_IFIFO | mode, 0);
+            res = ml_mknod(argv[1], S_IFIFO | mode, 0);
         }
     } else if (argc == 5) {
         dev = makedev(atoi(argv[3]), atoi(argv[4]));
 
         if (strcmp(argv[2], "c") == 0) {
-            res = mknod(argv[1], S_IFCHR | mode, dev);
+            res = ml_mknod(argv[1], S_IFCHR | mode, dev);
         } else if (strcmp(argv[2], "b") == 0) {
-            res = mknod(argv[1], S_IFBLK | mode, dev);
+            res = ml_mknod(argv[1], S_IFBLK | mode, dev);
         }
     }
 

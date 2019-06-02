@@ -26,6 +26,8 @@
  * This file is part of the Monolinux project.
  */
 
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/syscall.h>
@@ -44,4 +46,9 @@ int ml_close(int fd)
 int ml_finit_module(int fd, const char *params_p, int flags)
 {
     return (syscall(SYS_finit_module, fd, params_p, flags));
+}
+
+int ml_mknod(const char *path_p, mode_t mode, dev_t dev)
+{
+    return (mknod(path_p, mode, dev));
 }

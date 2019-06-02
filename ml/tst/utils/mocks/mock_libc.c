@@ -26,9 +26,14 @@
  * This file is part of the Monolinux project.
  */
 
+/* Needed by ftw. */
+#define _XOPEN_SOURCE 700
+#define _DEFAULT_SOURCE
+
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <ftw.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unicorn/unicorn.h>
@@ -284,4 +289,78 @@ int __wrap_statvfs(const char *path_p, struct statvfs *buf_p)
     mock_pop("statvfs(): return (res)", &res);
 
     return (res);
+}
+
+void mock_push_nftw(const char *dirpath_p,
+                    int nopenfd,
+                    int flags,
+                    const char *paths[],
+                    mode_t modes[],
+                    int length,
+                    int res)
+{
+    int i;
+
+    mock_push("nftw(dirpath_p)", dirpath_p, strlen(dirpath_p) + 1);
+    mock_push("nftw(nopenfd)", &nopenfd, sizeof(nopenfd));
+    mock_push("nftw(flags)", &flags, sizeof(flags));
+    mock_push("nftw(): return (length)", &length, sizeof(length));
+
+    for (i = 0; i < length; i++) {
+        mock_push("nftw(): return (path)", &paths[i], sizeof(paths[0]));
+        mock_push("nftw(): return (mode)", &modes[i], sizeof(modes[0]));
+    }
+
+    mock_push("nftw(): return (res)", &res, sizeof(res));
+}
+
+int __wrap_nftw(const char *dirpath_p,
+                int (*fn) (const char *fpath_p,
+                           const struct stat *sb_p,
+                           int typeflag,
+                           struct FTW *ftwbuf_p),
+                int nopenfd,
+                int flags)
+{
+    int res;
+    int i;
+    int length;
+    const char *path_p;
+    struct stat stat;
+
+    mock_pop_assert("nftw(dirpath_p)", dirpath_p);
+    mock_pop_assert("nftw(nopenfd)", &nopenfd);
+    mock_pop_assert("nftw(flags)", &flags);
+    mock_pop("nftw(): return (length)", &length);
+
+    for (i = 0; i < length; i++) {
+        mock_pop("nftw(): return (path)", &path_p);
+        mock_pop("nftw(): return (mode)", &stat.st_mode);
+
+        ASSERT_EQ(fn(path_p, &stat, 0, NULL), 0);
+    }
+
+    mock_pop("nftw(): return (res)", &res);
+
+    return (res);
+}
+
+void mock_push_ml_mknod(const char *path_p, mode_t mode, dev_t dev, int res)
+{
+    mock_push("ml_mknod(path_p)", path_p, strlen(path_p) + 1);
+    mock_push("ml_mknod(mode)", &mode, sizeof(mode));
+    mock_push("ml_mknod(dev)", &dev, sizeof(dev));
+    mock_push("ml_mknod(): return (res)", &res, sizeof(res));
+}
+
+int __wrap_ml_mknod(const char *path_p, mode_t mode, dev_t dev)
+{
+    int res;
+
+    mock_pop_assert("ml_mknod(path_p)", path_p);
+    mock_pop_assert("ml_mknod(mode)", &mode);
+    mock_pop_assert("ml_mknod(dev)", &dev);
+    mock_pop("ml_mknod(): return (res)", &res);
+
+    return (0);
 }
