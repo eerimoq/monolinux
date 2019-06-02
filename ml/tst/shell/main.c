@@ -515,9 +515,9 @@ TEST(command_find_no_args)
 {
     int fd;
     const char *paths[] = {
-        "foo",
-        "foo/bar",
-        "fie"
+        "./foo",
+        "./foo/bar",
+        "./fie"
     };
     mode_t modes[] = { S_IFDIR, 0, 0 };
 
@@ -535,9 +535,9 @@ TEST(command_find_no_args)
 
     ASSERT_EQ(output,
               "find\n"
-              "foo/\n"
-              "foo/bar\n"
-              "fie\n"
+              "./foo/\n"
+              "./foo/bar\n"
+              "./fie\n"
               "OK\n"
               "$ exit\n");
 
