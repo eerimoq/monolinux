@@ -295,7 +295,7 @@ TEST(command_udp_send_open_socket_failure)
         ASSERT_EQ(command_udp_send(membersof(argv), argv), -1);
     }
 
-    ASSERT_SUBSTRING(output, "socket creation failed:");
+    ASSERT_SUBSTRING(output, "error: socket:");
     ASSERT_SUBSTRING(output, "udp_send <ip-address> <port> <data>\n");
 
     mock_finalize();
@@ -394,7 +394,7 @@ TEST(command_udp_recv_open_socket_failure)
         ASSERT_EQ(command_udp_recv(membersof(argv), argv), -1);
     }
 
-    ASSERT_SUBSTRING(output, "socket creation failed:");
+    ASSERT_SUBSTRING(output, "error: socket:");
     ASSERT_SUBSTRING(output, "udp_recv <port> [<timeout in seconds>]\n");
 
     mock_finalize();

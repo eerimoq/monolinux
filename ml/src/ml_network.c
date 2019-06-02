@@ -39,7 +39,7 @@ static int net_open(const char *name_p,
 {
     int netfd;
 
-    netfd = socket(AF_INET, SOCK_DGRAM, 0);
+    netfd = ml_socket(AF_INET, SOCK_DGRAM, 0);
 
     memset(ifreq_p, 0, sizeof(*ifreq_p));
     strncpy(&ifreq_p->ifr_name[0], name_p, sizeof(ifreq_p->ifr_name) - 1);
@@ -69,11 +69,11 @@ static int up(int netfd, struct ifreq *ifreq_p)
 {
     int res;
 
-    res = ioctl(netfd, SIOCGIFFLAGS, ifreq_p);
+    res = ml_ioctl(netfd, SIOCGIFFLAGS, ifreq_p);
 
     if (res == 0) {
         ifreq_p->ifr_flags |= IFF_UP;
-        res = ioctl(netfd, SIOCSIFFLAGS, ifreq_p);
+        res = ml_ioctl(netfd, SIOCSIFFLAGS, ifreq_p);
     }
 
     return (res);
@@ -83,11 +83,11 @@ static int down(int netfd, struct ifreq *ifreq_p)
 {
     int res;
 
-    res = ioctl(netfd, SIOCGIFFLAGS, ifreq_p);
+    res = ml_ioctl(netfd, SIOCGIFFLAGS, ifreq_p);
 
     if (res == 0) {
         ifreq_p->ifr_flags &= ~IFF_UP;
-        res = ioctl(netfd, SIOCSIFFLAGS, ifreq_p);
+        res = ml_ioctl(netfd, SIOCSIFFLAGS, ifreq_p);
     }
 
     return (res);
@@ -99,7 +99,7 @@ static int set_ip_address(int netfd,
 {
     create_address_request(ifreq_p, address_p);
 
-    return (ioctl(netfd, SIOCSIFADDR, ifreq_p));
+    return (ml_ioctl(netfd, SIOCSIFADDR, ifreq_p));
 }
 
 static int set_netmask(int netfd,
@@ -108,7 +108,7 @@ static int set_netmask(int netfd,
 {
     create_address_request(ifreq_p, netmask_p);
 
-    return (ioctl(netfd, SIOCSIFNETMASK, ifreq_p));
+    return (ml_ioctl(netfd, SIOCSIFNETMASK, ifreq_p));
 }
 
 static int command_ifconfig(int argc, const char *argv[])
@@ -150,7 +150,7 @@ static int udp_send(const char *ip_address_p,
     other.sin_port = htons(atoi(port_p));
 
     if (inet_aton(ip_address_p, &other.sin_addr) != 0) {
-        sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+        sockfd = ml_socket(AF_INET, SOCK_DGRAM, 0);
 
         if (sockfd != -1) {
             size = sendto(sockfd,
@@ -167,8 +167,6 @@ static int udp_send(const char *ip_address_p,
             }
 
             ml_close(sockfd);
-        } else {
-            perror("socket creation failed");
         }
     }
 
@@ -217,7 +215,7 @@ static int udp_recv(const char *port_p, int timeout)
     char buf[256];
 
     res = -1;
-    sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    sockfd = ml_socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
     if (sockfd != -1) {
         memset(&me, 0, sizeof(me));
@@ -253,8 +251,6 @@ static int udp_recv(const char *port_p, int timeout)
         }
 
         ml_close(sockfd);
-    } else {
-        perror("socket creation failed");
     }
 
     return (res);

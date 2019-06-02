@@ -26,6 +26,8 @@
  * This file is part of the Monolinux project.
  */
 
+#include <stdlib.h>
+#include <arpa/inet.h>
 #include <mntent.h>
 #include <stdint.h>
 #include <ctype.h>
@@ -318,8 +320,34 @@ int ml_mount(const char *source_p,
 
     res = mount(source_p, target_p, type_p, 0, "");
 
-    if (res != 0) {
+    if (res == -1) {
         perror("error: mount");
+    }
+
+    return (res);
+}
+
+int ml_socket(int domain, int type, int protocol)
+{
+    int res;
+
+    res = socket(domain, type, protocol);
+
+    if (res == -1) {
+        perror("error: socket");
+    }
+
+    return (res);
+}
+
+int ml_ioctl(int fd, unsigned long request, void *data_p)
+{
+    int res;
+
+    res = ioctl(fd, request, data_p);
+
+    if (res == -1) {
+        perror("error: ioctl");
     }
 
     return (res);
