@@ -39,6 +39,7 @@
 #include "ml/ml.h"
 
 #define ESC "\x1b"
+#define BACKSPACE "\x08"
 
 static int command_hello(int argc, const char *argv[])
 {
@@ -316,10 +317,21 @@ TEST(history)
         input(fd, "bar\n");
         input(fd, "fie\n");
         input(fd, "history\n");
+        /* Ctrl R. */
         input(fd, "\x12""fo\n");
+        /* Down arrow - nothing should happen. */
+        input(fd, ESC"[B");
+        /* Up arrow one beyond top. */
+        input(fd, ESC"[A"ESC"[A"ESC"[A"ESC"[A"ESC"[A"ESC"[A"ESC"[A");
+        /* Down arrow once and press enter. */
+        input(fd, ESC"[B\n");
+        /* Up once and then down. */
+        input(fd, ESC"[A"ESC"[B");
         input(fd, "exit\n");
         ml_shell_join();
     }
+
+    ml_hexdump(output, 376);
 
     ASSERT_EQ(
         output,
@@ -342,7 +354,24 @@ TEST(history)
         ESC"[Ko': foo"ESC"[6D"ESC"[19D"ESC"[Kfoo\n"
         "foo: command not found\n"
         "ERROR(-1)\n"
-        "$ exit\n");
+        "$ foo"
+        ESC"[3D"ESC"[K"
+        "history"
+        ESC"[7D"ESC"[K"
+        "fie"
+        ESC"[3D"ESC"[K"
+        "bar"
+        ESC"[3D"ESC"[K"
+        "foo"
+        ESC"[3D"ESC"[K"
+        "bar\n"
+        "bar: command not found\n"
+        "ERROR(-1)\n"
+        "$ bar"
+        BACKSPACE" "BACKSPACE
+        BACKSPACE" "BACKSPACE
+        BACKSPACE" "BACKSPACE
+        "exit\n");
 }
 
 TEST(command_insmod)
