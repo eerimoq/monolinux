@@ -32,6 +32,7 @@
 
 #include <ftw.h>
 #include <fcntl.h>
+#include <sys/sysmacros.h>
 #include <unicorn/unicorn.h>
 #include "utils/mocks/mock_libc.h"
 #include "utils/mocks/mock.h"
