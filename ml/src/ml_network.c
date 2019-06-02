@@ -34,29 +34,12 @@
 #include <poll.h>
 #include "ml/ml.h"
 
-static void xioctl(int fd, unsigned long request, void *data_p)
-{
-    int res;
-
-    res = ioctl(fd, request, data_p);
-
-    if (res != 0) {
-        perror("error: ioctl");
-        exit(1);
-    }
-}
-
 static int net_open(const char *name_p,
                     struct ifreq *ifreq_p)
 {
     int netfd;
 
     netfd = socket(AF_INET, SOCK_DGRAM, 0);
-
-    if (netfd == -1) {
-        perror("error: open network socket");
-        exit(1);
-    }
 
     memset(ifreq_p, 0, sizeof(*ifreq_p));
     strncpy(&ifreq_p->ifr_name[0], name_p, sizeof(ifreq_p->ifr_name) - 1);
@@ -82,54 +65,66 @@ static void create_address_request(struct ifreq *ifreq_p,
     memcpy(&ifreq_p->ifr_addr, &sai, sizeof(ifreq_p->ifr_addr));
 }
 
-static void up(int netfd, struct ifreq *ifreq_p)
+static int up(int netfd, struct ifreq *ifreq_p)
 {
-    xioctl(netfd, SIOCGIFFLAGS, ifreq_p);
-    ifreq_p->ifr_flags |= IFF_UP;
-    xioctl(netfd, SIOCSIFFLAGS, ifreq_p);
+    int res;
+
+    res = ioctl(netfd, SIOCGIFFLAGS, ifreq_p);
+
+    if (res == 0) {
+        ifreq_p->ifr_flags |= IFF_UP;
+        res = ioctl(netfd, SIOCSIFFLAGS, ifreq_p);
+    }
+
+    return (res);
 }
 
-static void down(int netfd, struct ifreq *ifreq_p)
+static int down(int netfd, struct ifreq *ifreq_p)
 {
-    xioctl(netfd, SIOCGIFFLAGS, ifreq_p);
-    ifreq_p->ifr_flags &= ~IFF_UP;
-    xioctl(netfd, SIOCSIFFLAGS, ifreq_p);
+    int res;
+
+    res = ioctl(netfd, SIOCGIFFLAGS, ifreq_p);
+
+    if (res == 0) {
+        ifreq_p->ifr_flags &= ~IFF_UP;
+        res = ioctl(netfd, SIOCSIFFLAGS, ifreq_p);
+    }
+
+    return (res);
 }
 
-static void set_ip_address(int netfd,
-                           struct ifreq *ifreq_p,
-                           const char *address_p)
+static int set_ip_address(int netfd,
+                          struct ifreq *ifreq_p,
+                          const char *address_p)
 {
     create_address_request(ifreq_p, address_p);
-    xioctl(netfd, SIOCSIFADDR, ifreq_p);
+
+    return (ioctl(netfd, SIOCSIFADDR, ifreq_p));
 }
 
-static void set_netmask(int netfd,
-                        struct ifreq *ifreq_p,
-                        const char *netmask_p)
+static int set_netmask(int netfd,
+                       struct ifreq *ifreq_p,
+                       const char *netmask_p)
 {
     create_address_request(ifreq_p, netmask_p);
-    xioctl(netfd, SIOCSIFNETMASK, ifreq_p);
+
+    return (ioctl(netfd, SIOCSIFNETMASK, ifreq_p));
 }
 
 static int command_ifconfig(int argc, const char *argv[])
 {
     int res;
 
-    res = 0;
+    res = -1;
 
     if (argc == 3) {
         if (strcmp(argv[2], "up") == 0) {
-            ml_network_interface_up(argv[1]);
+            res = ml_network_interface_up(argv[1]);
         } else if (strcmp(argv[2], "down") == 0) {
-            ml_network_interface_down(argv[1]);
-        } else {
-            res = -1;
+            res = ml_network_interface_down(argv[1]);
         }
     } else if (argc == 4) {
-        ml_network_interface_configure(argv[1], argv[2], argv[3]);
-    } else {
-        res = -1;
+        res = ml_network_interface_configure(argv[1], argv[2], argv[3]);
     }
 
     if (res != 0) {
@@ -319,35 +314,60 @@ void ml_network_init(void)
                               command_udp_recv);
 }
 
-void ml_network_interface_configure(const char *name_p,
-                                    const char *ipv4_address_p,
-                                    const char *ipv4_netmask_p)
+int ml_network_interface_configure(const char *name_p,
+                                   const char *ipv4_address_p,
+                                   const char *ipv4_netmask_p)
 {
     struct ifreq ifreq;
+    int res;
     int netfd;
 
+    res = -1;
     netfd = net_open(name_p, &ifreq);
-    set_ip_address(netfd, &ifreq, ipv4_address_p);
-    set_netmask(netfd, &ifreq, ipv4_netmask_p);
-    net_close(netfd);
+
+    if (netfd != -1) {
+        res = set_ip_address(netfd, &ifreq, ipv4_address_p);
+
+        if (res == 0) {
+            res = set_netmask(netfd, &ifreq, ipv4_netmask_p);
+        }
+
+        net_close(netfd);
+    }
+
+    return (res);
 }
 
-void ml_network_interface_up(const char *name_p)
+int ml_network_interface_up(const char *name_p)
 {
     struct ifreq ifreq;
+    int res;
     int netfd;
 
+    res = -1;
     netfd = net_open(name_p, &ifreq);
-    up(netfd, &ifreq);
-    net_close(netfd);
+
+    if (netfd != -1) {
+        res = up(netfd, &ifreq);
+        net_close(netfd);
+    }
+
+    return (res);
 }
 
-void ml_network_interface_down(const char *name_p)
+int ml_network_interface_down(const char *name_p)
 {
     struct ifreq ifreq;
+    int res;
     int netfd;
 
+    res = -1;
     netfd = net_open(name_p, &ifreq);
-    down(netfd, &ifreq);
-    net_close(netfd);
+
+    if (netfd != -1) {
+        res = down(netfd, &ifreq);
+        net_close(netfd);
+    }
+
+    return (res);
 }

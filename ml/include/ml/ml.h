@@ -241,19 +241,19 @@ void ml_network_init(void);
 /**
  * Configure given network interface.
  */
-void ml_network_interface_configure(const char *name_p,
-                                    const char *ipv4_address_p,
-                                    const char *ipv4_netmask_p);
+int ml_network_interface_configure(const char *name_p,
+                                   const char *ipv4_address_p,
+                                   const char *ipv4_netmask_p);
 
 /**
  * Bring up given network interface.
  */
-void ml_network_interface_up(const char *name_p);
+int ml_network_interface_up(const char *name_p);
 
 /**
  * Take down given network interface.
  */
-void ml_network_interface_down(const char *name_p);
+int ml_network_interface_down(const char *name_p);
 
 /**
  * Strip leading and trailing characters from given string and return

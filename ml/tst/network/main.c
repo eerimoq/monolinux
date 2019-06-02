@@ -106,7 +106,9 @@ TEST(network_interface_configure)
 
     mock_push_configure("eth0");
 
-    ml_network_interface_configure("eth0", "192.168.0.4", "255.255.255.0");
+    ASSERT_EQ(ml_network_interface_configure("eth0",
+                                             "192.168.0.4",
+                                             "255.255.255.0"), 0);
 
     mock_finalize();
 }
@@ -118,7 +120,7 @@ TEST(network_interface_up)
 
     mock_push_up("eth0");
 
-    ml_network_interface_up("eth0");
+    ASSERT_EQ(ml_network_interface_up("eth0"), 0);
 
     mock_finalize();
 }
@@ -130,7 +132,7 @@ TEST(network_interface_down)
 
     mock_push_down("eth0");
 
-    ml_network_interface_down("eth0");
+    ASSERT_EQ(ml_network_interface_down("eth0"), 0);
 
     mock_finalize();
 }
