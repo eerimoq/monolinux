@@ -45,23 +45,25 @@
 #include "ml/ml.h"
 #include "internal.h"
 
-#define PROMPT              "$ "
+#define PROMPT                                  "$ "
 
-#define COMMAND_MAX          256
+#define COMMAND_MAX                              256
 
-#define TAB                 '\t'
-#define CARRIAGE_RETURN     '\r'
-#define NEWLINE             '\n'
-#define BACKSPACE              8
-#define DELETE               127
-#define CTRL_A                 1
-#define CTRL_E                 5
-#define CTRL_D                 4
-#define CTRL_K                11
-#define CTRL_T                20
-#define CTRL_R                18
-#define CTRL_G                 7
-#define ALT                   27
+#define MAXIMUM_HISTORY_LENGTH                    64
+
+#define TAB                                     '\t'
+#define CARRIAGE_RETURN                         '\r'
+#define NEWLINE                                 '\n'
+#define BACKSPACE                                  8
+#define DELETE                                   127
+#define CTRL_A                                     1
+#define CTRL_E                                     5
+#define CTRL_D                                     4
+#define CTRL_K                                    11
+#define CTRL_T                                    20
+#define CTRL_R                                    18
+#define CTRL_G                                     7
+#define ALT                                       27
 
 struct command_t {
     const char *name_p;
@@ -89,6 +91,7 @@ struct module_t {
     struct {
         struct history_elem_t *head_p;
         struct history_elem_t *tail_p;
+        int length;
         struct history_elem_t *current_p;
         struct line_t pattern;
         struct line_t match;
@@ -462,22 +465,19 @@ static int command_help(int argc, const char *argv[])
 
 static int command_history(int argc, const char *argv[])
 {
+    (void)argc;
+    (void)argv;
+
     struct history_elem_t *current_p;
     int i;
 
-    if (argc == 1) {
-        current_p = module.history.head_p;
-        i = 1;
+    current_p = module.history.head_p;
+    i = 1;
 
-        while (current_p != NULL) {
-            printf("%d: %s\n", i, current_p->buf);
-            current_p = current_p->next_p;
-            i++;
-        }
-    } else if (argc == 2) {
-        if (strcmp(argv[1], "-c") == 0) {
-            history_init();
-        }
+    while (current_p != NULL) {
+        printf("%d: %s\n", i, current_p->buf);
+        current_p = current_p->next_p;
+        i++;
     }
 
     return (0);
@@ -757,6 +757,7 @@ static void history_init(void)
 {
     module.history.head_p = NULL;
     module.history.tail_p = NULL;
+    module.history.length = 0;
     module.history.current_p = NULL;
     line_init(&module.history.line);
     module.history.line_valid = false;
@@ -765,7 +766,6 @@ static void history_init(void)
 static int history_append(char *command_p)
 {
     struct history_elem_t *elem_p, *head_p;
-    size_t command_size;
 
     /* Do not append if the command already is at the end of the
        list. */
@@ -775,34 +775,24 @@ static int history_append(char *command_p)
         }
     }
 
-    elem_p = NULL;
-    command_size = strlen(command_p) + 1;
+    if (module.history.length == MAXIMUM_HISTORY_LENGTH) {
+        head_p = module.history.head_p;
 
-    while (elem_p == NULL) {
-        /* Allocate memory. */
-        elem_p = malloc(sizeof(*elem_p) + command_size);
-
-        /* Free the oldest command if there is no memory available. */
-        if (elem_p == NULL) {
-            head_p = module.history.head_p;
-
-            /* Any element to free? */
-            if (head_p == NULL) {
-                return (-1);
-            }
-
-            /* Remove the head element from the list. */
-            if (head_p == module.history.tail_p) {
-                module.history.head_p = NULL;
-                module.history.tail_p = NULL;
-            } else {
-                module.history.head_p = head_p->next_p;
-                head_p->next_p->prev_p = NULL;
-            }
-
-            free(head_p);
+        /* Remove the head element from the list. */
+        if (head_p == module.history.tail_p) {
+            module.history.head_p = NULL;
+            module.history.tail_p = NULL;
+        } else {
+            module.history.head_p = head_p->next_p;
+            head_p->next_p->prev_p = NULL;
         }
+
+        free(head_p);
+        module.history.length--;
     }
+
+    /* Allocate memory. */
+    elem_p = malloc(sizeof(*elem_p) + strlen(command_p) + 1);
 
     if (elem_p != NULL) {
         strcpy(elem_p->buf, command_p);
@@ -819,6 +809,7 @@ static int history_append(char *command_p)
         }
 
         module.history.tail_p = elem_p;
+        module.history.length++;
     }
 
     return (0);
