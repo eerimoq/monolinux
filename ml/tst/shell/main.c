@@ -244,6 +244,14 @@ TEST(command_editing)
         input(fd, "12");
         input(fd, ESC"[D"ESC"[C""\n");
 
+        /* 5. Left arrow + Ctrl-K + Enter. */
+        input(fd, "12");
+        input(fd, ESC"[D\x0b\n");
+
+        /* 6. Ctrl-A + Ctrl-E + backspace + Enter. */
+        input(fd, "12");
+        input(fd, "\x01\x05\x08\n");
+
         input(fd, "exit\n");
         ml_shell_join();
     }
@@ -268,6 +276,16 @@ TEST(command_editing)
         /* 4. Left arrow + Right arrow + Enter. */
         "$ 12"ESC"[1D"ESC"[1C\n"
         "12: command not found\n"
+        "ERROR(-1)\n"
+
+        /* 5. Left arrow + Ctrl-K + Enter. */
+        "$ 12"ESC"[1D "BACKSPACE" "BACKSPACE"\n"
+        "1: command not found\n"
+        "ERROR(-1)\n"
+
+        /* 6. Ctrl-A + Ctrl-E + backspace + Enter. */
+        "$ 12"ESC"[2D"ESC"[2C"BACKSPACE" "BACKSPACE"\n"
+        "1: command not found\n"
         "ERROR(-1)\n"
 
         "$ exit\n");
