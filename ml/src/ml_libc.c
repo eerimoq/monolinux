@@ -43,6 +43,16 @@ int ml_close(int fd)
     return (close(fd));
 }
 
+ssize_t ml_read(int fd, void *buf_p, size_t count)
+{
+    return (read(fd, buf_p, count));
+}
+
+ssize_t ml_write(int fd, const void *buf_p, size_t count)
+{
+    return (write(fd, buf_p, count));
+}
+
 int ml_finit_module(int fd, const char *params_p, int flags)
 {
     return (syscall(SYS_finit_module, fd, params_p, flags));

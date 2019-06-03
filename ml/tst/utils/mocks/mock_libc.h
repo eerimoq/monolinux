@@ -74,6 +74,10 @@ void mock_push_ml_open(const char *path_p, int flags, int res);
 
 void mock_push_ml_close(int fd, int res);
 
+void mock_push_ml_read(int fd, void *buf_p, size_t count, ssize_t res);
+
+void mock_push_ml_write(int fd, const void *buf_p, size_t count, ssize_t res);
+
 void mock_push_ml_finit_module(int fd,
                                const char *params_p,
                                int flags,
@@ -98,5 +102,14 @@ void mock_push_nftw(const char *dirpath_p,
                     int res);
 
 void mock_push_ml_mknod(const char *path_p, mode_t mode, dev_t dev, int res);
+
+void mock_push_timerfd_create(int clockid, int flags, int res);
+
+void mock_push_timerfd_settime(int fd,
+                               int flags,
+                               const struct itimerspec *new_value_p,
+                               int res);
+
+void mock_push_poll(struct pollfd *fds_p, nfds_t nfds, int timeout, int res);
 
 #endif

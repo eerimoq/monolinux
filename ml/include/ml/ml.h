@@ -32,7 +32,9 @@
 #include <stdbool.h>
 #include <sys/types.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <pthread.h>
+#include <poll.h>
 
 /**
  * Create a unique identifier.
@@ -111,6 +113,59 @@ struct ml_bus_t {
 struct ml_log_object_t {
     const char *name_p;
     int mask;
+};
+
+enum ml_dhcp_client_state_t {
+    ml_dhcp_client_state_init_t = 0,
+    ml_dhcp_client_state_selecting_t,
+    ml_dhcp_client_state_requesting_t,
+    ml_dhcp_client_state_bound_t,
+    ml_dhcp_client_state_renewing_t,
+    ml_dhcp_client_state_rebinding_t
+};
+
+enum ml_dhcp_client_packet_type_t {
+    ml_dhcp_client_packet_type_offer_t = 0,
+    ml_dhcp_client_packet_type_ack_t,
+    ml_dhcp_client_packet_type_nak_t,
+    ml_dhcp_client_packet_type_none_t
+};
+
+struct ml_dhcp_client_t {
+    enum ml_dhcp_client_state_t state;
+    enum ml_dhcp_client_packet_type_t packet_type;
+    struct {
+        uint32_t ip_address;
+        int lease_time;
+        int renewal_interval;
+        int rebinding_time;
+        uint32_t subnet_mask;
+        uint32_t gateway_ip_address;
+        uint32_t dns_server_ip_address;
+    } offer;
+    struct {
+        uint32_t ip_address;
+        int lease_time;
+        int renewal_interval;
+        int rebinding_time;
+        uint32_t subnet_mask;
+        uint32_t gateway_ip_address;
+        uint32_t dns_server_ip_address;
+    } ack;
+    bool renewal_timer_expired;
+    bool rebinding_timer_expired;
+    bool response_timer_expired;
+    bool init_timer_expired;
+    struct pollfd fds[5];
+    struct {
+        uint8_t mac_address[6];
+    } self;
+    struct {
+        uint32_t ip_address;
+    } server;
+    const char *interface_name_p;
+    pthread_t pthread;
+    struct ml_log_object_t log_object;
 };
 
 /**
@@ -320,6 +375,28 @@ int ml_ioctl(int fd, unsigned long request, void *data_p);
 
 int finit_module(int fd, const char *params_p, int flags);
 
+/**
+ * Initialize a DHCP client for given ethernet interface.
+ */
+void ml_dhcp_client_init(struct ml_dhcp_client_t *self_p,
+                         const char *interface_name_p,
+                         int log_mask);
+
+/**
+ * Start given client.
+ */
+int ml_dhcp_client_start(struct ml_dhcp_client_t *self_p);
+
+/**
+ * Stop given client.
+ */
+void ml_dhcp_client_stop(struct ml_dhcp_client_t *self_p);
+
+/**
+ * Join given client.
+ */
+int ml_dhcp_client_join(struct ml_dhcp_client_t *self_p);
+
 /* Exits on failure. Use with care. */
 
 void *xmalloc(size_t size);
@@ -331,6 +408,10 @@ void *xrealloc(void *buf_p, size_t size);
 int ml_open(const char *path_p, int flags);
 
 int ml_close(int fd);
+
+ssize_t ml_read(int fd, void *buf_p, size_t count);
+
+ssize_t ml_write(int fd, const void *buf_p, size_t count);
 
 int ml_finit_module(int fd, const char *params_p, int flags);
 

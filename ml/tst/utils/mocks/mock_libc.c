@@ -198,6 +198,46 @@ int __wrap_ml_close(int fd)
     return (res);
 }
 
+void mock_push_ml_read(int fd, void *buf_p, size_t count, ssize_t res)
+{
+    mock_push("ml_read(fd)", &fd, sizeof(fd));
+    mock_push("ml_read(buf_p)", buf_p, count);
+    mock_push("ml_read(count)", &count, sizeof(count));
+    mock_push("ml_read(): return (res)", &res, sizeof(res));
+}
+
+ssize_t __wrap_ml_read(int fd, void *buf_p, size_t count)
+{
+    ssize_t res;
+
+    mock_pop_assert("ml_read(fd)", &fd);
+    mock_pop("ml_read(buf_p)", buf_p);
+    mock_pop_assert("ml_read(count)", &count);
+    mock_pop("ml_read(): return (res)", &res);
+
+    return (res);
+}
+
+void mock_push_ml_write(int fd, const void *buf_p, size_t count, ssize_t res)
+{
+    mock_push("ml_write(fd)", &fd, sizeof(fd));
+    mock_push("ml_write(buf_p)", buf_p, count);
+    mock_push("ml_write(count)", &count, sizeof(count));
+    mock_push("ml_write(): return (res)", &res, sizeof(res));
+}
+
+ssize_t __wrap_ml_write(int fd, const void *buf_p, size_t count)
+{
+    ssize_t res;
+
+    mock_pop_assert("ml_write(fd)", &fd);
+    mock_pop_assert("ml_write(buf_p)", buf_p);
+    mock_pop_assert("ml_write(count)", &count);
+    mock_pop("ml_write(): return (res)", &res);
+
+    return (res);
+}
+
 void mock_push_ml_finit_module(int fd,
                                const char *params_p,
                                int flags,
@@ -362,5 +402,86 @@ int __wrap_ml_mknod(const char *path_p, mode_t mode, dev_t dev)
     mock_pop_assert("ml_mknod(dev)", &dev);
     mock_pop("ml_mknod(): return (res)", &res);
 
-    return (0);
+    return (res);
+}
+
+void mock_push_timerfd_create(int clockid, int flags, int res)
+{
+    mock_push("timerfd_create(clockid)", &clockid, sizeof(clockid));
+    mock_push("timerfd_create(flags)", &flags, sizeof(flags));
+    mock_push("timerfd_create(): return (res)", &res, sizeof(res));
+}
+
+int __wrap_timerfd_create(int clockid, int flags)
+{
+    int res;
+
+    mock_pop_assert("timerfd_create(clockid)", &clockid);
+    mock_pop_assert("timerfd_create(flags)", &flags);
+    mock_pop("timerfd_create(): return (res)", &res);
+
+    return (res);
+}
+
+void mock_push_timerfd_settime(int fd,
+                               int flags,
+                               const struct itimerspec *new_value_p,
+                               int res)
+{
+    mock_push("timerfd_settime(fd)", &fd, sizeof(fd));
+    mock_push("timerfd_settime(flags)", &flags, sizeof(flags));
+    mock_push("timerfd_settime(new_value_p)", new_value_p, sizeof(*new_value_p));
+    mock_push("timerfd_settime(): return (res)", &res, sizeof(res));
+}
+
+int __wrap_timerfd_settime(int fd,
+                           int flags,
+                           const struct itimerspec *new_value_p,
+                           struct itimerspec *old_value_p)
+{
+    (void)old_value_p;
+
+    int res;
+
+    mock_pop_assert("timerfd_settime(fd)", &fd);
+    mock_pop_assert("timerfd_settime(flags)", &flags);
+    mock_pop_assert("timerfd_settime(new_value_p)", new_value_p);
+    mock_pop("timerfd_settime(): return (res)", &res);
+
+    return (res);
+}
+
+void mock_push_poll(struct pollfd *fds_p, nfds_t nfds, int timeout, int res)
+{
+    nfds_t i;
+
+    for (i = 0; i < nfds; i++) {
+        mock_push("poll(fds_p->fd)", &fds_p[i].fd, sizeof(fds_p[i].fd));
+        mock_push("poll(fds_p->events)", &fds_p[i].events, sizeof(fds_p[i].events));
+        mock_push("poll(): return (fds_p->revents)",
+                  &fds_p[i].revents,
+                  sizeof(fds_p[i].revents));
+    }
+
+    mock_push("poll(nfds)", &nfds, sizeof(nfds));
+    mock_push("poll(timeout)", &timeout, sizeof(timeout));
+    mock_push("poll(): return (res)", &res, sizeof(res));
+}
+
+int __wrap_poll(struct pollfd *fds_p, nfds_t nfds, int timeout)
+{
+    int res;
+    nfds_t i;
+
+    for (i = 0; i < nfds; i++) {
+        mock_pop_assert("poll(fds_p->fd)", &fds_p[i].fd);
+        mock_pop_assert("poll(fds_p->events)", &fds_p[i].events);
+        mock_pop("poll(): return (fds_p->revents)", &fds_p[i].revents);
+    }
+
+    mock_pop_assert("poll(nfds)", &nfds);
+    mock_pop_assert("poll(timeout)", &timeout);
+    mock_pop("poll(): return (res)", &res);
+
+    return (res);
 }
