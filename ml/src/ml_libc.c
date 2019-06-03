@@ -62,3 +62,12 @@ int ml_mknod(const char *path_p, mode_t mode, dev_t dev)
 {
     return (mknod(path_p, mode, dev));
 }
+
+#if defined(__GNU_LIBRARY__) && (__GLIBC__ <= 2) && (__GLIBC_MINOR__ <= 26)
+
+int memfd_create(const char *name, unsigned flags)
+{
+    return syscall(SYS_memfd_create, name, flags);
+}
+
+#endif
