@@ -430,8 +430,66 @@ TEST(renew)
     mock_finalize();
 }
 
-TEST(rebind)
+TEST(renew_nack)
 {
+    struct ml_dhcp_client_t client;
+
+    mock_push_ml_dhcp_client_start();
+    mock_push_init_to_selecting();
+    mock_push_selecting_to_requesting();
+    mock_push_requesting_to_bound();
+    mock_push_bound_to_renewing();
+    mock_push_poll_fd(SOCK_IX);
+    mock_push_dhcp_read(&nak[0], sizeof(nak));
+    mock_push_enter_init();
+    mock_push_poll_failure();
+
+    ml_dhcp_client_init(&client, "eth0", ML_LOG_ALL);
+    ml_dhcp_client_start(&client);
+    ml_dhcp_client_join(&client);
+
+    mock_finalize();
+}
+
+TEST(renew_response_timeout)
+{
+    struct ml_dhcp_client_t client;
+
+    mock_push_ml_dhcp_client_start();
+    mock_push_init_to_selecting();
+    mock_push_selecting_to_requesting();
+    mock_push_requesting_to_bound();
+    mock_push_bound_to_renewing();
+    mock_push_poll_fd(RESP_IX);
+    mock_push_timer_read(RESP_FD);
+    mock_push_enter_init();
+    mock_push_poll_failure();
+
+    ml_dhcp_client_init(&client, "eth0", ML_LOG_ALL);
+    ml_dhcp_client_start(&client);
+    ml_dhcp_client_join(&client);
+
+    mock_finalize();
+}
+
+TEST(rebind_timeout)
+{
+    struct ml_dhcp_client_t client;
+
+    mock_push_ml_dhcp_client_start();
+    mock_push_init_to_selecting();
+    mock_push_selecting_to_requesting();
+    mock_push_requesting_to_bound();
+    mock_push_bound_to_renewing();
+    mock_push_poll_fd(REBIND_IX);
+    mock_push_timer_read(REBIND_FD);
+    mock_push_enter_init();
+    mock_push_poll_failure();
+
+    ml_dhcp_client_init(&client, "eth0", ML_LOG_ALL);
+    ml_dhcp_client_start(&client);
+    ml_dhcp_client_join(&client);
+
     mock_finalize();
 }
 
@@ -504,7 +562,9 @@ int main()
         start_join,
         new,
         renew,
-        rebind,
+        renew_nack,
+        renew_response_timeout,
+        rebind_timeout,
         discovery_response_timeout,
         request_response_timeout,
         discard_offers_in_requesting,
