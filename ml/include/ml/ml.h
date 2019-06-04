@@ -58,22 +58,23 @@
 #define ML_LOG_ALL         ML_LOG_UPTO(DEBUG)
 #define ML_LOG_NONE        0x00
 
-#define ML_EMERGENCY(log_object_p, fmt_p, ...)                          \
-    ml_log_object_print(log_object_p, ML_LOG_EMERGENCY, fmt_p, ##__VA_ARGS__)
-#define ML_ALERT(log_object_p, fmt_p, ...)                              \
-    ml_log_object_print(log_object_p, ML_LOG_ALERT, fmt_p, ##__VA_ARGS__)
-#define ML_CRITICAL(log_object_p, fmt_p, ...)                           \
-    ml_log_object_print(log_object_p, ML_LOG_CRITICAL, fmt_p, ##__VA_ARGS__)
-#define ML_ERROR(log_object_p, fmt_p, ...)                              \
-    ml_log_object_print(log_object_p, ML_LOG_ERROR, fmt_p, ##__VA_ARGS__)
-#define ML_WARNING(log_object_p, fmt_p, ...)                            \
-    ml_log_object_print(log_object_p, ML_LOG_WARNING, fmt_p, ##__VA_ARGS__)
-#define ML_NOTICE(log_object_p, fmt_p, ...)                             \
-    ml_log_object_print(log_object_p, ML_LOG_NOTICE, fmt_p, ##__VA_ARGS__)
-#define ML_INFO(log_object_p, fmt_p, ...)                               \
-    ml_log_object_print(log_object_p, ML_LOG_INFO, fmt_p, ##__VA_ARGS__)
-#define ML_DEBUG(log_object_p, fmt_p, ...)                              \
-    ml_log_object_print(log_object_p, ML_LOG_DEBUG, fmt_p, ##__VA_ARGS__)
+/* Requires "self_p->log_object". */
+#define ML_EMERGENCY(fmt_p, ...)                                        \
+    ml_log_object_print(&self_p->log_object, ML_LOG_EMERGENCY, fmt_p, ##__VA_ARGS__)
+#define ML_ALERT(fmt_p, ...)                              \
+    ml_log_object_print(&self_p->log_object, ML_LOG_ALERT, fmt_p, ##__VA_ARGS__)
+#define ML_CRITICAL(fmt_p, ...)                           \
+    ml_log_object_print(&self_p->log_object, ML_LOG_CRITICAL, fmt_p, ##__VA_ARGS__)
+#define ML_ERROR(fmt_p, ...)                              \
+    ml_log_object_print(&self_p->log_object, ML_LOG_ERROR, fmt_p, ##__VA_ARGS__)
+#define ML_WARNING(fmt_p, ...)                            \
+    ml_log_object_print(&self_p->log_object, ML_LOG_WARNING, fmt_p, ##__VA_ARGS__)
+#define ML_NOTICE(fmt_p, ...)                             \
+    ml_log_object_print(&self_p->log_object, ML_LOG_NOTICE, fmt_p, ##__VA_ARGS__)
+#define ML_INFO(fmt_p, ...)                               \
+    ml_log_object_print(&self_p->log_object, ML_LOG_INFO, fmt_p, ##__VA_ARGS__)
+#define ML_DEBUG(fmt_p, ...)                              \
+    ml_log_object_print(&self_p->log_object, ML_LOG_DEBUG, fmt_p, ##__VA_ARGS__)
 
 #define PRINT_FILE_LINE() printf("%s:%d\n", __FILE__, __LINE__);
 
@@ -395,6 +396,11 @@ void ml_dhcp_client_stop(struct ml_dhcp_client_t *self_p);
  * Join given client.
  */
 int ml_dhcp_client_join(struct ml_dhcp_client_t *self_p);
+
+/**
+ * @return "true" or "false" strings.
+ */
+const char *ml_bool_str(bool value);
 
 /* Exits on failure. Use with care. */
 

@@ -225,9 +225,7 @@ static int unpack_all_options(struct ml_dhcp_client_t *self_p,
             break;
 
         default:
-            ML_DEBUG(&self_p->log_object,
-                     "Ignoring DHCP option %d.",
-                     option);
+            ML_DEBUG("Ignoring DHCP option %d.", option);
             res = 0;
             break;
         }
@@ -264,9 +262,9 @@ static int unpack_options(struct ml_dhcp_client_t *self_p,
     return (res);
 }
 
-static int unpack_packet(struct ml_dhcp_client_t *self_p,
-                         const uint8_t *buf_p,
-                         size_t size)
+static void unpack_packet(struct ml_dhcp_client_t *self_p,
+                          const uint8_t *buf_p,
+                          size_t size)
 {
     (void)size;
 
@@ -274,15 +272,15 @@ static int unpack_packet(struct ml_dhcp_client_t *self_p,
     struct options_t options;
 
     if (buf_p[0] != BOOTP_MESSAGE_TYPE_BOOT_RESPONSE) {
-        return (-1);
+        return;
     }
 
     if (buf_p[1] != HARDWARE_TYPE_ETHERNET) {
-        return (-1);
+        return;
     }
 
     if (size <= 240) {
-        return (-1);
+        return;
     }
 
     res = unpack_options(self_p,
@@ -291,31 +289,31 @@ static int unpack_packet(struct ml_dhcp_client_t *self_p,
                          size - 240);
 
     if (res != 0) {
-        return (res);
+        return;
     }
 
     if (!options.message_type.valid) {
-        return (-1);
+        return;
     }
 
     switch (options.message_type.value) {
 
     case MESSAGE_TYPE_OFFER:
-        self_p->packet_type = ml_dhcp_client_packet_type_offer_t;
         self_p->offer.ip_address = ((buf_p[16] << 24)
                                     | (buf_p[17] << 16)
                                     | (buf_p[18] << 8)
                                     | (buf_p[19] << 0));
 
         if (!options.lease_time.valid) {
-            return (-1);
+            return;
         }
 
         if (options.lease_time.value < 1) {
-            return (-1);
+            return;
         }
 
         self_p->offer.lease_time = options.lease_time.value;
+        self_p->packet_type = ml_dhcp_client_packet_type_offer_t;
         break;
 
     case MESSAGE_TYPE_ACK:
@@ -327,16 +325,9 @@ static int unpack_packet(struct ml_dhcp_client_t *self_p,
         break;
 
     default:
-        ML_DEBUG(&self_p->log_object,
-                 "Invalid packet type %d.",
-                 options.message_type);
-        res = -1;
+        ML_DEBUG("Invalid packet type %d.", options.message_type);
         break;
     }
-
-    printf("packet_type: %d\n", self_p->packet_type);
-
-    return (res);
 }
 
 static void configure_interface(struct ml_dhcp_client_t *self_p)
@@ -363,7 +354,7 @@ static bool is_timeout(struct pollfd *fd_p)
     return (timeout);
 }
 
-static const char *packet_type_string(uint8_t packet_type)
+static const char *packet_type_str(uint8_t packet_type)
 {
     const char *res_p;
 
@@ -393,21 +384,11 @@ static const char *packet_type_string(uint8_t packet_type)
     return (res_p);
 }
 
-static const char *bool_string(bool value)
-{
-    if (value) {
-        return "true";
-    } else {
-        return "false";
-    }
-}
-
 static void update_events(struct ml_dhcp_client_t *self_p)
 {
     uint8_t buf[1024];
     ssize_t size;
 
-    /* Default values. */
     self_p->packet_type = ml_dhcp_client_packet_type_none_t;
 
     if (self_p->fds[0].revents & POLLIN) {
@@ -423,22 +404,17 @@ static void update_events(struct ml_dhcp_client_t *self_p)
     self_p->response_timer_expired = is_timeout(&self_p->fds[3]);
     self_p->init_timer_expired = is_timeout(&self_p->fds[4]);
 
-    ML_DEBUG(&self_p->log_object, "Events:");
-    ML_DEBUG(&self_p->log_object,
-             "  PacketType:            %s",
-             packet_type_string(self_p->packet_type));
-    ML_DEBUG(&self_p->log_object,
-             "  RenewalTimerExpired:   %s",
-             bool_string(self_p->renewal_timer_expired));
-    ML_DEBUG(&self_p->log_object,
-             "  RebindingTimerExpired: %s",
-             bool_string(self_p->rebinding_timer_expired));
-    ML_DEBUG(&self_p->log_object,
-             "  ResponseTimerExpired:  %s",
-             bool_string(self_p->response_timer_expired));
-    ML_DEBUG(&self_p->log_object,
-             "  InitTimerExpired:      %s",
-             bool_string(self_p->init_timer_expired));
+    ML_DEBUG("Events:");
+    ML_DEBUG("  PacketType:            %s",
+             packet_type_str(self_p->packet_type));
+    ML_DEBUG("  RenewalTimerExpired:   %s",
+             ml_bool_str(self_p->renewal_timer_expired));
+    ML_DEBUG("  RebindingTimerExpired: %s",
+             ml_bool_str(self_p->rebinding_timer_expired));
+    ML_DEBUG("  ResponseTimerExpired:  %s",
+             ml_bool_str(self_p->response_timer_expired));
+    ML_DEBUG("  InitTimerExpired:      %s",
+             ml_bool_str(self_p->init_timer_expired));
 }
 
 static int set_timer(int fd, time_t seconds, long nanoseconds)
@@ -525,8 +501,6 @@ static bool send_discover(struct ml_dhcp_client_t *self_p)
 
     transaction_id = 0x32493678;
 
-    ML_DEBUG(&self_p->log_object, "Sending discover.");
-
     memset(&buf[0], 0, sizeof(buf));
     buf[0] = BOOTP_MESSAGE_TYPE_BOOT_REQUEST;
     buf[1] = HARDWARE_TYPE_ETHERNET;
@@ -567,8 +541,6 @@ static bool send_request(struct ml_dhcp_client_t *self_p)
     uint32_t transaction_id;
 
     transaction_id = 0x32493678;
-
-    ML_DEBUG(&self_p->log_object, "Sending request.");
 
     memset(&buf[0], 0, sizeof(buf));
     buf[0] = BOOTP_MESSAGE_TYPE_BOOT_REQUEST;
@@ -650,8 +622,7 @@ static const char *state_string(enum ml_dhcp_client_state_t state)
 static void change_state(struct ml_dhcp_client_t *self_p,
                          enum ml_dhcp_client_state_t state)
 {
-    ML_INFO(&self_p->log_object,
-            "State change from %s to %s.",
+    ML_INFO("State change from %s to %s.",
             state_string(self_p->state),
             state_string(state));
 
@@ -955,15 +926,13 @@ static void *client_main(void *arg_p)
 
     self_p = (struct ml_dhcp_client_t *)arg_p;
 
-    ML_INFO(&self_p->log_object,
-            "Starting on interface '%s'.",
-            self_p->interface_name_p);
+    ML_INFO("Starting on interface '%s'.", self_p->interface_name_p);
 
     while (true) {
         res = poll(&self_p->fds[0], membersof(self_p->fds), WAIT_FOREVER);
 
         if (res <= 0) {
-            ML_INFO(&self_p->log_object, "Poll returned %d.", res);
+            ML_INFO("Poll returned %d.", res);
             break;
         }
 

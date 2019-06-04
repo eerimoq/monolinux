@@ -241,6 +241,15 @@ static void init_pollfds(struct pollfd *fds_p)
     fds_p[INIT_IX].events = POLLIN;
 }
 
+static void mock_push_poll_fd(int index)
+{
+    struct pollfd fds[5];
+
+    init_pollfds(&fds[0]);
+    fds[index].revents = POLLIN;
+    mock_push_poll(&fds[0], 5, -1, 1);
+}
+
 static void mock_push_dhcp_sendto(const uint8_t *buf_p, size_t size)
 {
     struct sockaddr_in addr;
@@ -250,6 +259,19 @@ static void mock_push_dhcp_sendto(const uint8_t *buf_p, size_t size)
     addr.sin_addr.s_addr = htonl(INADDR_BROADCAST);
     addr.sin_port = htons(67);
     mock_push_sendto(SOCK_FD, buf_p, size, &addr, size);
+}
+
+static void mock_push_dhcp_read(uint8_t *buf_p, size_t size)
+{
+    mock_push_ml_read(SOCK_FD, buf_p, 1024, size);
+}
+
+static void mock_push_timer_read(int fd)
+{
+    uint64_t value;
+
+    value = 0;
+    mock_push_ml_read(fd, &value, sizeof(value), sizeof(value));
 }
 
 static void mock_push_ml_dhcp_client_start(void)
@@ -284,14 +306,9 @@ static void mock_push_ml_dhcp_client_start(void)
 static void mock_push_init_to_selecting(void)
 {
     struct itimerspec timeout;
-    struct pollfd fds[5];
-    uint64_t value;
 
-    init_pollfds(&fds[0]);
-    fds[INIT_IX].revents = POLLIN;
-    mock_push_poll(&fds[0], 5, -1, 1);
-    value = 0;
-    mock_push_ml_read(INIT_FD, &value, sizeof(value), sizeof(value));
+    mock_push_poll_fd(INIT_IX);
+    mock_push_timer_read(INIT_FD);
     mock_push_dhcp_sendto(&discover[0], sizeof(discover));
     memset(&timeout, 0, sizeof(timeout));
     timeout.it_value.tv_sec = 5;
@@ -301,12 +318,9 @@ static void mock_push_init_to_selecting(void)
 static void mock_push_selecting_to_requesting(void)
 {
     struct itimerspec timeout;
-    struct pollfd fds[5];
 
-    init_pollfds(&fds[0]);
-    fds[SOCK_IX].revents = POLLIN;
-    mock_push_poll(&fds[0], 5, -1, 1);
-    mock_push_ml_read(SOCK_FD, &offer[0], 1024, sizeof(offer));
+    mock_push_poll_fd(SOCK_IX);
+    mock_push_dhcp_read(&offer[0], sizeof(offer));
     mock_push_dhcp_sendto(&request[0], sizeof(request));
     memset(&timeout, 0, sizeof(timeout));
     timeout.it_value.tv_sec = 5;
@@ -316,12 +330,9 @@ static void mock_push_selecting_to_requesting(void)
 static void mock_push_requesting_to_bound(void)
 {
     struct itimerspec timeout;
-    struct pollfd fds[5];
 
-    init_pollfds(&fds[0]);
-    fds[SOCK_IX].revents = POLLIN;
-    mock_push_poll(&fds[0], 5, -1, 1);
-    mock_push_ml_read(SOCK_FD, &ack[0], 1024, sizeof(ack));
+    mock_push_poll_fd(SOCK_IX);
+    mock_push_dhcp_read(&ack[0], sizeof(ack));
     memset(&timeout, 0, sizeof(timeout));
     timeout.it_value.tv_sec = 0;
     mock_push_timerfd_settime(RESP_FD, 0, &timeout, 0);
@@ -334,14 +345,9 @@ static void mock_push_requesting_to_bound(void)
 static void mock_push_bound_to_renewing(void)
 {
     struct itimerspec timeout;
-    struct pollfd fds[5];
-    uint64_t value;
 
-    init_pollfds(&fds[0]);
-    fds[RENEW_IX].revents = POLLIN;
-    mock_push_poll(&fds[0], 5, -1, 1);
-    value = 0;
-    mock_push_ml_read(RENEW_FD, &value, sizeof(value), sizeof(value));
+    mock_push_poll_fd(RENEW_IX);
+    mock_push_timer_read(RENEW_FD);
     mock_push_dhcp_sendto(&request[0], sizeof(request));
     memset(&timeout, 0, sizeof(timeout));
     timeout.it_value.tv_sec = 5;
@@ -432,17 +438,11 @@ TEST(rebind)
 TEST(discovery_response_timeout)
 {
     struct ml_dhcp_client_t client;
-    struct pollfd fds[5];
-    uint64_t value;
 
     mock_push_ml_dhcp_client_start();
     mock_push_init_to_selecting();
-
-    init_pollfds(&fds[0]);
-    fds[RESP_IX].revents = POLLIN;
-    mock_push_poll(&fds[0], 5, -1, 1);
-    value = 0;
-    mock_push_ml_read(RESP_FD, &value, sizeof(value), sizeof(value));
+    mock_push_poll_fd(RESP_IX);
+    mock_push_timer_read(RESP_FD);
     mock_push_enter_init();
     mock_push_poll_failure();
 
@@ -461,15 +461,12 @@ TEST(request_response_timeout)
 TEST(discard_offers_in_requesting)
 {
     struct ml_dhcp_client_t client;
-    struct pollfd fds[5];
 
     mock_push_ml_dhcp_client_start();
     mock_push_init_to_selecting();
     mock_push_selecting_to_requesting();
-    init_pollfds(&fds[0]);
-    fds[SOCK_IX].revents = POLLIN;
-    mock_push_poll(&fds[0], 5, -1, 1);
-    mock_push_ml_read(SOCK_FD, &offer[0], 1024, sizeof(offer));
+    mock_push_poll_fd(SOCK_IX);
+    mock_push_dhcp_read(&offer[0], sizeof(offer));
     mock_push_requesting_to_bound();
     mock_push_poll_failure();
 
@@ -483,15 +480,12 @@ TEST(discard_offers_in_requesting)
 TEST(request_nack)
 {
     struct ml_dhcp_client_t client;
-    struct pollfd fds[5];
 
     mock_push_ml_dhcp_client_start();
     mock_push_init_to_selecting();
     mock_push_selecting_to_requesting();
-    init_pollfds(&fds[0]);
-    fds[SOCK_IX].revents = POLLIN;
-    mock_push_poll(&fds[0], 5, -1, 1);
-    mock_push_ml_read(SOCK_FD, &nak[0], 1024, sizeof(nak));
+    mock_push_poll_fd(SOCK_IX);
+    mock_push_dhcp_read(&nak[0], sizeof(nak));
     mock_push_enter_init();
     mock_push_poll_failure();
 

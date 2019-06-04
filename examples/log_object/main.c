@@ -50,9 +50,5 @@ int main()
     ml_log_object_print(&log_object_2, ML_LOG_DEBUG, "Debug level 3!");
     ml_log_object_print(&log_object_2, ML_LOG_INFO, "Info level 3!");
 
-    /* Short form. */
-    ML_DEBUG(&log_object_1, "Debug level 4!");
-    ML_INFO(&log_object_1, "Info level 4!");
-
     return (0);
 }

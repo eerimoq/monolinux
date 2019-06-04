@@ -353,6 +353,15 @@ int ml_ioctl(int fd, unsigned long request, void *data_p)
     return (res);
 }
 
+const char *ml_bool_str(bool value)
+{
+    if (value) {
+        return "true";
+    } else {
+        return "false";
+    }
+}
+
 void *xmalloc(size_t size)
 {
     void *buf_p;
