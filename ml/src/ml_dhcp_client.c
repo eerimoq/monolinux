@@ -74,6 +74,12 @@
 #define SERVER_PORT 67
 #define CLIENT_PORT 68
 
+#define SOCK_IX   0
+#define RENEW_IX  1
+#define REBIND_IX 2
+#define RESP_IX   3
+#define INIT_IX   4
+
 struct option_u8_t {
     uint8_t value;
     bool valid;
@@ -391,18 +397,18 @@ static void update_events(struct ml_dhcp_client_t *self_p)
 
     self_p->packet_type = ml_dhcp_client_packet_type_none_t;
 
-    if (self_p->fds[0].revents & POLLIN) {
-        size = ml_read(self_p->fds[0].fd, &buf[0], sizeof(buf));
+    if (self_p->fds[SOCK_IX].revents & POLLIN) {
+        size = ml_read(self_p->fds[SOCK_IX].fd, &buf[0], sizeof(buf));
 
         if (size > 0) {
             unpack_packet(self_p, &buf[0], size);
         }
     }
 
-    self_p->renewal_timer_expired = is_timeout(&self_p->fds[1]);
-    self_p->rebinding_timer_expired = is_timeout(&self_p->fds[2]);
-    self_p->response_timer_expired = is_timeout(&self_p->fds[3]);
-    self_p->init_timer_expired = is_timeout(&self_p->fds[4]);
+    self_p->renewal_timer_expired = is_timeout(&self_p->fds[RENEW_IX]);
+    self_p->rebinding_timer_expired = is_timeout(&self_p->fds[REBIND_IX]);
+    self_p->response_timer_expired = is_timeout(&self_p->fds[RESP_IX]);
+    self_p->init_timer_expired = is_timeout(&self_p->fds[INIT_IX]);
 
     ML_DEBUG("Events:");
     ML_DEBUG("  PacketType:            %s",
@@ -430,34 +436,34 @@ static int set_timer(int fd, time_t seconds, long nanoseconds)
 
 static int set_renewal_timer(struct ml_dhcp_client_t *self_p)
 {
-    return (set_timer(self_p->fds[1].fd, 50, 0));
+    return (set_timer(self_p->fds[RENEW_IX].fd, 50, 0));
 }
 
 static int set_rebinding_timer(struct ml_dhcp_client_t *self_p)
 {
-    return (set_timer(self_p->fds[2].fd, 60, 0));
+    return (set_timer(self_p->fds[REBIND_IX].fd, 60, 0));
 }
 
 static int set_response_timer(struct ml_dhcp_client_t *self_p)
 {
-    return (set_timer(self_p->fds[3].fd, 5, 0));
+    return (set_timer(self_p->fds[RESP_IX].fd, 5, 0));
 }
 
 static void cancel_rebinding_timer(struct ml_dhcp_client_t *self_p)
 {
-    set_timer(self_p->fds[2].fd, 0, 0);
+    set_timer(self_p->fds[REBIND_IX].fd, 0, 0);
 }
 
 static void cancel_response_timer(struct ml_dhcp_client_t *self_p)
 {
-    set_timer(self_p->fds[3].fd, 0, 0);
+    set_timer(self_p->fds[RESP_IX].fd, 0, 0);
 }
 
 static int set_init_timer(struct ml_dhcp_client_t *self_p,
                           time_t seconds,
                           long nanoseconds)
 {
-    return (set_timer(self_p->fds[4].fd, seconds, nanoseconds));
+    return (set_timer(self_p->fds[INIT_IX].fd, seconds, nanoseconds));
 }
 
 static bool send_packet(struct ml_dhcp_client_t *self_p,
@@ -474,7 +480,7 @@ static bool send_packet(struct ml_dhcp_client_t *self_p,
     addr.sin_addr.s_addr = htonl(INADDR_BROADCAST);
     addr.sin_port = htons(SERVER_PORT);
 
-    res = sendto(self_p->fds[0].fd,
+    res = sendto(self_p->fds[SOCK_IX].fd,
                  buf_p,
                  size,
                  0,
@@ -760,7 +766,7 @@ static int setup_socket(struct ml_dhcp_client_t *self_p)
         goto err2;
     }
 
-    init_pollfd(&self_p->fds[0], sock);
+    init_pollfd(&self_p->fds[SOCK_IX], sock);
 
     return (0);
 
@@ -772,56 +778,15 @@ err1:
     return (res);
 }
 
-static int setup_renewal_timer(struct ml_dhcp_client_t *self_p)
+static int setup_timer(struct ml_dhcp_client_t *self_p,
+                       int index)
 {
     int fd;
 
     fd = timerfd_create(CLOCK_REALTIME, 0);
 
     if (fd != -1) {
-        init_pollfd(&self_p->fds[1], fd);
-        fd = 0;
-    }
-
-    return (fd);
-}
-
-static int setup_rebinding_timer(struct ml_dhcp_client_t *self_p)
-{
-    int fd;
-
-    fd = timerfd_create(CLOCK_REALTIME, 0);
-
-    if (fd != -1) {
-        init_pollfd(&self_p->fds[2], fd);
-        fd = 0;
-    }
-
-    return (fd);
-}
-
-static int setup_response_timer(struct ml_dhcp_client_t *self_p)
-{
-    int fd;
-
-    fd = timerfd_create(CLOCK_REALTIME, 0);
-
-    if (fd != -1) {
-        init_pollfd(&self_p->fds[3], fd);
-        fd = 0;
-    }
-
-    return (fd);
-}
-
-static int setup_init_timer(struct ml_dhcp_client_t *self_p)
-{
-    int fd;
-
-    fd = timerfd_create(CLOCK_REALTIME, 0);
-
-    if (fd != -1) {
-        init_pollfd(&self_p->fds[4], fd);
+        init_pollfd(&self_p->fds[index], fd);
         fd = 0;
     }
 
@@ -838,25 +803,25 @@ static int init(struct ml_dhcp_client_t *self_p)
         goto err1;
     }
 
-    res = setup_renewal_timer(self_p);
+    res = setup_timer(self_p, RENEW_IX);
 
     if (res != 0) {
         goto err2;
     }
 
-    res = setup_rebinding_timer(self_p);
+    res = setup_timer(self_p, REBIND_IX);
 
     if (res != 0) {
         goto err3;
     }
 
-    res = setup_response_timer(self_p);
+    res = setup_timer(self_p, RESP_IX);
 
     if (res != 0) {
         goto err4;
     }
 
-    res = setup_init_timer(self_p);
+    res = setup_timer(self_p, INIT_IX);
 
     if (res != 0) {
         goto err5;
@@ -865,16 +830,16 @@ static int init(struct ml_dhcp_client_t *self_p)
     return (res);
 
  err5:
-    ml_close(self_p->fds[3].fd);
+    ml_close(self_p->fds[RESP_IX].fd);
 
  err4:
-    ml_close(self_p->fds[2].fd);
+    ml_close(self_p->fds[REBIND_IX].fd);
 
  err3:
-    ml_close(self_p->fds[1].fd);
+    ml_close(self_p->fds[RENEW_IX].fd);
 
  err2:
-    ml_close(self_p->fds[0].fd);
+    ml_close(self_p->fds[SOCK_IX].fd);
 
  err1:
 
