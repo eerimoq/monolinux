@@ -286,7 +286,6 @@ static void update_events(struct ml_dhcp_client_t *self_p)
     self_p->packet_type = ml_dhcp_client_packet_type_none_t;
 
     if (self_p->fds[0].revents & POLLIN) {
-        /* ToDo: Cancel the response timer. */
         size = ml_read(self_p->fds[0].fd, &buf[0], sizeof(buf));
 
         if (size > 0) {
@@ -323,6 +322,16 @@ static int set_rebinding_timer(struct ml_dhcp_client_t *self_p)
 static int set_response_timer(struct ml_dhcp_client_t *self_p)
 {
     return (set_timer(self_p->fds[3].fd, 5));
+}
+
+static void cancel_rebinding_timer(struct ml_dhcp_client_t *self_p)
+{
+    set_timer(self_p->fds[2].fd, 0);
+}
+
+static void cancel_response_timer(struct ml_dhcp_client_t *self_p)
+{
+    set_timer(self_p->fds[3].fd, 0);
 }
 
 static int set_init_timer(struct ml_dhcp_client_t *self_p, int seconds)
@@ -493,6 +502,8 @@ static void change_state(struct ml_dhcp_client_t *self_p,
 
 static void enter_init(struct ml_dhcp_client_t *self_p)
 {
+    cancel_response_timer(self_p);
+    cancel_rebinding_timer(self_p);
     set_init_timer(self_p, 10);
     change_state(self_p, ml_dhcp_client_state_init_t);
 }
@@ -509,6 +520,7 @@ static void enter_requesting(struct ml_dhcp_client_t *self_p)
 
 static void enter_bound(struct ml_dhcp_client_t *self_p)
 {
+    cancel_response_timer(self_p);
     set_renewal_timer(self_p);
     set_rebinding_timer(self_p);
     configure_interface(self_p);
@@ -541,6 +553,8 @@ static void process_events_selecting(struct ml_dhcp_client_t *self_p)
     if (is_offer(self_p)) {
         if (send_request(self_p)) {
             enter_requesting(self_p);
+        } else {
+            enter_init(self_p);
         }
     } else if (is_response_timeout(self_p)) {
         enter_init(self_p);
