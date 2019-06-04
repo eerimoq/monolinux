@@ -394,6 +394,40 @@ TEST(start_join)
     mock_finalize();
 }
 
+TEST(start_failure_last_init_step)
+{
+    struct ml_dhcp_client_t client;
+    struct sockaddr_in addr;
+    int yes;
+
+    mock_push_socket(AF_INET, SOCK_DGRAM, 0, SOCK_FD);
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(68);
+    addr.sin_addr.s_addr = INADDR_ANY;
+    mock_push_bind(SOCK_FD, (struct sockaddr *)&addr, sizeof(addr), 0);
+    yes = 1;
+    mock_push_setsockopt(SOCK_FD,
+                         SOL_SOCKET,
+                         SO_BROADCAST,
+                         &yes,
+                         sizeof(yes),
+                         0);
+    mock_push_timerfd_create(CLOCK_REALTIME, 0, RENEW_FD);
+    mock_push_timerfd_create(CLOCK_REALTIME, 0, REBIND_FD);
+    mock_push_timerfd_create(CLOCK_REALTIME, 0, RESP_FD);
+    mock_push_timerfd_create(CLOCK_REALTIME, 0, -1);
+    mock_push_ml_close(RESP_FD, 0);
+    mock_push_ml_close(REBIND_FD, 0);
+    mock_push_ml_close(RENEW_FD, 0);
+    mock_push_ml_close(SOCK_FD, 0);
+
+    ml_dhcp_client_init(&client, "eth0", ML_LOG_ALL);
+    ml_dhcp_client_start(&client);
+
+    mock_finalize();
+}
+
 TEST(new)
 {
     struct ml_dhcp_client_t client;
@@ -560,6 +594,7 @@ int main()
 
     return RUN_TESTS(
         start_join,
+        start_failure_last_init_step,
         new,
         renew,
         renew_nack,
