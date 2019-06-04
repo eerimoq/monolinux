@@ -252,6 +252,7 @@ static void mock_push_ml_dhcp_client_start(void)
     mock_push_timerfd_create(CLOCK_REALTIME, 0, INIT_FD);
     memset(&timeout, 0, sizeof(timeout));
     timeout.it_value.tv_sec = 0;
+    timeout.it_value.tv_nsec = 1;
     mock_push_timerfd_settime(INIT_FD, 0, &timeout, 0);
 }
 

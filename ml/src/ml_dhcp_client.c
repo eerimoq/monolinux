@@ -288,12 +288,49 @@ static bool is_timeout(struct pollfd *fd_p)
     return (timeout);
 }
 
+static const char *packet_type_string(uint8_t packet_type)
+{
+    const char *res_p;
+
+    switch (packet_type) {
+
+    case ml_dhcp_client_packet_type_offer_t:
+        res_p = "OFFER";
+        break;
+
+    case ml_dhcp_client_packet_type_ack_t:
+        res_p = "ACK";
+        break;
+
+    case ml_dhcp_client_packet_type_nak_t:
+        res_p = "NAK";
+        break;
+
+    case ml_dhcp_client_packet_type_none_t:
+        res_p = "NONE";
+        break;
+
+
+    default:
+        res_p = "UNKNOWN";
+    }
+
+    return (res_p);
+}
+
+static const char *bool_string(bool value)
+{
+    if (value) {
+        return "true";
+    } else {
+        return "false";
+    }
+}
+
 static void update_events(struct ml_dhcp_client_t *self_p)
 {
     uint8_t buf[1024];
     ssize_t size;
-
-    PRINT_FILE_LINE();
 
     /* Default values. */
     self_p->packet_type = ml_dhcp_client_packet_type_none_t;
@@ -310,46 +347,66 @@ static void update_events(struct ml_dhcp_client_t *self_p)
     self_p->rebinding_timer_expired = is_timeout(&self_p->fds[2]);
     self_p->response_timer_expired = is_timeout(&self_p->fds[3]);
     self_p->init_timer_expired = is_timeout(&self_p->fds[4]);
+
+    ML_DEBUG(&self_p->log_object, "Events:");
+    ML_DEBUG(&self_p->log_object,
+             "  PacketType:            %s",
+             packet_type_string(self_p->packet_type));
+    ML_DEBUG(&self_p->log_object,
+             "  RenewalTimerExpired:   %s",
+             bool_string(self_p->renewal_timer_expired));
+    ML_DEBUG(&self_p->log_object,
+             "  RebindingTimerExpired: %s",
+             bool_string(self_p->rebinding_timer_expired));
+    ML_DEBUG(&self_p->log_object,
+             "  ResponseTimerExpired:  %s",
+             bool_string(self_p->response_timer_expired));
+    ML_DEBUG(&self_p->log_object,
+             "  InitTimerExpired:      %s",
+             bool_string(self_p->init_timer_expired));
 }
 
-static int set_timer(int fd, int seconds)
+static int set_timer(int fd, time_t seconds, long nanoseconds)
 {
     struct itimerspec timeout;
 
     memset(&timeout, 0, sizeof(timeout));
     timeout.it_value.tv_sec = seconds;
+    timeout.it_value.tv_nsec = nanoseconds;
 
     return (timerfd_settime(fd, 0, &timeout, NULL));
 }
 
 static int set_renewal_timer(struct ml_dhcp_client_t *self_p)
 {
-    return (set_timer(self_p->fds[1].fd, 50));
+    return (set_timer(self_p->fds[1].fd, 50, 0));
 }
 
 static int set_rebinding_timer(struct ml_dhcp_client_t *self_p)
 {
-    return (set_timer(self_p->fds[2].fd, 60));
+    return (set_timer(self_p->fds[2].fd, 60, 0));
 }
 
 static int set_response_timer(struct ml_dhcp_client_t *self_p)
 {
-    return (set_timer(self_p->fds[3].fd, 5));
+    return (set_timer(self_p->fds[3].fd, 5, 0));
 }
 
 static void cancel_rebinding_timer(struct ml_dhcp_client_t *self_p)
 {
-    set_timer(self_p->fds[2].fd, 0);
+    set_timer(self_p->fds[2].fd, 0, 0);
 }
 
 static void cancel_response_timer(struct ml_dhcp_client_t *self_p)
 {
-    set_timer(self_p->fds[3].fd, 0);
+    set_timer(self_p->fds[3].fd, 0, 0);
 }
 
-static int set_init_timer(struct ml_dhcp_client_t *self_p, int seconds)
+static int set_init_timer(struct ml_dhcp_client_t *self_p,
+                          time_t seconds,
+                          long nanoseconds)
 {
-    return (set_timer(self_p->fds[4].fd, seconds));
+    return (set_timer(self_p->fds[4].fd, seconds, nanoseconds));
 }
 
 static bool send_packet(struct ml_dhcp_client_t *self_p,
@@ -513,7 +570,7 @@ static void enter_init(struct ml_dhcp_client_t *self_p)
 {
     cancel_response_timer(self_p);
     cancel_rebinding_timer(self_p);
-    set_init_timer(self_p, 10);
+    set_init_timer(self_p, 10, 0);
     change_state(self_p, ml_dhcp_client_state_init_t);
 }
 
@@ -547,7 +604,7 @@ static void process_events_init(struct ml_dhcp_client_t *self_p)
         if (send_discover(self_p)) {
             enter_selecting(self_p);
         } else {
-            set_init_timer(self_p, 10);
+            set_init_timer(self_p, 10, 0);
         }
     }
 }
@@ -775,11 +832,15 @@ static void *client_main(void *arg_p)
 
     self_p = (struct ml_dhcp_client_t *)arg_p;
 
+    ML_INFO(&self_p->log_object,
+            "Starting on interface '%s'.",
+            self_p->interface_name_p);
+
     while (true) {
-        PRINT_FILE_LINE();
         res = poll(&self_p->fds[0], membersof(self_p->fds), WAIT_FOREVER);
 
         if (res <= 0) {
+            ML_INFO(&self_p->log_object, "Poll returned %d.", res);
             break;
         }
 
@@ -817,7 +878,7 @@ int ml_dhcp_client_start(struct ml_dhcp_client_t *self_p)
     res = init(self_p);
 
     if (res == 0) {
-        set_init_timer(self_p, 0);
+        set_init_timer(self_p, 0, 1);
 
         res = pthread_create(&self_p->pthread, NULL, client_main, self_p);
 
