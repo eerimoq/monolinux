@@ -1,6 +1,7 @@
 # A package.
 
 SUITES ?= $(filter-out utils,$(shell ls tst))
+CLEAN_PATHS ?=
 
 .PHONY: test clean coverage
 
@@ -26,7 +27,7 @@ clean:
 	for test in $(SUITES) ; do \
 	  $(MAKE) -C tst/$$test clean ; \
 	done
-	rm -rf build
+	rm -rf build $(CLEAN_PATHS)
 
 print-%:
 	@echo $($*)

@@ -54,6 +54,18 @@ void mock_push_mount(const char *source_p,
 
 void mock_push_socket(int domain, int type, int protocol, int res);
 
+void mock_push_bind(int fd,
+                    const struct sockaddr *addr_p,
+                    socklen_t addrlen,
+                    int res);
+
+void mock_push_setsockopt(int sockfd,
+                          int level,
+                          int optname,
+                          const void *optval_p,
+                          socklen_t optlen,
+                          int res);
+
 void mock_push_ioctl(int fd,
                      unsigned long request,
                      void *data_p,
@@ -69,6 +81,12 @@ void mock_push_sendto(int fd,
                       size_t len,
                       const struct sockaddr_in *dest_addr_p,
                       ssize_t res);
+
+void mock_push_recvfrom(int fd,
+                        void *buf_p,
+                        size_t len,
+                        struct sockaddr_in *dest_addr_p,
+                        ssize_t res);
 
 void mock_push_ml_open(const char *path_p, int flags, int res);
 

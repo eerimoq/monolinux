@@ -98,6 +98,64 @@ int __wrap_socket(int domain, int type, int protocol)
     return (res);
 }
 
+void mock_push_bind(int fd,
+                    const struct sockaddr *addr_p,
+                    socklen_t addrlen,
+                    int res)
+{
+    mock_push("bind(fd)", &fd, sizeof(fd));
+    mock_push("bind(addr_p)", addr_p, addrlen);
+    mock_push("bind(addrlen)", &addrlen, sizeof(addrlen));
+    mock_push("bind(): return (res)", &res, sizeof(res));
+}
+
+int __wrap_bind(int fd,
+                const struct sockaddr *addr_p,
+                socklen_t addrlen)
+{
+    int res;
+
+    mock_pop_assert("bind(fd)", &fd);
+    mock_pop_assert("bind(addr_p)", addr_p);
+    mock_pop_assert("bind(addrlen)", &addrlen);
+    mock_pop("bind(): return (res)", &res);
+
+    return (res);
+}
+
+void mock_push_setsockopt(int sockfd,
+                          int level,
+                          int optname,
+                          const void *optval_p,
+                          socklen_t optlen,
+                          int res)
+{
+    mock_push("setsockopt(sockfd)", &sockfd, sizeof(sockfd));
+    mock_push("setsockopt(level)", &level, sizeof(level));
+    mock_push("setsockopt(optname)", &optname, sizeof(optname));
+    mock_push("setsockopt(optval_p)", optval_p, optlen);
+    mock_push("setsockopt(optlen)", &optlen, sizeof(optlen));
+    mock_push("setsockopt(): return (res)", &res, sizeof(res));
+}
+
+int __wrap_setsockopt(int sockfd,
+                      int level,
+                      int optname,
+                      const void *optval_p,
+                      socklen_t optlen)
+{
+    int res;
+
+    mock_pop_assert("setsockopt(sockfd)", &sockfd);
+    mock_pop_assert("setsockopt(level)", &level);
+    mock_pop_assert("setsockopt(optname)", &optname);
+    mock_pop_assert("setsockopt(optval_p)", optval_p);
+    mock_pop_assert("setsockopt(optlen)", &optlen);
+    mock_pop("setsockopt(): return (res)", &res);
+
+    return (res);
+}
+
 void mock_push_ioctl(int fd,
                      unsigned long request,
                      void *data_p,
@@ -157,9 +215,42 @@ ssize_t __wrap_sendto(int fd,
     mock_pop_assert("sendto(buf_p)", buf_p);
     mock_pop_assert("sendto(len)", &len);
     ASSERT_EQ(flags, 0);
-    ASSERT_EQ(addrlen, sizeof(*dest_addr_p));
+    ASSERT_EQ(addrlen, sizeof(struct sockaddr_in));
     mock_pop_assert("sendto(dest_addr_p)", dest_addr_p);
     mock_pop("sendto(): return (res)", &res);
+
+    return (res);
+}
+
+void mock_push_recvfrom(int fd,
+                        void *buf_p,
+                        size_t len,
+                        struct sockaddr_in *dest_addr_p,
+                        ssize_t res)
+{
+    mock_push("recvfrom(fd)", &fd, sizeof(fd));
+    mock_push("recvfrom(buf_p)", buf_p, len);
+    mock_push("recvfrom(len)", &len, sizeof(len));
+    mock_push("recvfrom(dest_addr_p)", dest_addr_p, sizeof(*dest_addr_p));
+    mock_push("recvfrom(): return (res)", &res, sizeof(res));
+}
+
+ssize_t __wrap_recvfrom(int fd,
+                        void *buf_p,
+                        size_t len,
+                        int flags,
+                        struct sockaddr *dest_addr_p,
+                        socklen_t *addrlen_p)
+{
+    ssize_t res;
+
+    mock_pop_assert("recvfrom(fd)", &fd);
+    mock_pop("recvfrom(buf_p)", buf_p);
+    mock_pop_assert("recvfrom(len)", &len);
+    ASSERT_EQ(flags, 0);
+    ASSERT_EQ(*addrlen_p, sizeof(struct sockaddr_in));
+    mock_pop("recvfrom(dest_addr_p)", dest_addr_p);
+    mock_pop("recvfrom(): return (res)", &res);
 
     return (res);
 }

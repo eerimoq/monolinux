@@ -28,13 +28,15 @@
 
 #define _GNU_SOURCE
 
-#include <sys/mman.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#include <sys/timerfd.h>
 #include <time.h>
+#include <sys/timerfd.h>
+#include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <arpa/inet.h>
 #include <unistd.h>
 #include "ml/ml.h"
 
@@ -69,11 +71,25 @@
 
 #define WAIT_FOREVER -1
 
+#define SERVER_PORT 67
+#define CLIENT_PORT 68
+
+struct option_u8_t {
+    uint8_t value;
+    bool valid;
+};
+
+struct option_u32_t {
+    uint8_t value;
+    bool valid;
+};
+
 struct options_t {
-    uint8_t message_type;
-    bool message_type_valid;
-    uint32_t subnet_mask;
-    bool subnet_mask_valid;
+    struct option_u8_t message_type;
+    struct option_u32_t subnet_mask;
+    struct option_u32_t lease_time;
+    struct option_u32_t renewal_time;
+    struct option_u32_t rebinding_time;
 };
 
 static bool is_offer(struct ml_dhcp_client_t *self_p)
@@ -109,6 +125,37 @@ static bool is_rebinding_timeout(struct ml_dhcp_client_t *self_p)
 static bool is_init_timeout(struct ml_dhcp_client_t *self_p)
 {
     return (self_p->init_timer_expired);
+}
+
+static int unpack_option_u8(struct option_u8_t *option_p,
+                            const uint8_t *buf_p,
+                            uint8_t size)
+{
+    if (size != 1) {
+        return (-1);
+    }
+
+    option_p->value = buf_p[0];
+    option_p->valid = true;
+
+    return (0);
+}
+
+static int unpack_option_u32(struct option_u32_t *option_p,
+                             const uint8_t *buf_p,
+                             uint8_t size)
+{
+    if (size != 4) {
+        return (-1);
+    }
+
+    option_p->value = ((buf_p[0] << 24)
+                       | (buf_p[1] << 16)
+                       | (buf_p[2] << 8)
+                       | (buf_p[3] << 0));
+    option_p->valid = true;
+
+    return (0);
 }
 
 static int unpack_all_options(struct ml_dhcp_client_t *self_p,
@@ -148,31 +195,45 @@ static int unpack_all_options(struct ml_dhcp_client_t *self_p,
         switch (option) {
 
         case OPTION_SUBNET_MASK:
-            if (length != 4) {
-                return (-1);
-            }
-
-            options_p->subnet_mask = ((buf[0] << 24)
-                                      | (buf[1] << 16)
-                                      | (buf[2] << 8)
-                                      | (buf[3] << 0));
-            options_p->subnet_mask_valid = true;
+            res = unpack_option_u32(&options_p->subnet_mask,
+                                    &buf[0],
+                                    length);
             break;
 
         case OPTION_DHCP_MESSAGE_TYPE:
-            if (length != 1) {
-                return (-1);
-            }
+            res = unpack_option_u8(&options_p->message_type,
+                                   &buf[0],
+                                   length);
+            break;
 
-            options_p->message_type = buf[0];
-            options_p->message_type_valid = true;
+        case OPTION_IP_ADDRESS_LEASE_TIME:
+            res = unpack_option_u32(&options_p->lease_time,
+                                    &buf[0],
+                                    length);
+            break;
+
+        case OPTION_RENEWAL_TIME_INTERVAL:
+            res = unpack_option_u32(&options_p->renewal_time,
+                                    &buf[0],
+                                    length);
+            break;
+
+        case OPTION_REBINDING_TIME_INTERVAL:
+            res = unpack_option_u32(&options_p->rebinding_time,
+                                    &buf[0],
+                                    length);
             break;
 
         default:
             ML_DEBUG(&self_p->log_object,
                      "Ignoring DHCP option %d.",
                      option);
+            res = 0;
             break;
+        }
+
+        if (res != 0) {
+            return (res);
         }
     }
 
@@ -233,14 +294,28 @@ static int unpack_packet(struct ml_dhcp_client_t *self_p,
         return (res);
     }
 
-    if (!options.message_type_valid) {
+    if (!options.message_type.valid) {
         return (-1);
     }
 
-    switch (options.message_type) {
+    switch (options.message_type.value) {
 
     case MESSAGE_TYPE_OFFER:
         self_p->packet_type = ml_dhcp_client_packet_type_offer_t;
+        self_p->offer.ip_address = ((buf_p[16] << 24)
+                                    | (buf_p[17] << 16)
+                                    | (buf_p[18] << 8)
+                                    | (buf_p[19] << 0));
+
+        if (!options.lease_time.valid) {
+            return (-1);
+        }
+
+        if (options.lease_time.value < 1) {
+            return (-1);
+        }
+
+        self_p->offer.lease_time = options.lease_time.value;
         break;
 
     case MESSAGE_TYPE_ACK:
@@ -415,11 +490,24 @@ static bool send_packet(struct ml_dhcp_client_t *self_p,
 {
     bool ok;
     ssize_t res;
+    struct sockaddr_in addr;
 
     ok = false;
-    res = ml_write(self_p->fds[0].fd, buf_p, size);
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = htonl(INADDR_BROADCAST);
+    addr.sin_port = htons(SERVER_PORT);
 
+    res = sendto(self_p->fds[0].fd,
+                 buf_p,
+                 size,
+                 0,
+                 (struct sockaddr *)&addr,
+                 sizeof(addr));
+
+    PRINT_FILE_LINE();
     if (res == (ssize_t)size) {
+        PRINT_FILE_LINE();
         res = set_response_timer(self_p);
 
         if (res != -1) {
@@ -436,6 +524,8 @@ static bool send_discover(struct ml_dhcp_client_t *self_p)
     uint32_t transaction_id;
 
     transaction_id = 0x32493678;
+
+    ML_DEBUG(&self_p->log_object, "Sending discover.");
 
     memset(&buf[0], 0, sizeof(buf));
     buf[0] = BOOTP_MESSAGE_TYPE_BOOT_REQUEST;
@@ -477,6 +567,8 @@ static bool send_request(struct ml_dhcp_client_t *self_p)
     uint32_t transaction_id;
 
     transaction_id = 0x32493678;
+
+    ML_DEBUG(&self_p->log_object, "Sending request.");
 
     memset(&buf[0], 0, sizeof(buf));
     buf[0] = BOOTP_MESSAGE_TYPE_BOOT_REQUEST;
@@ -666,16 +758,47 @@ static void init_pollfd(struct pollfd *fd_p, int fd)
 
 static int setup_socket(struct ml_dhcp_client_t *self_p)
 {
+    int res;
     int sock;
+    int yes;
+    struct sockaddr_in addr;
 
+    res = -1;
     sock = socket(AF_INET, SOCK_DGRAM, 0);
 
-    if (sock != -1) {
-        init_pollfd(&self_p->fds[0], sock);
-        sock = 0;
+    if (sock == -1) {
+        res = -1;
+        goto err1;
     }
 
-    return (sock);
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(CLIENT_PORT);
+    addr.sin_addr.s_addr = INADDR_ANY;
+
+    res = bind(sock, (struct sockaddr *)&addr, sizeof(addr));
+
+    if (res != 0) {
+        goto err2;
+    }
+
+    yes = 1;
+    res = setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &yes, sizeof(yes));
+
+    if (res != 0) {
+        goto err2;
+    }
+
+    init_pollfd(&self_p->fds[0], sock);
+
+    return (0);
+
+err2:
+    close(sock);
+
+err1:
+
+    return (res);
 }
 
 static int setup_renewal_timer(struct ml_dhcp_client_t *self_p)
@@ -864,8 +987,8 @@ void ml_dhcp_client_init(struct ml_dhcp_client_t *self_p,
     self_p->self.mac_address[4] = 5;
     self_p->self.mac_address[5] = 6;
     self_p->server.ip_address = 0x01020304;
-    self_p->offer.ip_address = 0x05060708;
-    self_p->offer.lease_time = 0x090a0b0c;
+    self_p->offer.ip_address = 0;
+    self_p->offer.lease_time = 0;
     ml_log_object_init(&self_p->log_object,
                        "dhcp_client",
                        log_mask);
