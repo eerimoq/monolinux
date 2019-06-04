@@ -565,6 +565,8 @@ static void process_events_requesting(struct ml_dhcp_client_t *self_p)
 {
     if (is_ack(self_p)) {
         enter_bound(self_p);
+    } else if (is_nak(self_p)) {
+        enter_init(self_p);
     } else if (is_response_timeout(self_p)) {
         enter_init(self_p);
     }
