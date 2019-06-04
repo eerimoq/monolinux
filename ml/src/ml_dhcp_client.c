@@ -57,10 +57,15 @@
 #define OPTION_RENEWAL_TIME_INTERVAL 58
 #define OPTION_REBINDING_TIME_INTERVAL 59
 #define OPTION_END 255
+
 #define MESSAGE_TYPE_DISCOVER 1
-#define MESSAGE_TYPE_OFFER 2
-#define MESSAGE_TYPE_REQUEST 3
-#define MESSAGE_TYPE_ACK 5
+#define MESSAGE_TYPE_OFFER    2
+#define MESSAGE_TYPE_REQUEST  3
+#define MESSAGE_TYPE_DECLINE  4
+#define MESSAGE_TYPE_ACK      5
+#define MESSAGE_TYPE_NAK      6
+#define MESSAGE_TYPE_RELEASE  7
+#define MESSAGE_TYPE_INFORM   8
 
 #define WAIT_FOREVER -1
 
@@ -106,30 +111,14 @@ static bool is_init_timeout(struct ml_dhcp_client_t *self_p)
     return (self_p->init_timer_expired);
 }
 
-static int unpack_options(struct ml_dhcp_client_t *self_p,
-                          struct options_t *options_p,
-                          const uint8_t *buf_p,
-                          size_t size)
+static int unpack_all_options(struct ml_dhcp_client_t *self_p,
+                              struct options_t *options_p,
+                              int fd)
 {
-    int fd;
-    int res;
+    ssize_t res;
     uint8_t option;
     uint8_t length;
     uint8_t buf[255];
-
-    fd = memfd_create("packet", 0);
-
-    if (fd == -1) {
-        return (fd);
-    }
-
-    if (write(fd, buf_p, size) != (ssize_t)size) {
-        return (-1);
-    }
-
-    if (lseek(fd, 0, SEEK_SET) == -1) {
-        return (-1);
-    }
 
     memset(options_p, 0, sizeof(*options_p));
 
@@ -190,6 +179,30 @@ static int unpack_options(struct ml_dhcp_client_t *self_p,
     return (0);
 }
 
+static int unpack_options(struct ml_dhcp_client_t *self_p,
+                          struct options_t *options_p,
+                          const uint8_t *buf_p,
+                          size_t size)
+{
+    int fd;
+    int res;
+
+    res = -1;
+    fd = memfd_create("packet", 0);
+
+    if (fd != -1) {
+        if (write(fd, buf_p, size) == (ssize_t)size) {
+            if (lseek(fd, 0, SEEK_SET) != -1) {
+                res = unpack_all_options(self_p, options_p, fd);
+            }
+        }
+
+        close(fd);
+    }
+
+    return (res);
+}
+
 static int unpack_packet(struct ml_dhcp_client_t *self_p,
                          const uint8_t *buf_p,
                          size_t size)
@@ -226,15 +239,15 @@ static int unpack_packet(struct ml_dhcp_client_t *self_p,
 
     switch (options.message_type) {
 
-    case 2:
+    case MESSAGE_TYPE_OFFER:
         self_p->packet_type = ml_dhcp_client_packet_type_offer_t;
         break;
 
-    case 5:
+    case MESSAGE_TYPE_ACK:
         self_p->packet_type = ml_dhcp_client_packet_type_ack_t;
         break;
 
-    case 6:
+    case MESSAGE_TYPE_NAK:
         self_p->packet_type = ml_dhcp_client_packet_type_nak_t;
         break;
 
@@ -477,10 +490,6 @@ static const char *state_string(enum ml_dhcp_client_state_t state)
         res_p = "RENEWING";
         break;
 
-    case ml_dhcp_client_state_rebinding_t:
-        res_p = "REBINDING";
-        break;
-
     default:
         res_p = "UNKNOWN";
         break;
@@ -530,11 +539,6 @@ static void enter_bound(struct ml_dhcp_client_t *self_p)
 static void enter_renewing(struct ml_dhcp_client_t *self_p)
 {
     change_state(self_p, ml_dhcp_client_state_renewing_t);
-}
-
-static void enter_rebinding(struct ml_dhcp_client_t *self_p)
-{
-    change_state(self_p, ml_dhcp_client_state_rebinding_t);
 }
 
 static void process_events_init(struct ml_dhcp_client_t *self_p)
@@ -587,24 +591,12 @@ static void process_events_renewing(struct ml_dhcp_client_t *self_p)
 {
     if (is_ack(self_p)) {
         enter_bound(self_p);
-    } else if (is_response_timeout(self_p)) {
-        enter_init(self_p);
-    } else if (is_rebinding_timeout(self_p)) {
-        if (send_request(self_p)) {
-            enter_rebinding(self_p);
-        } else {
-            enter_init(self_p);
-        }
-    }
-}
-
-static void process_events_rebinding(struct ml_dhcp_client_t *self_p)
-{
-    if (is_ack(self_p)) {
-        enter_bound(self_p);
     } else if (is_nak(self_p)) {
         enter_init(self_p);
     } else if (is_response_timeout(self_p)) {
+        enter_init(self_p);
+    } else if (is_rebinding_timeout(self_p)) {
+        /* Just go to init for now. */
         enter_init(self_p);
     }
 }
@@ -769,10 +761,6 @@ static void process_events(struct ml_dhcp_client_t *self_p)
 
     case ml_dhcp_client_state_renewing_t:
         process_events_renewing(self_p);
-        break;
-
-    case ml_dhcp_client_state_rebinding_t:
-        process_events_rebinding(self_p);
         break;
 
     default:

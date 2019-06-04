@@ -120,8 +120,7 @@ enum ml_dhcp_client_state_t {
     ml_dhcp_client_state_selecting_t,
     ml_dhcp_client_state_requesting_t,
     ml_dhcp_client_state_bound_t,
-    ml_dhcp_client_state_renewing_t,
-    ml_dhcp_client_state_rebinding_t
+    ml_dhcp_client_state_renewing_t
 };
 
 enum ml_dhcp_client_packet_type_t {

@@ -458,7 +458,6 @@ TEST(request_nack)
 {
     struct ml_dhcp_client_t client;
     struct pollfd fds[5];
-    uint64_t value;
 
     mock_push_ml_dhcp_client_start();
     mock_push_init_to_selecting();
