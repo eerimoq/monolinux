@@ -460,7 +460,7 @@ TEST(renew)
     ml_dhcp_client_init(&client, "eth0", ML_LOG_ALL);
     ml_dhcp_client_start(&client);
     ml_dhcp_client_join(&client);
-    FAIL();
+
     mock_finalize();
 }
 
