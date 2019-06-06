@@ -152,8 +152,9 @@ TEST(command_ifconfig_no_args)
     }
 
     ASSERT_EQ(output,
-              "ifconfig <interface> <ip-address> <netmask>\n"
-              "ifconfig <interface> up/down\n");
+              "ifconfig <interface>\n"
+              "ifconfig <interface> up/down\n"
+              "ifconfig <interface> <ip-address> <netmask>\n");
 
     mock_finalize();
 }
@@ -236,8 +237,9 @@ TEST(command_ifconfig_foobar)
     }
 
     ASSERT_EQ(output,
-              "ifconfig <interface> <ip-address> <netmask>\n"
-              "ifconfig <interface> up/down\n");
+              "ifconfig <interface>\n"
+              "ifconfig <interface> up/down\n"
+              "ifconfig <interface> <ip-address> <netmask>\n");
 
     mock_finalize();
 }

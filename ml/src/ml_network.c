@@ -111,13 +111,58 @@ static int set_netmask(int netfd,
     return (ml_ioctl(netfd, SIOCSIFNETMASK, ifreq_p));
 }
 
+static int command_ifconfig_print(const char *name_p)
+{
+    int res;
+    uint8_t mac_address[6];
+    int index;
+    struct in_addr in_addr;
+
+    printf("IP Address:  ");
+    res = ml_network_interface_ip_address(name_p, &in_addr);
+
+    if (res == 0) {
+        puts(inet_ntoa(in_addr));
+    } else {
+        printf("failure\n");
+    }
+
+    printf("MAC Address: ");
+    res = ml_network_interface_mac_address(name_p, &mac_address[0]);
+
+    if (res == 0) {
+        printf("%02x:%02x:%02x:%02x:%02x:%02x\n",
+               mac_address[0],
+               mac_address[1],
+               mac_address[2],
+               mac_address[3],
+               mac_address[4],
+               mac_address[5]);
+    } else {
+        printf("failure\n");
+    }
+
+    printf("Index:       ");
+    res = ml_network_interface_index(name_p, &index);
+
+    if (res == 0) {
+        printf("%d\n", index);
+    } else {
+        printf("failure\n");
+    }
+
+    return (0);
+}
+
 static int command_ifconfig(int argc, const char *argv[])
 {
     int res;
 
     res = -1;
 
-    if (argc == 3) {
+    if (argc == 2) {
+        res = command_ifconfig_print(argv[1]);
+    } else if (argc == 3) {
         if (strcmp(argv[2], "up") == 0) {
             res = ml_network_interface_up(argv[1]);
         } else if (strcmp(argv[2], "down") == 0) {
@@ -128,8 +173,9 @@ static int command_ifconfig(int argc, const char *argv[])
     }
 
     if (res != 0) {
-        printf("ifconfig <interface> <ip-address> <netmask>\n"
-               "ifconfig <interface> up/down\n");
+        printf("ifconfig <interface>\n"
+               "ifconfig <interface> up/down\n"
+               "ifconfig <interface> <ip-address> <netmask>\n");
     }
 
     return (res);
@@ -399,6 +445,25 @@ int ml_network_interface_mac_address(const char *name_p,
     if (netfd != -1) {
         res = ioctl(netfd, SIOCGIFHWADDR, &ifreq);
         memcpy(mac_address_p, &ifreq.ifr_hwaddr.sa_data[0], 6);
+        net_close(netfd);
+    }
+
+    return (res);
+}
+
+int ml_network_interface_ip_address(const char *name_p,
+                                    struct in_addr *ip_address_p)
+{
+    struct ifreq ifreq;
+    int res;
+    int netfd;
+
+    res = -1;
+    netfd = net_open(name_p, &ifreq);
+
+    if (netfd != -1) {
+        res = ioctl(netfd, SIOCGIFADDR, &ifreq);
+        *ip_address_p = ((struct sockaddr_in *)&ifreq.ifr_addr)->sin_addr;
         net_close(netfd);
     }
 

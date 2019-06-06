@@ -29,6 +29,7 @@
 #ifndef ML_ML_H
 #define ML_ML_H
 
+#include <netinet/in.h>
 #include <stdbool.h>
 #include <sys/types.h>
 #include <stdio.h>
@@ -315,6 +316,12 @@ int ml_network_interface_index(const char *name_p, int *index_p);
  */
 int ml_network_interface_mac_address(const char *name_p,
                                      uint8_t *mac_address_p);
+
+/**
+ * Network interface IP address.
+ */
+int ml_network_interface_ip_address(const char *name_p,
+                                    struct in_addr *in_addr_p);
 
 /**
  * Strip leading and trailing characters from given string and return
