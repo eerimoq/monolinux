@@ -498,9 +498,9 @@ static void mock_push_requesting_to_bound(void)
     memset(&timeout, 0, sizeof(timeout));
     timeout.it_value.tv_sec = 0;
     mock_push_timerfd_settime(RESP_FD, 0, &timeout, 0);
-    timeout.it_value.tv_sec = 50;
+    timeout.it_value.tv_sec = 30;
     mock_push_timerfd_settime(RENEW_FD, 0, &timeout, 0);
-    timeout.it_value.tv_sec = 60;
+    timeout.it_value.tv_sec = 40;
     mock_push_timerfd_settime(REBIND_FD, 0, &timeout, 0);
     mock_push_ml_network_interface_configure("eth0",
                                              "192.168.0.3",
@@ -531,9 +531,9 @@ static void mock_push_renewing_to_bound(void)
     memset(&timeout, 0, sizeof(timeout));
     timeout.it_value.tv_sec = 0;
     mock_push_timerfd_settime(RESP_FD, 0, &timeout, 0);
-    timeout.it_value.tv_sec = 50;
+    timeout.it_value.tv_sec = 30;
     mock_push_timerfd_settime(RENEW_FD, 0, &timeout, 0);
-    timeout.it_value.tv_sec = 60;
+    timeout.it_value.tv_sec = 40;
     mock_push_timerfd_settime(REBIND_FD, 0, &timeout, 0);
     mock_push_ml_network_interface_configure("eth0",
                                              "192.168.0.3",

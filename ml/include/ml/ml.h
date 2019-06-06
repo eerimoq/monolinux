@@ -143,15 +143,6 @@ struct ml_dhcp_client_t {
         uint32_t gateway_ip_address;
         uint32_t dns_server_ip_address;
     } offer;
-    struct {
-        uint32_t ip_address;
-        int lease_time;
-        int renewal_interval;
-        int rebinding_time;
-        uint32_t subnet_mask;
-        uint32_t gateway_ip_address;
-        uint32_t dns_server_ip_address;
-    } ack;
     bool renewal_timer_expired;
     bool rebinding_timer_expired;
     bool response_timer_expired;

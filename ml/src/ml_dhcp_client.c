@@ -110,6 +110,19 @@ struct options_t {
     struct option_u32_t server_ip_address;
 };
 
+static char *inet_string(char *buf_p, uint32_t value)
+{
+    snprintf(buf_p,
+             16,
+             "%u.%u.%u.%u",
+             (value >> 24) & 0xff,
+             (value >> 16) & 0xff,
+             (value >> 8) & 0xff,
+             (value >> 0) & 0xff);
+
+    return (buf_p);
+}
+
 static uint32_t inet_checksum_begin(void)
 {
   return (0);
@@ -376,6 +389,7 @@ static int unpack_all_options(struct ml_dhcp_client_t *self_p,
     uint8_t option;
     uint8_t length;
     uint8_t buf[255];
+    char string[16];
 
     memset(options_p, 0, sizeof(*options_p));
 
@@ -407,6 +421,34 @@ static int unpack_all_options(struct ml_dhcp_client_t *self_p,
         if (res != 0) {
             return (res);
         }
+    }
+
+    ML_INFO("Options:");
+
+    if (options_p->message_type.valid) {
+        ML_INFO("  Message Type: %u", options_p->message_type.value);
+    }
+
+    if (options_p->subnet_mask.valid) {
+        ML_INFO("  Subnet Mask: %s",
+                inet_string(&string[0], options_p->subnet_mask.value));
+    }
+
+    if (options_p->lease_time.valid) {
+        ML_INFO("  Lease Time: %u", options_p->lease_time.value);
+    }
+
+    if (options_p->renewal_time.valid) {
+        ML_INFO("  Renewal Time: %u", options_p->renewal_time.value);
+    }
+
+    if (options_p->rebinding_time.valid) {
+        ML_INFO("  Rebinding Time: %u", options_p->rebinding_time.value);
+    }
+
+    if (options_p->server_ip_address.valid) {
+        ML_INFO("  Server IP Address: %s",
+                inet_string(&string[0], options_p->server_ip_address.value));
     }
 
     return (0);
@@ -457,8 +499,15 @@ static void unpack_message_type_offer(struct ml_dhcp_client_t *self_p,
         return;
     }
 
+    if (!options_p->subnet_mask.valid) {
+        return;
+    }
+
     self_p->server.ip_address = options_p->server_ip_address.value;
+    self_p->offer.subnet_mask = options_p->subnet_mask.value;
     self_p->offer.lease_time = options_p->lease_time.value;
+    self_p->offer.renewal_interval = (self_p->offer.lease_time / 2);
+    self_p->offer.rebinding_time = (self_p->offer.lease_time / 2 + 10);
     self_p->packet_type = ml_dhcp_client_packet_type_offer_t;
 }
 
@@ -650,22 +699,21 @@ static void configure_interface(struct ml_dhcp_client_t *self_p)
 {
     int res;
     char ip_address[16];
+    char subnet_mask[16];
 
-    snprintf(&ip_address[0],
-             sizeof(ip_address),
-             "%u.%u.%u.%u",
-             (self_p->offer.ip_address >> 24) & 0xff,
-             (self_p->offer.ip_address >> 16) & 0xff,
-             (self_p->offer.ip_address >> 8) & 0xff,
-             (self_p->offer.ip_address >> 0) & 0xff);
+    inet_string(&ip_address[0], self_p->offer.ip_address);
+    inet_string(&subnet_mask[0], self_p->offer.subnet_mask);
 
-    ML_INFO("Configuring '%s' with ip address '%s'.",
-            self_p->interface.name_p,
-            &ip_address[0]);
+    ML_INFO(
+        "Configuring interface '%s' with ip address %s and "
+        "subnet mask %s.",
+        self_p->interface.name_p,
+        &ip_address[0],
+        &subnet_mask[0]);
 
     res = ml_network_interface_configure(self_p->interface.name_p,
                                          &ip_address[0],
-                                         "255.255.255.0");
+                                         &subnet_mask[0]);
 
     if (res != 0) {
         ML_WARNING("Failed to configure '%s' with ip address '%s'.",
@@ -707,7 +755,7 @@ static void update_events(struct ml_dhcp_client_t *self_p)
             unpack_packet(self_p, &buf[0], size);
         }
 
-        ML_DEBUG("Received %s packet.", packet_type_str(self_p->packet_type));
+        ML_INFO("Received %s packet.", packet_type_str(self_p->packet_type));
     }
 
     self_p->renewal_timer_expired = is_timeout(&self_p->fds[RENEW_IX]);
@@ -739,12 +787,16 @@ static int set_timer(int fd, time_t seconds, long nanoseconds)
 
 static int set_renewal_timer(struct ml_dhcp_client_t *self_p)
 {
-    return (set_timer(self_p->fds[RENEW_IX].fd, 50, 0));
+    return (set_timer(self_p->fds[RENEW_IX].fd,
+                      self_p->offer.renewal_interval,
+                      0));
 }
 
 static int set_rebinding_timer(struct ml_dhcp_client_t *self_p)
 {
-    return (set_timer(self_p->fds[REBIND_IX].fd, 60, 0));
+    return (set_timer(self_p->fds[REBIND_IX].fd,
+                      self_p->offer.rebinding_time,
+                      0));
 }
 
 static int set_response_timer(struct ml_dhcp_client_t *self_p)
@@ -1154,6 +1206,16 @@ static int init(struct ml_dhcp_client_t *self_p)
         goto err1;
     }
 
+    ML_INFO("Interface information:");
+    ML_INFO("  MAC Address: %02x:%02x:%02x:%02x:%02x:%02x",
+            self_p->self.mac_address[0],
+            self_p->self.mac_address[1],
+            self_p->self.mac_address[2],
+            self_p->self.mac_address[3],
+            self_p->self.mac_address[4],
+            self_p->self.mac_address[5]);
+    ML_INFO("  Index:       %d", self_p->interface.index);
+
     res = setup_packet_socket(self_p);
 
     if (res != 0) {
@@ -1163,6 +1225,7 @@ static int init(struct ml_dhcp_client_t *self_p)
     res = setup_timer(self_p, RENEW_IX);
 
     if (res != 0) {
+        perror("timer");
         goto err2;
     }
 
@@ -1270,8 +1333,6 @@ void ml_dhcp_client_init(struct ml_dhcp_client_t *self_p,
     self_p->interface.name_p = interface_name_p;
     self_p->state = ml_dhcp_client_state_init_t;
     self_p->server.ip_address = 0x01020304;
-    self_p->offer.ip_address = 0;
-    self_p->offer.lease_time = 0;
     ml_log_object_init(&self_p->log_object,
                        "dhcp_client",
                        log_mask);
