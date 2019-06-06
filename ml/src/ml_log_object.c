@@ -121,5 +121,5 @@ void ml_log_object_print(struct ml_log_object_t *self_p,
     va_start(ap, fmt_p);
     vprintf(fmt_p, ap);
     va_end(ap);
-    printf("\n");
+    putchar('\n');
 }

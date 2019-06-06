@@ -40,56 +40,56 @@ TEST(format)
         ml_log_object_print(&log_object, ML_LOG_EMERGENCY, "bar %d", 1);
     }
 
-    ASSERT_SUBSTRING(output1, " EMERGENCY foo bar 1");
+    ASSERT_SUBSTRING(output1, " EMERGENCY foo bar 1\n");
 
     /* Alert. */
     CAPTURE_OUTPUT(output2) {
         ml_log_object_print(&log_object, ML_LOG_ALERT, "bar %d", 2);
     }
 
-    ASSERT_SUBSTRING(output2, " ALERT foo bar 2");
+    ASSERT_SUBSTRING(output2, " ALERT foo bar 2\n");
 
     /* Critical. */
     CAPTURE_OUTPUT(output3) {
         ml_log_object_print(&log_object, ML_LOG_CRITICAL, "bar %d", 3);
     }
 
-    ASSERT_SUBSTRING(output3, " CRITICAL foo bar 3");
+    ASSERT_SUBSTRING(output3, " CRITICAL foo bar 3\n");
 
     /* Error. */
     CAPTURE_OUTPUT(output4) {
         ml_log_object_print(&log_object, ML_LOG_ERROR, "bar %d", 4);
     }
 
-    ASSERT_SUBSTRING(output4, " ERROR foo bar 4");
+    ASSERT_SUBSTRING(output4, " ERROR foo bar 4\n");
 
     /* Warning. */
     CAPTURE_OUTPUT(output5) {
         ml_log_object_print(&log_object, ML_LOG_WARNING, "bar %d", 5);
     }
 
-    ASSERT_SUBSTRING(output5, " WARNING foo bar 5");
+    ASSERT_SUBSTRING(output5, " WARNING foo bar 5\n");
 
     /* Notice. */
     CAPTURE_OUTPUT(output6) {
         ml_log_object_print(&log_object, ML_LOG_NOTICE, "bar %d", 6);
     }
 
-    ASSERT_SUBSTRING(output6, " NOTICE foo bar 6");
+    ASSERT_SUBSTRING(output6, " NOTICE foo bar 6\n");
 
     /* Info. */
     CAPTURE_OUTPUT(output7) {
         ml_log_object_print(&log_object, ML_LOG_INFO, "bar %d", 7);
     }
 
-    ASSERT_SUBSTRING(output7, " INFO foo bar 7");
+    ASSERT_SUBSTRING(output7, " INFO foo bar 7\n");
 
     /* Debug. */
     CAPTURE_OUTPUT(output8) {
         ml_log_object_print(&log_object, ML_LOG_DEBUG, "bar %d", 8);
     }
 
-    ASSERT_SUBSTRING(output8, " DEBUG foo bar 8");
+    ASSERT_SUBSTRING(output8, " DEBUG foo bar 8\n");
 }
 
 TEST(enable_disable)
@@ -106,8 +106,8 @@ TEST(enable_disable)
         ml_log_object_print(&log_object, ML_LOG_INFO, "bar");
     }
 
-    ASSERT_SUBSTRING(output1, " DEBUG foo bar");
-    ASSERT_NOT_SUBSTRING(output1, " INFO foo bar");
+    ASSERT_SUBSTRING(output1, " DEBUG foo bar\n");
+    ASSERT_NOT_SUBSTRING(output1, " INFO foo bar\n");
 
     /* Only info, no debug. */
     ml_log_object_set_mask(&log_object, ML_LOG_MASK(INFO));
@@ -119,8 +119,8 @@ TEST(enable_disable)
         ml_log_object_print(&log_object, ML_LOG_INFO, "bar");
     }
 
-    ASSERT_SUBSTRING(output2, " INFO foo bar");
-    ASSERT_NOT_SUBSTRING(output2, " DEBUG foo bar");
+    ASSERT_SUBSTRING(output2, " INFO foo bar\n");
+    ASSERT_NOT_SUBSTRING(output2, " DEBUG foo bar\n");
 }
 
 int main()
