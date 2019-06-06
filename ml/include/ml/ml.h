@@ -156,6 +156,7 @@ struct ml_dhcp_client_t {
     bool rebinding_timer_expired;
     bool response_timer_expired;
     bool init_timer_expired;
+    bool is_packet_socket;
     struct pollfd fds[5];
     struct {
         uint8_t mac_address[6];
@@ -163,7 +164,10 @@ struct ml_dhcp_client_t {
     struct {
         uint32_t ip_address;
     } server;
-    const char *interface_name_p;
+    struct {
+        const char *name_p;
+        int index;
+    } interface;
     pthread_t pthread;
     struct ml_log_object_t log_object;
 };
@@ -309,6 +313,11 @@ int ml_network_interface_up(const char *name_p);
  * Take down given network interface.
  */
 int ml_network_interface_down(const char *name_p);
+
+/**
+ * Network index.
+ */
+int ml_network_interface_index(const char *name_p, int *index_p);
 
 /**
  * Strip leading and trailing characters from given string and return

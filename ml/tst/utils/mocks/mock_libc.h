@@ -79,7 +79,8 @@ void mock_push_ioctl_ifreq_ok(int fd,
 void mock_push_sendto(int fd,
                       const void *buf_p,
                       size_t len,
-                      const struct sockaddr_in *dest_addr_p,
+                      const struct sockaddr *dest_addr_p,
+                      socklen_t addrlen,
                       ssize_t res);
 
 void mock_push_recvfrom(int fd,

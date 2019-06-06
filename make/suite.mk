@@ -9,10 +9,12 @@ CFLAGS += -DUNIT_TEST
 LDFLAGS += -lunicorn
 COVERAGE_FILTERS +=
 
-.PHONY: all run coverage
+.PHONY: all run build coverage
 
 all: run
 	$(MAKE) coverage
+
+build: $(EXE)
 
 run: $(EXE)
 	$(EXE)

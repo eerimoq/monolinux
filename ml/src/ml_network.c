@@ -367,3 +367,21 @@ int ml_network_interface_down(const char *name_p)
 
     return (res);
 }
+
+int ml_network_interface_index(const char *name_p, int *index_p)
+{
+    struct ifreq ifreq;
+    int res;
+    int netfd;
+
+    res = -1;
+    netfd = net_open(name_p, &ifreq);
+
+    if (netfd != -1) {
+        res = ioctl(netfd, SIOCGIFINDEX, &ifreq);
+        *index_p = ifreq.ifr_ifindex;
+        net_close(netfd);
+    }
+
+    return (res);
+}

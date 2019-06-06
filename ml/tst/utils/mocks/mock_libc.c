@@ -192,13 +192,15 @@ int __wrap_ioctl(int fd,
 void mock_push_sendto(int fd,
                       const void *buf_p,
                       size_t len,
-                      const struct sockaddr_in *dest_addr_p,
+                      const struct sockaddr *dest_addr_p,
+                      socklen_t addrlen,
                       ssize_t res)
 {
     mock_push("sendto(fd)", &fd, sizeof(fd));
-    mock_push("sendto(buf_p)", buf_p, len);
     mock_push("sendto(len)", &len, sizeof(len));
-    mock_push("sendto(dest_addr_p)", dest_addr_p, sizeof(*dest_addr_p));
+    mock_push("sendto(buf_p)", buf_p, len);
+    mock_push("sendto(addrlen)", &addrlen, sizeof(addrlen));
+    mock_push("sendto(dest_addr_p)", dest_addr_p, addrlen);
     mock_push("sendto(): return (res)", &res, sizeof(res));
 }
 
@@ -212,10 +214,10 @@ ssize_t __wrap_sendto(int fd,
     ssize_t res;
 
     mock_pop_assert("sendto(fd)", &fd);
-    mock_pop_assert("sendto(buf_p)", buf_p);
     mock_pop_assert("sendto(len)", &len);
+    mock_pop_assert("sendto(buf_p)", buf_p);
     ASSERT_EQ(flags, 0);
-    ASSERT_EQ(addrlen, sizeof(struct sockaddr_in));
+    mock_pop_assert("sendto(addrlen)", &addrlen);
     mock_pop_assert("sendto(dest_addr_p)", dest_addr_p);
     mock_pop("sendto(): return (res)", &res);
 
@@ -229,8 +231,8 @@ void mock_push_recvfrom(int fd,
                         ssize_t res)
 {
     mock_push("recvfrom(fd)", &fd, sizeof(fd));
-    mock_push("recvfrom(buf_p)", buf_p, len);
     mock_push("recvfrom(len)", &len, sizeof(len));
+    mock_push("recvfrom(buf_p)", buf_p, len);
     mock_push("recvfrom(dest_addr_p)", dest_addr_p, sizeof(*dest_addr_p));
     mock_push("recvfrom(): return (res)", &res, sizeof(res));
 }
@@ -245,8 +247,8 @@ ssize_t __wrap_recvfrom(int fd,
     ssize_t res;
 
     mock_pop_assert("recvfrom(fd)", &fd);
-    mock_pop("recvfrom(buf_p)", buf_p);
     mock_pop_assert("recvfrom(len)", &len);
+    mock_pop("recvfrom(buf_p)", buf_p);
     ASSERT_EQ(flags, 0);
     ASSERT_EQ(*addrlen_p, sizeof(struct sockaddr_in));
     mock_pop("recvfrom(dest_addr_p)", dest_addr_p);
@@ -292,8 +294,8 @@ int __wrap_ml_close(int fd)
 void mock_push_ml_read(int fd, void *buf_p, size_t count, ssize_t res)
 {
     mock_push("ml_read(fd)", &fd, sizeof(fd));
-    mock_push("ml_read(buf_p)", buf_p, count);
     mock_push("ml_read(count)", &count, sizeof(count));
+    mock_push("ml_read(buf_p)", buf_p, count);
     mock_push("ml_read(): return (res)", &res, sizeof(res));
 }
 
@@ -302,8 +304,8 @@ ssize_t __wrap_ml_read(int fd, void *buf_p, size_t count)
     ssize_t res;
 
     mock_pop_assert("ml_read(fd)", &fd);
-    mock_pop("ml_read(buf_p)", buf_p);
     mock_pop_assert("ml_read(count)", &count);
+    mock_pop("ml_read(buf_p)", buf_p);
     mock_pop("ml_read(): return (res)", &res);
 
     return (res);
@@ -312,8 +314,8 @@ ssize_t __wrap_ml_read(int fd, void *buf_p, size_t count)
 void mock_push_ml_write(int fd, const void *buf_p, size_t count, ssize_t res)
 {
     mock_push("ml_write(fd)", &fd, sizeof(fd));
-    mock_push("ml_write(buf_p)", buf_p, count);
     mock_push("ml_write(count)", &count, sizeof(count));
+    mock_push("ml_write(buf_p)", buf_p, count);
     mock_push("ml_write(): return (res)", &res, sizeof(res));
 }
 
@@ -322,8 +324,8 @@ ssize_t __wrap_ml_write(int fd, const void *buf_p, size_t count)
     ssize_t res;
 
     mock_pop_assert("ml_write(fd)", &fd);
-    mock_pop_assert("ml_write(buf_p)", buf_p);
     mock_pop_assert("ml_write(count)", &count);
+    mock_pop_assert("ml_write(buf_p)", buf_p);
     mock_pop("ml_write(): return (res)", &res);
 
     return (res);
@@ -546,6 +548,8 @@ void mock_push_poll(struct pollfd *fds_p, nfds_t nfds, int timeout, int res)
 {
     nfds_t i;
 
+    mock_push("poll(nfds)", &nfds, sizeof(nfds));
+
     for (i = 0; i < nfds; i++) {
         mock_push("poll(fds_p->fd)", &fds_p[i].fd, sizeof(fds_p[i].fd));
         mock_push("poll(fds_p->events)", &fds_p[i].events, sizeof(fds_p[i].events));
@@ -554,7 +558,6 @@ void mock_push_poll(struct pollfd *fds_p, nfds_t nfds, int timeout, int res)
                   sizeof(fds_p[i].revents));
     }
 
-    mock_push("poll(nfds)", &nfds, sizeof(nfds));
     mock_push("poll(timeout)", &timeout, sizeof(timeout));
     mock_push("poll(): return (res)", &res, sizeof(res));
 }
@@ -564,13 +567,14 @@ int __wrap_poll(struct pollfd *fds_p, nfds_t nfds, int timeout)
     int res;
     nfds_t i;
 
+    mock_pop_assert("poll(nfds)", &nfds);
+
     for (i = 0; i < nfds; i++) {
         mock_pop_assert("poll(fds_p->fd)", &fds_p[i].fd);
         mock_pop_assert("poll(fds_p->events)", &fds_p[i].events);
         mock_pop("poll(): return (fds_p->revents)", &fds_p[i].revents);
     }
 
-    mock_pop_assert("poll(nfds)", &nfds);
     mock_pop_assert("poll(timeout)", &timeout);
     mock_pop("poll(): return (res)", &res);
 
