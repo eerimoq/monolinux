@@ -46,4 +46,8 @@ void mock_push_ml_network_interface_index(const char *name_p,
                                           int index,
                                           int res);
 
+void mock_push_ml_network_interface_mac_address(const char *name_p,
+                                                uint8_t *mac_address_p,
+                                                int res);
+
 #endif

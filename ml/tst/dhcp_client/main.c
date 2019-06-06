@@ -449,9 +449,11 @@ static void mock_push_ml_dhcp_client_start(void)
 {
     struct itimerspec timeout;
     int interface_index;
+    uint8_t mac_address[] = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 };
 
     interface_index = 5;
     mock_push_ml_network_interface_index("eth0", interface_index, 0);
+    mock_push_ml_network_interface_mac_address("eth0", &mac_address[0], 0);
     mock_push_setup_packet_socket();
     mock_push_timerfd_create(CLOCK_REALTIME, 0, RENEW_FD);
     mock_push_timerfd_create(CLOCK_REALTIME, 0, REBIND_FD);
@@ -584,9 +586,11 @@ TEST(start_failure_last_init_step)
     struct sockaddr_ll addr;
     int yes;
     int interface_index;
+    uint8_t mac_address[] = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 };
 
     interface_index = 5;
     mock_push_ml_network_interface_index("eth0", interface_index, 0);
+    mock_push_ml_network_interface_mac_address("eth0", &mac_address[0], 0);
     mock_push_socket(AF_PACKET, SOCK_DGRAM, 0, SOCK_FD);
     memset(&addr, 0, sizeof(addr));
     addr.sll_family = AF_PACKET;

@@ -130,3 +130,30 @@ int __wrap_ml_network_interface_index(const char *name_p, int *index_p)
 
     return (res);
 }
+
+void mock_push_ml_network_interface_mac_address(const char *name_p,
+                                                uint8_t *mac_address_p,
+                                                int res)
+{
+    mock_push("ml_network_interface_mac_address(name_p)",
+              name_p,
+              strlen(name_p) + 1);
+    mock_push("ml_network_interface_mac_address(mac_address_p)",
+              mac_address_p,
+              6);
+    mock_push("ml_network_interface_mac_address(): return (res)",
+              &res,
+              sizeof(res));
+}
+
+int __wrap_ml_network_interface_mac_address(const char *name_p,
+                                            uint8_t *mac_address_p)
+{
+    int res;
+
+    mock_pop_assert("ml_network_interface_mac_address(name_p)", name_p);
+    mock_pop("ml_network_interface_mac_address(mac_address_p)", mac_address_p);
+    mock_pop("ml_network_interface_mac_address(): return (res)", &res);
+
+    return (res);
+}

@@ -1147,6 +1147,13 @@ static int init(struct ml_dhcp_client_t *self_p)
         goto err1;
     }
 
+    res = ml_network_interface_mac_address(self_p->interface.name_p,
+                                           &self_p->self.mac_address[0]);
+
+    if (res != 0) {
+        goto err1;
+    }
+
     res = setup_packet_socket(self_p);
 
     if (res != 0) {
@@ -1262,12 +1269,6 @@ void ml_dhcp_client_init(struct ml_dhcp_client_t *self_p,
 {
     self_p->interface.name_p = interface_name_p;
     self_p->state = ml_dhcp_client_state_init_t;
-    self_p->self.mac_address[0] = 1;
-    self_p->self.mac_address[1] = 2;
-    self_p->self.mac_address[2] = 3;
-    self_p->self.mac_address[3] = 4;
-    self_p->self.mac_address[4] = 5;
-    self_p->self.mac_address[5] = 6;
     self_p->server.ip_address = 0x01020304;
     self_p->offer.ip_address = 0;
     self_p->offer.lease_time = 0;

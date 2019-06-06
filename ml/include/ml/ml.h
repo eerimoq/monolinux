@@ -315,9 +315,15 @@ int ml_network_interface_up(const char *name_p);
 int ml_network_interface_down(const char *name_p);
 
 /**
- * Network index.
+ * Network interface index.
  */
 int ml_network_interface_index(const char *name_p, int *index_p);
+
+/**
+ * Network interface MAC address.
+ */
+int ml_network_interface_mac_address(const char *name_p,
+                                     uint8_t *mac_address_p);
 
 /**
  * Strip leading and trailing characters from given string and return

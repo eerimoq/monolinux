@@ -385,3 +385,22 @@ int ml_network_interface_index(const char *name_p, int *index_p)
 
     return (res);
 }
+
+int ml_network_interface_mac_address(const char *name_p,
+                                     uint8_t *mac_address_p)
+{
+    struct ifreq ifreq;
+    int res;
+    int netfd;
+
+    res = -1;
+    netfd = net_open(name_p, &ifreq);
+
+    if (netfd != -1) {
+        res = ioctl(netfd, SIOCGIFHWADDR, &ifreq);
+        memcpy(mac_address_p, &ifreq.ifr_hwaddr.sa_data[0], 6);
+        net_close(netfd);
+    }
+
+    return (res);
+}
