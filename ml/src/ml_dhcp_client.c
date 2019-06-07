@@ -33,6 +33,7 @@
 #include <stdint.h>
 #include <time.h>
 #include <netinet/if_ether.h>
+#include <netinet/ip.h>
 #include <linux/if_packet.h>
 #include <sys/timerfd.h>
 #include <sys/mman.h>
@@ -899,13 +900,15 @@ static bool broadcast_packet(struct ml_dhcp_client_t *self_p,
 static void pack_ip_header(uint8_t *buf_p, size_t size)
 {
     uint16_t checksum;
+    uint8_t identifier;
 
-    buf_p[0] = ((4 << 4) | 5);
+    buf_p[0] = ((IPVERSION << 4) | 5);
     buf_p[2] = (uint8_t)(size >> 8);
     buf_p[3] = (uint8_t)size;
-    buf_p[5] = 0x11;
-    buf_p[8] = 255;
-    buf_p[9] = 17;
+    identifier = 0x11;
+    buf_p[5] = identifier;
+    buf_p[8] = MAXTTL;
+    buf_p[9] = IPPROTO_UDP;
     buf_p[16] = 255;
     buf_p[17] = 255;
     buf_p[18] = 255;
