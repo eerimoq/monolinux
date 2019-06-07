@@ -836,7 +836,8 @@ static bool broadcast_packet(struct ml_dhcp_client_t *self_p,
     addr.sll_protocol = htons(ETH_P_IP);
     addr.sll_ifindex = self_p->interface.index;
 
-    ML_DEBUG("Broadcasting %s packet.", message_type_str(buf_p[28 + OPTIONS_OFFSET + 2]));
+    ML_DEBUG("Broadcasting %s packet.",
+             message_type_str(buf_p[28 + OPTIONS_OFFSET + 2]));
 
     res = sendto(self_p->fds[SOCK_IX].fd,
                  buf_p,
