@@ -490,10 +490,10 @@ static void unpack_message_type_offer(struct ml_dhcp_client_t *self_p,
                                       struct options_t *options_p,
                                       const uint8_t *buf_p)
 {
-    self_p->offer.ip_address.s_addr = ntohl((buf_p[0] << 24)
-                                            | (buf_p[1] << 16)
-                                            | (buf_p[2] << 8)
-                                            | (buf_p[3] << 0));
+    self_p->ip_address.s_addr = ntohl((buf_p[0] << 24)
+                                      | (buf_p[1] << 16)
+                                      | (buf_p[2] << 8)
+                                      | (buf_p[3] << 0));
 
     if (!options_p->server_ip_address.valid) {
         return;
@@ -512,10 +512,10 @@ static void unpack_message_type_offer(struct ml_dhcp_client_t *self_p,
     }
 
     self_p->server.ip_address = options_p->server_ip_address.value;
-    self_p->offer.subnet_mask = options_p->subnet_mask.value;
-    self_p->offer.lease_time = options_p->lease_time.value;
-    self_p->offer.renewal_interval = (self_p->offer.lease_time / 2);
-    self_p->offer.rebinding_time = (self_p->offer.lease_time / 2 + 10);
+    self_p->subnet_mask = options_p->subnet_mask.value;
+    self_p->lease_time = options_p->lease_time.value;
+    self_p->renewal_interval = (self_p->lease_time / 2);
+    self_p->rebinding_time = (self_p->lease_time / 2 + 10);
     self_p->packet_type = ml_dhcp_client_packet_type_offer_t;
 }
 
@@ -566,8 +566,8 @@ static void unpack_packet(struct ml_dhcp_client_t *self_p,
     }
 
     res = memcmp(&buf_p[28],
-                 &self_p->self.mac_address[0],
-                 sizeof(self_p->self.mac_address));
+                 &self_p->interface.mac_address[0],
+                 sizeof(self_p->interface.mac_address));
 
     if (res != 0) {
         return;
@@ -709,8 +709,8 @@ static void configure_interface(struct ml_dhcp_client_t *self_p)
     char ip_address[16];
     char subnet_mask[16];
 
-    strcpy(&ip_address[0], inet_ntoa(self_p->offer.ip_address));
-    strcpy(&subnet_mask[0], inet_ntoa(self_p->offer.subnet_mask));
+    strcpy(&ip_address[0], inet_ntoa(self_p->ip_address));
+    strcpy(&subnet_mask[0], inet_ntoa(self_p->subnet_mask));
 
     ML_INFO(
         "Configuring interface '%s' with ip address %s and "
@@ -796,14 +796,14 @@ static int set_timer(int fd, time_t seconds, long nanoseconds)
 static int set_renewal_timer(struct ml_dhcp_client_t *self_p)
 {
     return (set_timer(self_p->fds[RENEW_IX].fd,
-                      self_p->offer.renewal_interval,
+                      self_p->renewal_interval,
                       0));
 }
 
 static int set_rebinding_timer(struct ml_dhcp_client_t *self_p)
 {
     return (set_timer(self_p->fds[REBIND_IX].fd,
-                      self_p->offer.rebinding_time,
+                      self_p->rebinding_time,
                       0));
 }
 
@@ -968,17 +968,17 @@ static void pack_dhcp_request(uint8_t *buf_p,
     buf_p[5] = (value >> 0);
     buf_p[6] = OPTION_REQUSETED_IP_ADDRESS;
     buf_p[7] = 4;
-    value = htonl(self_p->offer.ip_address.s_addr);
+    value = htonl(self_p->ip_address.s_addr);
     buf_p[8] = (value >> 24);
     buf_p[9] = (value >> 16);
     buf_p[10] = (value >> 8);
     buf_p[11] = (value >> 0);
     buf_p[12] = OPTION_IP_ADDRESS_LEASE_TIME;
     buf_p[13] = 4;
-    buf_p[14] = (self_p->offer.lease_time >> 24);
-    buf_p[15] = (self_p->offer.lease_time >> 16);
-    buf_p[16] = (self_p->offer.lease_time >> 8);
-    buf_p[17] = (self_p->offer.lease_time >> 0);
+    buf_p[14] = (self_p->lease_time >> 24);
+    buf_p[15] = (self_p->lease_time >> 16);
+    buf_p[16] = (self_p->lease_time >> 8);
+    buf_p[17] = (self_p->lease_time >> 0);
     buf_p[18] = OPTION_END;
 }
 
@@ -990,7 +990,7 @@ static bool broadcast_discover(struct ml_dhcp_client_t *self_p)
     pack_ip_header(&buf[0], sizeof(buf));
     pack_udp_header(&buf[20], 584);
     pack_dhcp_fixed(&buf[28],
-                    &self_p->self.mac_address[0],
+                    &self_p->interface.mac_address[0],
                     MESSAGE_TYPE_DISCOVER);
     buf[271] = OPTION_MAXIMUM_DHCP_MESSAGE_SIZE;
     buf[272] = 2;
@@ -1014,7 +1014,7 @@ static bool broadcast_request(struct ml_dhcp_client_t *self_p)
     pack_ip_header(&buf[0], sizeof(buf));
     pack_udp_header(&buf[20], 584);
     pack_dhcp_fixed(&buf[28],
-                    &self_p->self.mac_address[0],
+                    &self_p->interface.mac_address[0],
                     MESSAGE_TYPE_REQUEST);
     pack_dhcp_request(&buf[271], self_p);
 
@@ -1027,7 +1027,7 @@ static bool send_request(struct ml_dhcp_client_t *self_p)
 
     memset(&buf[0], 0, sizeof(buf));
     pack_dhcp_fixed(&buf[0],
-                    &self_p->self.mac_address[0],
+                    &self_p->interface.mac_address[0],
                     MESSAGE_TYPE_REQUEST);
     pack_dhcp_request(&buf[243], self_p);
 
@@ -1170,7 +1170,7 @@ static int init(struct ml_dhcp_client_t *self_p)
     }
 
     res = ml_network_interface_mac_address(self_p->interface.name_p,
-                                           &self_p->self.mac_address[0]);
+                                           &self_p->interface.mac_address[0]);
 
     if (res != 0) {
         goto err1;
@@ -1178,12 +1178,12 @@ static int init(struct ml_dhcp_client_t *self_p)
 
     ML_INFO("Interface information:");
     ML_INFO("  MAC Address: %02x:%02x:%02x:%02x:%02x:%02x",
-            self_p->self.mac_address[0],
-            self_p->self.mac_address[1],
-            self_p->self.mac_address[2],
-            self_p->self.mac_address[3],
-            self_p->self.mac_address[4],
-            self_p->self.mac_address[5]);
+            self_p->interface.mac_address[0],
+            self_p->interface.mac_address[1],
+            self_p->interface.mac_address[2],
+            self_p->interface.mac_address[3],
+            self_p->interface.mac_address[4],
+            self_p->interface.mac_address[5]);
     ML_INFO("  Index:       %d", self_p->interface.index);
 
     res = setup_packet_socket(self_p);

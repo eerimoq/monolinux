@@ -135,15 +135,11 @@ enum ml_dhcp_client_packet_type_t {
 struct ml_dhcp_client_t {
     enum ml_dhcp_client_state_t state;
     enum ml_dhcp_client_packet_type_t packet_type;
-    struct {
-        struct in_addr ip_address;
-        int lease_time;
-        int renewal_interval;
-        int rebinding_time;
-        struct in_addr subnet_mask;
-        struct in_addr gateway_ip_address;
-        struct in_addr dns_server_ip_address;
-    } offer;
+    struct in_addr ip_address;
+    int lease_time;
+    int renewal_interval;
+    int rebinding_time;
+    struct in_addr subnet_mask;
     bool renewal_timer_expired;
     bool rebinding_timer_expired;
     bool response_timer_expired;
@@ -151,14 +147,12 @@ struct ml_dhcp_client_t {
     bool is_packet_socket;
     struct pollfd fds[5];
     struct {
-        uint8_t mac_address[6];
-    } self;
-    struct {
         struct in_addr ip_address;
     } server;
     struct {
         const char *name_p;
         int index;
+        uint8_t mac_address[6];
     } interface;
     pthread_t pthread;
     struct ml_log_object_t log_object;
