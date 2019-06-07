@@ -409,6 +409,19 @@ int ml_dhcp_client_join(struct ml_dhcp_client_t *self_p);
  */
 const char *ml_bool_str(bool value);
 
+/**
+ * Internet checksum.
+ */
+uint32_t ml_inet_checksum_begin(void);
+
+uint32_t ml_inet_checksum_acc(uint32_t acc,
+                              const uint16_t *buf_p,
+                              size_t size);
+
+uint16_t ml_inet_checksum_end(uint32_t acc);
+
+uint16_t ml_inet_checksum(const void *buf_p, size_t size);
+
 /* Exits on failure. Use with care. */
 
 void *xmalloc(size_t size);

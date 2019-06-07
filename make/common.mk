@@ -4,6 +4,7 @@ SRC += \
 	$(ML_ROOT)/ml/src/ml.c \
 	$(ML_ROOT)/ml/src/ml_bus.c \
 	$(ML_ROOT)/ml/src/ml_dhcp_client.c \
+	$(ML_ROOT)/ml/src/ml_inet.c \
 	$(ML_ROOT)/ml/src/ml_libc.c \
 	$(ML_ROOT)/ml/src/ml_log_object.c \
 	$(ML_ROOT)/ml/src/ml_message.c \
