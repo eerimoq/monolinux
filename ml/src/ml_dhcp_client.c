@@ -49,11 +49,14 @@
 #define HARDWARE_TYPE_ETHERNET                    1
 #define HARDWARE_ADDRESS_LENGTH                   6
 #define BOOT_FLAGS                                0x8000
-#define MAGIC_COOKIE_DHCP                         0x63825363
+#define MAGIC_COOKIE_DHCP_0                       0x63
+#define MAGIC_COOKIE_DHCP_1                       0x82
+#define MAGIC_COOKIE_DHCP_2                       0x53
+#define MAGIC_COOKIE_DHCP_3                       0x63
 
 /* DHCP option identifiers. */
 #define OPTION_SUBNET_MASK                        1
-#define OPTION_ROUTER                             2
+#define OPTION_ROUTER                             3
 #define OPTION_DOMAIN_NAME_SERVER                 6
 #define OPTION_HOST_NAME                          12
 #define OPTION_REQUSETED_IP_ADDRESS               50
@@ -81,6 +84,7 @@
 #define SERVER_PORT                               67
 #define CLIENT_PORT                               68
 
+#define MAGIC_COOKIE_DHCP_OFFSET                  236
 #define OPTIONS_OFFSET                            240
 
 /* Socket indexes in the poll list. */
@@ -110,6 +114,8 @@ struct option_in_addr_t {
 struct options_t {
     struct option_u8_t message_type;
     struct option_in_addr_t subnet_mask;
+    struct option_in_addr_t gateway;
+    struct option_in_addr_t dns;
     struct option_u32_t lease_time;
     struct option_u32_t renewal_time;
     struct option_u32_t rebinding_time;
@@ -321,6 +327,18 @@ static int unpack_option(struct ml_dhcp_client_t *self_p,
         res = unpack_option_in_addr(&options_p->subnet_mask, buf_p, length);
         break;
 
+    case OPTION_ROUTER:
+        res = unpack_option_in_addr(&options_p->gateway, buf_p, length);
+        break;
+
+    case OPTION_DOMAIN_NAME_SERVER:
+        if (length > 4) {
+            length = 4;
+        }
+
+        res = unpack_option_in_addr(&options_p->dns, buf_p, length);
+        break;
+
     case OPTION_DHCP_MESSAGE_TYPE:
         res = unpack_option_u8(&options_p->message_type, buf_p, length);
         break;
@@ -394,23 +412,32 @@ static int unpack_all_options(struct ml_dhcp_client_t *self_p,
     ML_INFO("Options:");
 
     if (options_p->message_type.valid) {
-        ML_INFO("  Message Type: %u", options_p->message_type.value);
+        ML_INFO("  Message Type:      %u", options_p->message_type.value);
     }
 
     if (options_p->subnet_mask.valid) {
-        ML_INFO("  Subnet Mask: %s", inet_ntoa(options_p->subnet_mask.value));
+        ML_INFO("  Subnet Mask:       %s",
+                inet_ntoa(options_p->subnet_mask.value));
+    }
+
+    if (options_p->gateway.valid) {
+        ML_INFO("  Gateway:           %s", inet_ntoa(options_p->gateway.value));
+    }
+
+    if (options_p->dns.valid) {
+        ML_INFO("  DNS:               %s", inet_ntoa(options_p->dns.value));
     }
 
     if (options_p->lease_time.valid) {
-        ML_INFO("  Lease Time: %u", options_p->lease_time.value);
+        ML_INFO("  Lease Time:        %u", options_p->lease_time.value);
     }
 
     if (options_p->renewal_time.valid) {
-        ML_INFO("  Renewal Time: %u", options_p->renewal_time.value);
+        ML_INFO("  Renewal Time:      %u", options_p->renewal_time.value);
     }
 
     if (options_p->rebinding_time.valid) {
-        ML_INFO("  Rebinding Time: %u", options_p->rebinding_time.value);
+        ML_INFO("  Rebinding Time:    %u", options_p->rebinding_time.value);
     }
 
     if (options_p->server_ip_address.valid) {
@@ -449,29 +476,23 @@ static void unpack_message_type_offer(struct ml_dhcp_client_t *self_p,
                                       struct options_t *options_p,
                                       const uint8_t *buf_p)
 {
+    if (!(options_p->server_ip_address.valid
+          && options_p->lease_time.valid
+          && (options_p->lease_time.value >= 1)
+          && options_p->subnet_mask.valid
+          && options_p->gateway.valid
+          && options_p->dns.valid)) {
+        return;
+    }
+
     self_p->ip_address.s_addr = ntohl((buf_p[0] << 24)
                                       | (buf_p[1] << 16)
                                       | (buf_p[2] << 8)
                                       | (buf_p[3] << 0));
-
-    if (!options_p->server_ip_address.valid) {
-        return;
-    }
-
-    if (!options_p->lease_time.valid) {
-        return;
-    }
-
-    if (options_p->lease_time.value < 1) {
-        return;
-    }
-
-    if (!options_p->subnet_mask.valid) {
-        return;
-    }
-
     self_p->server.ip_address = options_p->server_ip_address.value;
     self_p->subnet_mask = options_p->subnet_mask.value;
+    self_p->gateway = options_p->gateway.value;
+    self_p->dns = options_p->dns.value;
     self_p->lease_time = options_p->lease_time.value;
     self_p->renewal_interval = (self_p->lease_time / 2);
     self_p->rebinding_time = (self_p->lease_time / 2 + 10);
@@ -548,6 +569,13 @@ static void unpack_packet(struct ml_dhcp_client_t *self_p,
                  sizeof(self_p->interface.mac_address));
 
     if (res != 0) {
+        return;
+    }
+
+    if ((buf_p[MAGIC_COOKIE_DHCP_OFFSET] != MAGIC_COOKIE_DHCP_0)
+        || (buf_p[MAGIC_COOKIE_DHCP_OFFSET + 1] != MAGIC_COOKIE_DHCP_1)
+        || (buf_p[MAGIC_COOKIE_DHCP_OFFSET + 2] != MAGIC_COOKIE_DHCP_2)
+        || (buf_p[MAGIC_COOKIE_DHCP_OFFSET + 3] != MAGIC_COOKIE_DHCP_3)) {
         return;
     }
 
@@ -632,10 +660,10 @@ static int setup_packet_socket(struct ml_dhcp_client_t *self_p)
 
     return (0);
 
-err2:
+ err2:
     ml_close(sock);
 
-err1:
+ err1:
     ML_ERROR("Packet socket setup failed.");
 
     return (res);
@@ -672,10 +700,10 @@ static int setup_udp_socket(struct ml_dhcp_client_t *self_p)
 
     return (0);
 
-err2:
+ err2:
     ml_close(sock);
 
-err1:
+ err1:
     ML_ERROR("UDP socket setup failed.");
 
     return (res);
@@ -924,10 +952,10 @@ static void pack_dhcp_fixed(uint8_t *buf_p,
     buf_p[10] = (uint8_t)(BOOT_FLAGS >> 8);
     buf_p[11] = (uint8_t)(BOOT_FLAGS >> 0);
     memcpy(&buf_p[28], mac_address_p, 6);
-    buf_p[236] = (uint8_t)(MAGIC_COOKIE_DHCP >> 24);
-    buf_p[237] = (uint8_t)(MAGIC_COOKIE_DHCP >> 16);
-    buf_p[238] = (uint8_t)(MAGIC_COOKIE_DHCP >> 8);
-    buf_p[239] = (uint8_t)(MAGIC_COOKIE_DHCP >> 0);
+    buf_p[236] = MAGIC_COOKIE_DHCP_0;
+    buf_p[237] = MAGIC_COOKIE_DHCP_1;
+    buf_p[238] = MAGIC_COOKIE_DHCP_2;
+    buf_p[239] = MAGIC_COOKIE_DHCP_3;
     buf_p[240] = OPTION_DHCP_MESSAGE_TYPE;
     buf_p[241] = 1;
     buf_p[242] = message_type;
