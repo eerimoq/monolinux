@@ -510,6 +510,11 @@ static bool is_udp_valid(const uint8_t *buf_p, size_t size)
             && (buf_p[3] == (uint8_t)CLIENT_PORT));
 }
 
+static bool is_packet_valid(const uint8_t *buf_p, size_t size)
+{
+    return (is_ip_valid(buf_p, size) && is_udp_valid(&buf_p[20], size));
+}
+
 static void unpack_packet(struct ml_dhcp_client_t *self_p,
                           const uint8_t *buf_p,
                           size_t size)
@@ -518,11 +523,7 @@ static void unpack_packet(struct ml_dhcp_client_t *self_p,
     struct options_t options;
 
     if (self_p->is_packet_socket) {
-        if (!is_ip_valid(buf_p, size)) {
-            return;
-        }
-
-        if (!is_udp_valid(&buf_p[20], size)) {
+        if (!is_packet_valid(buf_p, size)) {
             return;
         }
 
