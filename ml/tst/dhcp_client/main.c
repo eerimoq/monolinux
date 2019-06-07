@@ -506,6 +506,9 @@ static void mock_push_requesting_to_bound(void)
                                              "192.168.0.3",
                                              "255.255.255.0",
                                              0);
+    mock_push_ml_network_interface_add_route("eth0",
+                                             "192.168.0.1",
+                                             0);
     mock_push_ml_close(SOCK_PACKET_FD, 0);
     mock_push_setup_udp_socket();
 }
@@ -538,6 +541,9 @@ static void mock_push_renewing_to_bound(void)
     mock_push_ml_network_interface_configure("eth0",
                                              "192.168.0.3",
                                              "255.255.255.0",
+                                             0);
+    mock_push_ml_network_interface_add_route("eth0",
+                                             "192.168.0.1",
                                              0);
     mock_push_ml_close(SOCK_PACKET_FD, 0);
     mock_push_setup_udp_socket();

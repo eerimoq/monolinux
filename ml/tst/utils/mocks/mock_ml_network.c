@@ -157,3 +157,31 @@ int __wrap_ml_network_interface_mac_address(const char *name_p,
 
     return (res);
 }
+
+void mock_push_ml_network_interface_add_route(const char *name_p,
+                                              const char *ip_address_p,
+                                              int res)
+{
+    mock_push("ml_network_interface_add_route(name_p)",
+              name_p,
+              strlen(name_p) + 1);
+    mock_push("ml_network_interface_add_route(ip_address_p)",
+              ip_address_p,
+              strlen(ip_address_p) + 1);
+    mock_push("ml_network_interface_add_route(): return (res)",
+              &res,
+              sizeof(res));
+}
+
+int __wrap_ml_network_interface_add_route(const char *name_p,
+                                          const char *ip_address_p)
+{
+    int res;
+
+    mock_pop_assert("ml_network_interface_add_route(name_p)", name_p);
+    mock_pop_assert("ml_network_interface_add_route(ip_address_p)",
+                    ip_address_p);
+    mock_pop("ml_network_interface_add_route(): return (res)", &res);
+
+    return (res);
+}

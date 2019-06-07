@@ -320,6 +320,12 @@ int ml_network_interface_ip_address(const char *name_p,
                                     struct in_addr *in_addr_p);
 
 /**
+ * Add a route.
+ */
+int ml_network_interface_add_route(const char *name_p,
+                                   const char *ip_address_p);
+
+/**
  * Strip leading and trailing characters from given string and return
  * a pointer to the beginning of the new string.
  */

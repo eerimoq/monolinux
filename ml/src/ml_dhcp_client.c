@@ -714,16 +714,19 @@ static void configure_interface(struct ml_dhcp_client_t *self_p)
     int res;
     char ip_address[16];
     char subnet_mask[16];
+    char gateway[16];
 
     strcpy(&ip_address[0], inet_ntoa(self_p->ip_address));
     strcpy(&subnet_mask[0], inet_ntoa(self_p->subnet_mask));
+    strcpy(&gateway[0], inet_ntoa(self_p->gateway));
 
     ML_INFO(
-        "Configuring interface '%s' with ip address %s and "
-        "subnet mask %s.",
+        "Configuring interface '%s' with ip address %s, "
+        "subnet mask %s and gateway %s.",
         self_p->interface.name_p,
         &ip_address[0],
-        &subnet_mask[0]);
+        &subnet_mask[0],
+        &gateway[0]);
 
     res = ml_network_interface_configure(self_p->interface.name_p,
                                          &ip_address[0],
@@ -733,6 +736,15 @@ static void configure_interface(struct ml_dhcp_client_t *self_p)
         ML_WARNING("Failed to configure '%s' with ip address '%s'.",
                    self_p->interface.name_p,
                    &ip_address[0]);
+    }
+
+    res = ml_network_interface_add_route(self_p->interface.name_p,
+                                         &gateway[0]);
+
+    if (res != 0) {
+        ML_WARNING("Failed to add route %s to interface '%s'.",
+                   &gateway[0],
+                   self_p->interface.name_p);
     }
 }
 

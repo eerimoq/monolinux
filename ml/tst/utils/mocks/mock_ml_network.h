@@ -50,4 +50,8 @@ void mock_push_ml_network_interface_mac_address(const char *name_p,
                                                 uint8_t *mac_address_p,
                                                 int res);
 
+void mock_push_ml_network_interface_add_route(const char *name_p,
+                                              const char *ip_address_p,
+                                              int res);
+
 #endif

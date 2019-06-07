@@ -28,10 +28,12 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <net/route.h>
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <arpa/inet.h>
 #include <poll.h>
+#include <errno.h>
 #include "ml/ml.h"
 
 static int net_open(const char *name_p,
@@ -176,6 +178,23 @@ static int command_ifconfig(int argc, const char *argv[])
         printf("ifconfig <interface>\n"
                "ifconfig <interface> up/down\n"
                "ifconfig <interface> <ip-address> <netmask>\n");
+    }
+
+    return (res);
+}
+
+static int command_route(int argc, const char *argv[])
+{
+    int res;
+
+    res = -1;
+
+    if (argc == 3) {
+        res = ml_network_interface_add_route(argv[1], argv[2]);
+    }
+
+    if (res != 0) {
+        printf("route <interface> <ip-address>\n");
     }
 
     return (res);
@@ -348,6 +367,9 @@ void ml_network_init(void)
     ml_shell_register_command("ifconfig",
                               "Network interface management.",
                               command_ifconfig);
+    ml_shell_register_command("route",
+                              "Network routing.",
+                              command_route);
     ml_shell_register_command("udp_send",
                               "UDP send.",
                               command_udp_send);
@@ -464,6 +486,43 @@ int ml_network_interface_ip_address(const char *name_p,
     if (netfd != -1) {
         res = ioctl(netfd, SIOCGIFADDR, &ifreq);
         *ip_address_p = ((struct sockaddr_in *)&ifreq.ifr_addr)->sin_addr;
+        net_close(netfd);
+    }
+
+    return (res);
+}
+
+int ml_network_interface_add_route(const char *name_p,
+                                   const char *ip_address_p)
+{
+    struct ifreq ifreq;
+    int res;
+    int netfd;
+    struct rtentry route;
+    struct sockaddr_in *addr_p;
+
+    res = -1;
+    netfd = net_open(name_p, &ifreq);
+
+    if (netfd != -1) {
+        memset(&route, 0, sizeof(route));
+        addr_p = (struct sockaddr_in*)&route.rt_gateway;
+        addr_p->sin_family = AF_INET;
+        addr_p->sin_addr.s_addr = inet_addr(ip_address_p);
+        addr_p = (struct sockaddr_in*)&route.rt_dst;
+        addr_p->sin_family = AF_INET;
+        addr_p->sin_addr.s_addr = INADDR_ANY;
+        addr_p = (struct sockaddr_in*)&route.rt_genmask;
+        addr_p->sin_family = AF_INET;
+        addr_p->sin_addr.s_addr = INADDR_ANY;
+        route.rt_flags = (RTF_UP | RTF_GATEWAY);
+        res = ml_ioctl(netfd, SIOCADDRT, &route);
+
+        /* Route already exists? */
+        if ((res == -1) && (errno == EEXIST)) {
+            res = 0;
+        }
+
         net_close(netfd);
     }
 

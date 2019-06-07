@@ -36,6 +36,8 @@ static void mock_push_ml_network_init(void)
 {
     mock_push_ml_shell_register_command("ifconfig",
                                         "Network interface management.");
+    mock_push_ml_shell_register_command("route",
+                                        "Network routing.");
     mock_push_ml_shell_register_command("udp_send",
                                         "UDP send.");
     mock_push_ml_shell_register_command("udp_recv",

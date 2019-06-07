@@ -10,6 +10,7 @@ LDFLAGS += -Wl,--wrap=poll
 LDFLAGS += -Wl,--wrap=ml_network_interface_index
 LDFLAGS += -Wl,--wrap=ml_network_interface_configure
 LDFLAGS += -Wl,--wrap=ml_network_interface_mac_address
+LDFLAGS += -Wl,--wrap=ml_network_interface_add_route
 INC += ..
 SRC += ../utils/mocks/mock.c
 SRC += ../utils/mocks/mock_libc.c
