@@ -101,27 +101,19 @@ struct option_u32_t {
     bool valid;
 };
 
+struct option_in_addr_t {
+    struct in_addr value;
+    bool valid;
+};
+
 struct options_t {
     struct option_u8_t message_type;
-    struct option_u32_t subnet_mask;
+    struct option_in_addr_t subnet_mask;
     struct option_u32_t lease_time;
     struct option_u32_t renewal_time;
     struct option_u32_t rebinding_time;
-    struct option_u32_t server_ip_address;
+    struct option_in_addr_t server_ip_address;
 };
-
-static char *inet_string(char *buf_p, uint32_t value)
-{
-    snprintf(buf_p,
-             16,
-             "%u.%u.%u.%u",
-             (value >> 24) & 0xff,
-             (value >> 16) & 0xff,
-             (value >> 8) & 0xff,
-             (value >> 0) & 0xff);
-
-    return (buf_p);
-}
 
 static uint32_t inet_checksum_begin(void)
 {
@@ -338,6 +330,23 @@ static int unpack_option_u32(struct option_u32_t *option_p,
     return (0);
 }
 
+static int unpack_option_in_addr(struct option_in_addr_t *option_p,
+                                 const uint8_t *buf_p,
+                                 uint8_t size)
+{
+    if (size != 4) {
+        return (-1);
+    }
+
+    option_p->value.s_addr = ntohl((buf_p[0] << 24)
+                                   | (buf_p[1] << 16)
+                                   | (buf_p[2] << 8)
+                                   | (buf_p[3] << 0));
+    option_p->valid = true;
+
+    return (0);
+}
+
 static int unpack_option(struct ml_dhcp_client_t *self_p,
                          struct options_t *options_p,
                          uint8_t option,
@@ -349,7 +358,7 @@ static int unpack_option(struct ml_dhcp_client_t *self_p,
     switch (option) {
 
     case OPTION_SUBNET_MASK:
-        res = unpack_option_u32(&options_p->subnet_mask, buf_p, length);
+        res = unpack_option_in_addr(&options_p->subnet_mask, buf_p, length);
         break;
 
     case OPTION_DHCP_MESSAGE_TYPE:
@@ -369,7 +378,7 @@ static int unpack_option(struct ml_dhcp_client_t *self_p,
         break;
 
     case OPTION_DHCP_SERVER_IDENTIFIER:
-        res = unpack_option_u32(&options_p->server_ip_address, buf_p, length);
+        res = unpack_option_in_addr(&options_p->server_ip_address, buf_p, length);
         break;
 
     default:
@@ -389,7 +398,6 @@ static int unpack_all_options(struct ml_dhcp_client_t *self_p,
     uint8_t option;
     uint8_t length;
     uint8_t buf[255];
-    char string[16];
 
     memset(options_p, 0, sizeof(*options_p));
 
@@ -430,8 +438,7 @@ static int unpack_all_options(struct ml_dhcp_client_t *self_p,
     }
 
     if (options_p->subnet_mask.valid) {
-        ML_INFO("  Subnet Mask: %s",
-                inet_string(&string[0], options_p->subnet_mask.value));
+        ML_INFO("  Subnet Mask: %s", inet_ntoa(options_p->subnet_mask.value));
     }
 
     if (options_p->lease_time.valid) {
@@ -448,7 +455,7 @@ static int unpack_all_options(struct ml_dhcp_client_t *self_p,
 
     if (options_p->server_ip_address.valid) {
         ML_INFO("  Server IP Address: %s",
-                inet_string(&string[0], options_p->server_ip_address.value));
+                inet_ntoa(options_p->server_ip_address.value));
     }
 
     return (0);
@@ -482,10 +489,10 @@ static void unpack_message_type_offer(struct ml_dhcp_client_t *self_p,
                                       struct options_t *options_p,
                                       const uint8_t *buf_p)
 {
-    self_p->offer.ip_address = ((buf_p[0] << 24)
-                                | (buf_p[1] << 16)
-                                | (buf_p[2] << 8)
-                                | (buf_p[3] << 0));
+    self_p->offer.ip_address.s_addr = ntohl((buf_p[0] << 24)
+                                            | (buf_p[1] << 16)
+                                            | (buf_p[2] << 8)
+                                            | (buf_p[3] << 0));
 
     if (!options_p->server_ip_address.valid) {
         return;
@@ -701,8 +708,8 @@ static void configure_interface(struct ml_dhcp_client_t *self_p)
     char ip_address[16];
     char subnet_mask[16];
 
-    inet_string(&ip_address[0], self_p->offer.ip_address);
-    inet_string(&subnet_mask[0], self_p->offer.subnet_mask);
+    strcpy(&ip_address[0], inet_ntoa(self_p->offer.ip_address));
+    strcpy(&subnet_mask[0], inet_ntoa(self_p->offer.subnet_mask));
 
     ML_INFO(
         "Configuring interface '%s' with ip address %s and "
@@ -822,7 +829,7 @@ static int set_init_timer(struct ml_dhcp_client_t *self_p,
 }
 
 static bool send_packet(struct ml_dhcp_client_t *self_p,
-                        uint8_t *buf_p,
+                        const uint8_t *buf_p,
                         size_t size)
 {
     bool ok;
@@ -832,7 +839,7 @@ static bool send_packet(struct ml_dhcp_client_t *self_p,
     ok = false;
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = htonl(self_p->server.ip_address);
+    addr.sin_addr = self_p->server.ip_address;
     addr.sin_port = htons(SERVER_PORT);
 
     ML_DEBUG("Sending %s packet.", message_type_str(buf_p[OPTIONS_OFFSET + 2]));
@@ -966,6 +973,7 @@ static bool broadcast_request(struct ml_dhcp_client_t *self_p)
 {
     uint8_t buf[604];
     uint32_t transaction_id;
+    uint32_t value;
 
     memset(&buf[0], 0, sizeof(buf));
     pack_ip_header(&buf[0], sizeof(buf));
@@ -994,16 +1002,18 @@ static bool broadcast_request(struct ml_dhcp_client_t *self_p)
     buf[270] = MESSAGE_TYPE_REQUEST;
     buf[271] = OPTION_DHCP_SERVER_IDENTIFIER;
     buf[272] = 4;
-    buf[273] = (self_p->server.ip_address >> 24);
-    buf[274] = (self_p->server.ip_address >> 16);
-    buf[275] = (self_p->server.ip_address >> 8);
-    buf[276] = (self_p->server.ip_address >> 0);
+    value = htonl(self_p->server.ip_address.s_addr);
+    buf[273] = (value >> 24);
+    buf[274] = (value >> 16);
+    buf[275] = (value >> 8);
+    buf[276] = (value >> 0);
     buf[277] = OPTION_REQUSETED_IP_ADDRESS;
     buf[278] = 4;
-    buf[279] = (self_p->offer.ip_address >> 24);
-    buf[280] = (self_p->offer.ip_address >> 16);
-    buf[281] = (self_p->offer.ip_address >> 8);
-    buf[282] = (self_p->offer.ip_address >> 0);
+    value = htonl(self_p->offer.ip_address.s_addr);
+    buf[279] = (value >> 24);
+    buf[280] = (value >> 16);
+    buf[281] = (value >> 8);
+    buf[282] = (value >> 0);
     buf[283] = OPTION_IP_ADDRESS_LEASE_TIME;
     buf[284] = 4;
     buf[285] = (self_p->offer.lease_time >> 24);
@@ -1019,6 +1029,7 @@ static bool send_request(struct ml_dhcp_client_t *self_p)
 {
     uint8_t buf[576];
     uint32_t transaction_id;
+    uint32_t value;
 
     memset(&buf[0], 0, sizeof(buf));
     transaction_id = 0x32493678;
@@ -1043,16 +1054,18 @@ static bool send_request(struct ml_dhcp_client_t *self_p)
     buf[242] = MESSAGE_TYPE_REQUEST;
     buf[243] = OPTION_DHCP_SERVER_IDENTIFIER;
     buf[244] = 4;
-    buf[245] = (self_p->server.ip_address >> 24);
-    buf[246] = (self_p->server.ip_address >> 16);
-    buf[247] = (self_p->server.ip_address >> 8);
-    buf[248] = (self_p->server.ip_address >> 0);
+    value = htonl(self_p->server.ip_address.s_addr);
+    buf[245] = (value >> 24);
+    buf[246] = (value >> 16);
+    buf[247] = (value >> 8);
+    buf[248] = (value >> 0);
     buf[249] = OPTION_REQUSETED_IP_ADDRESS;
     buf[250] = 4;
-    buf[251] = (self_p->offer.ip_address >> 24);
-    buf[252] = (self_p->offer.ip_address >> 16);
-    buf[253] = (self_p->offer.ip_address >> 8);
-    buf[254] = (self_p->offer.ip_address >> 0);
+    value = htonl(self_p->offer.ip_address.s_addr);
+    buf[251] = (value >> 24);
+    buf[252] = (value >> 16);
+    buf[253] = (value >> 8);
+    buf[254] = (value >> 0);
     buf[255] = OPTION_IP_ADDRESS_LEASE_TIME;
     buf[256] = 4;
     buf[257] = (self_p->offer.lease_time >> 24);
@@ -1332,7 +1345,6 @@ void ml_dhcp_client_init(struct ml_dhcp_client_t *self_p,
 {
     self_p->interface.name_p = interface_name_p;
     self_p->state = ml_dhcp_client_state_init_t;
-    self_p->server.ip_address = 0x01020304;
     ml_log_object_init(&self_p->log_object,
                        "dhcp_client",
                        log_mask);
