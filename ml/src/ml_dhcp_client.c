@@ -488,6 +488,28 @@ static void unpack_message_type_nak(struct ml_dhcp_client_t *self_p)
     self_p->packet_type = ml_dhcp_client_packet_type_nak_t;
 }
 
+static bool is_ip_valid(const uint8_t *buf_p, size_t size)
+{
+    return ((size >= 20)
+            && (ml_inet_checksum(&buf_p[0], 20) == 0)
+            && (buf_p[0] == ((IPVERSION << 4) | 5))
+            && (buf_p[9] == IPPROTO_UDP)
+            && (buf_p[16] == 255)
+            && (buf_p[17] == 255)
+            && (buf_p[18] == 255)
+            && (buf_p[19] == 255));
+}
+
+static bool is_udp_valid(const uint8_t *buf_p, size_t size)
+{
+    /* ToDo: Validate checksum. */
+    return ((size >= 28)
+            && (buf_p[0] == (uint8_t)(SERVER_PORT >> 8))
+            && (buf_p[1] == (uint8_t)SERVER_PORT)
+            && (buf_p[2] == (uint8_t)(CLIENT_PORT >> 8))
+            && (buf_p[3] == (uint8_t)CLIENT_PORT));
+}
+
 static void unpack_packet(struct ml_dhcp_client_t *self_p,
                           const uint8_t *buf_p,
                           size_t size)
@@ -496,17 +518,13 @@ static void unpack_packet(struct ml_dhcp_client_t *self_p,
     struct options_t options;
 
     if (self_p->is_packet_socket) {
-        if (size < 20) {
+        if (!is_ip_valid(buf_p, size)) {
             return;
         }
 
-        /* ToDo: IPv4 validation. */
-
-        if (size < 28) {
+        if (!is_udp_valid(&buf_p[20], size)) {
             return;
         }
-
-        /* ToDo: UDP validation. */
 
         buf_p += 28;
         size -= 28;
