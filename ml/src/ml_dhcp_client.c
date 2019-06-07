@@ -925,44 +925,78 @@ static void pack_udp_header(uint8_t *buf_p, size_t size)
     buf_p[5] = (uint8_t)size;
 }
 
+static void pack_dhcp_fixed(uint8_t *buf_p,
+                            uint8_t *mac_address_p,
+                            uint8_t message_type)
+{
+    uint32_t transaction_id;
+
+    transaction_id = 0x32493678;
+    buf_p[0] = BOOTP_MESSAGE_TYPE_BOOT_REQUEST;
+    buf_p[1] = HARDWARE_TYPE_ETHERNET;
+    buf_p[2] = HARDWARE_ADDRESS_LENGTH;
+    buf_p[4] = (transaction_id >> 24);
+    buf_p[5] = (transaction_id >> 16);
+    buf_p[6] = (transaction_id >> 8);
+    buf_p[7] = (transaction_id >> 0);
+    buf_p[10] = (uint8_t)(BOOT_FLAGS >> 8);
+    buf_p[11] = (uint8_t)(BOOT_FLAGS >> 0);
+    memcpy(&buf_p[28], mac_address_p, 6);
+    buf_p[236] = (uint8_t)(MAGIC_COOKIE_DHCP >> 24);
+    buf_p[237] = (uint8_t)(MAGIC_COOKIE_DHCP >> 16);
+    buf_p[238] = (uint8_t)(MAGIC_COOKIE_DHCP >> 8);
+    buf_p[239] = (uint8_t)(MAGIC_COOKIE_DHCP >> 0);
+    buf_p[240] = OPTION_DHCP_MESSAGE_TYPE;
+    buf_p[241] = 1;
+    buf_p[242] = message_type;
+}
+
+static void pack_dhcp_request(uint8_t *buf_p,
+                              struct ml_dhcp_client_t *self_p)
+{
+    uint32_t value;
+
+    buf_p[0] = OPTION_DHCP_SERVER_IDENTIFIER;
+    buf_p[1] = 4;
+    value = htonl(self_p->server.ip_address.s_addr);
+    buf_p[2] = (value >> 24);
+    buf_p[3] = (value >> 16);
+    buf_p[4] = (value >> 8);
+    buf_p[5] = (value >> 0);
+    buf_p[6] = OPTION_REQUSETED_IP_ADDRESS;
+    buf_p[7] = 4;
+    value = htonl(self_p->offer.ip_address.s_addr);
+    buf_p[8] = (value >> 24);
+    buf_p[9] = (value >> 16);
+    buf_p[10] = (value >> 8);
+    buf_p[11] = (value >> 0);
+    buf_p[12] = OPTION_IP_ADDRESS_LEASE_TIME;
+    buf_p[13] = 4;
+    buf_p[14] = (self_p->offer.lease_time >> 24);
+    buf_p[15] = (self_p->offer.lease_time >> 16);
+    buf_p[16] = (self_p->offer.lease_time >> 8);
+    buf_p[17] = (self_p->offer.lease_time >> 0);
+    buf_p[18] = OPTION_END;
+}
+
 static bool broadcast_discover(struct ml_dhcp_client_t *self_p)
 {
     uint8_t buf[604];
-    uint32_t transaction_id;
 
     memset(&buf[0], 0, sizeof(buf));
     pack_ip_header(&buf[0], sizeof(buf));
     pack_udp_header(&buf[20], 584);
-
-    /* DHCP packet. */
-    transaction_id = 0x32493678;
-    buf[28] = BOOTP_MESSAGE_TYPE_BOOT_REQUEST;
-    buf[29] = HARDWARE_TYPE_ETHERNET;
-    buf[30] = HARDWARE_ADDRESS_LENGTH;
-    buf[32] = (transaction_id >> 24);
-    buf[33] = (transaction_id >> 16);
-    buf[34] = (transaction_id >> 8);
-    buf[35] = (transaction_id >> 0);
-    buf[38] = (uint8_t)(BOOT_FLAGS >> 8);
-    buf[39] = (uint8_t)(BOOT_FLAGS >> 0);
-    memcpy(&buf[56],
-           &self_p->self.mac_address[0],
-           sizeof(self_p->self.mac_address));
-    buf[264] = (uint8_t)(MAGIC_COOKIE_DHCP >> 24);
-    buf[265] = (uint8_t)(MAGIC_COOKIE_DHCP >> 16);
-    buf[266] = (uint8_t)(MAGIC_COOKIE_DHCP >> 8);
-    buf[267] = (uint8_t)(MAGIC_COOKIE_DHCP >> 0);
-    buf[268] = OPTION_DHCP_MESSAGE_TYPE;
-    buf[269] = 1;
-    buf[270] = MESSAGE_TYPE_DISCOVER;
+    pack_dhcp_fixed(&buf[28],
+                    &self_p->self.mac_address[0],
+                    MESSAGE_TYPE_DISCOVER);
     buf[271] = OPTION_MAXIMUM_DHCP_MESSAGE_SIZE;
     buf[272] = 2;
     buf[273] = (uint8_t)(MAXIMUM_PACKET_SIZE >> 8);
     buf[274] = (uint8_t)(MAXIMUM_PACKET_SIZE >> 0);
     buf[275] = OPTION_PARAMETER_REQUEST_LIST;
     buf[276] = 3;
-    buf[277] = 1;
-    buf[278] = 6;
+    buf[277] = OPTION_SUBNET_MASK;
+    buf[278] = OPTION_DOMAIN_NAME_SERVER;
     buf[279] = 3;
     buf[280] = OPTION_END;
 
@@ -972,55 +1006,14 @@ static bool broadcast_discover(struct ml_dhcp_client_t *self_p)
 static bool broadcast_request(struct ml_dhcp_client_t *self_p)
 {
     uint8_t buf[604];
-    uint32_t transaction_id;
-    uint32_t value;
 
     memset(&buf[0], 0, sizeof(buf));
     pack_ip_header(&buf[0], sizeof(buf));
     pack_udp_header(&buf[20], 584);
-
-    /* DHCP packet. */
-    transaction_id = 0x32493678;
-    buf[28] = BOOTP_MESSAGE_TYPE_BOOT_REQUEST;
-    buf[29] = HARDWARE_TYPE_ETHERNET;
-    buf[30] = HARDWARE_ADDRESS_LENGTH;
-    buf[32] = (transaction_id >> 24);
-    buf[33] = (transaction_id >> 16);
-    buf[34] = (transaction_id >> 8);
-    buf[35] = (transaction_id >> 0);
-    buf[38] = (uint8_t)(BOOT_FLAGS >> 8);
-    buf[39] = (uint8_t)(BOOT_FLAGS >> 0);
-    memcpy(&buf[56],
-           &self_p->self.mac_address[0],
-           sizeof(self_p->self.mac_address));
-    buf[264] = (uint8_t)(MAGIC_COOKIE_DHCP >> 24);
-    buf[265] = (uint8_t)(MAGIC_COOKIE_DHCP >> 16);
-    buf[266] = (uint8_t)(MAGIC_COOKIE_DHCP >> 8);
-    buf[267] = (uint8_t)(MAGIC_COOKIE_DHCP >> 0);
-    buf[268] = OPTION_DHCP_MESSAGE_TYPE;
-    buf[269] = 1;
-    buf[270] = MESSAGE_TYPE_REQUEST;
-    buf[271] = OPTION_DHCP_SERVER_IDENTIFIER;
-    buf[272] = 4;
-    value = htonl(self_p->server.ip_address.s_addr);
-    buf[273] = (value >> 24);
-    buf[274] = (value >> 16);
-    buf[275] = (value >> 8);
-    buf[276] = (value >> 0);
-    buf[277] = OPTION_REQUSETED_IP_ADDRESS;
-    buf[278] = 4;
-    value = htonl(self_p->offer.ip_address.s_addr);
-    buf[279] = (value >> 24);
-    buf[280] = (value >> 16);
-    buf[281] = (value >> 8);
-    buf[282] = (value >> 0);
-    buf[283] = OPTION_IP_ADDRESS_LEASE_TIME;
-    buf[284] = 4;
-    buf[285] = (self_p->offer.lease_time >> 24);
-    buf[286] = (self_p->offer.lease_time >> 16);
-    buf[287] = (self_p->offer.lease_time >> 8);
-    buf[288] = (self_p->offer.lease_time >> 0);
-    buf[289] = OPTION_END;
+    pack_dhcp_fixed(&buf[28],
+                    &self_p->self.mac_address[0],
+                    MESSAGE_TYPE_REQUEST);
+    pack_dhcp_request(&buf[271], self_p);
 
     return (broadcast_packet(self_p, &buf[0], sizeof(buf)));
 }
@@ -1028,51 +1021,12 @@ static bool broadcast_request(struct ml_dhcp_client_t *self_p)
 static bool send_request(struct ml_dhcp_client_t *self_p)
 {
     uint8_t buf[576];
-    uint32_t transaction_id;
-    uint32_t value;
 
     memset(&buf[0], 0, sizeof(buf));
-    transaction_id = 0x32493678;
-    buf[0] = BOOTP_MESSAGE_TYPE_BOOT_REQUEST;
-    buf[1] = HARDWARE_TYPE_ETHERNET;
-    buf[2] = HARDWARE_ADDRESS_LENGTH;
-    buf[4] = (transaction_id >> 24);
-    buf[5] = (transaction_id >> 16);
-    buf[6] = (transaction_id >> 8);
-    buf[7] = (transaction_id >> 0);
-    buf[10] = (uint8_t)(BOOT_FLAGS >> 8);
-    buf[11] = (uint8_t)(BOOT_FLAGS >> 0);
-    memcpy(&buf[28],
-           &self_p->self.mac_address[0],
-           sizeof(self_p->self.mac_address));
-    buf[236] = (uint8_t)(MAGIC_COOKIE_DHCP >> 24);
-    buf[237] = (uint8_t)(MAGIC_COOKIE_DHCP >> 16);
-    buf[238] = (uint8_t)(MAGIC_COOKIE_DHCP >> 8);
-    buf[239] = (uint8_t)(MAGIC_COOKIE_DHCP >> 0);
-    buf[240] = OPTION_DHCP_MESSAGE_TYPE;
-    buf[241] = 1;
-    buf[242] = MESSAGE_TYPE_REQUEST;
-    buf[243] = OPTION_DHCP_SERVER_IDENTIFIER;
-    buf[244] = 4;
-    value = htonl(self_p->server.ip_address.s_addr);
-    buf[245] = (value >> 24);
-    buf[246] = (value >> 16);
-    buf[247] = (value >> 8);
-    buf[248] = (value >> 0);
-    buf[249] = OPTION_REQUSETED_IP_ADDRESS;
-    buf[250] = 4;
-    value = htonl(self_p->offer.ip_address.s_addr);
-    buf[251] = (value >> 24);
-    buf[252] = (value >> 16);
-    buf[253] = (value >> 8);
-    buf[254] = (value >> 0);
-    buf[255] = OPTION_IP_ADDRESS_LEASE_TIME;
-    buf[256] = 4;
-    buf[257] = (self_p->offer.lease_time >> 24);
-    buf[258] = (self_p->offer.lease_time >> 16);
-    buf[259] = (self_p->offer.lease_time >> 8);
-    buf[260] = (self_p->offer.lease_time >> 0);
-    buf[261] = OPTION_END;
+    pack_dhcp_fixed(&buf[0],
+                    &self_p->self.mac_address[0],
+                    MESSAGE_TYPE_REQUEST);
+    pack_dhcp_request(&buf[243], self_p);
 
     return (send_packet(self_p, &buf[0], sizeof(buf)));
 }
