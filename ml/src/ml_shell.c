@@ -107,6 +107,7 @@ struct module_t {
 static struct module_t module;
 
 static void history_init(void);
+static void show_line(void);
 
 static int xgetc(void)
 {
@@ -439,7 +440,7 @@ static int command_help(int argc, const char *argv[])
            "       Ctrl+K   Cut the line from cursor to end.\n"
            "       Ctrl+T   Swap the last two characters before the cursor "
            "(typo).\n"
-           "          TAB   Tab completion for file/directory names.\n"
+           "          TAB   Tab completion for command names.\n"
            "    BACKSPACE   Delete the character before the cursor.\n"
            "\n"
            "History\n"
@@ -882,8 +883,96 @@ static char *history_reverse_search(const char *pattern_p)
     return (NULL);
 }
 
+static void auto_complete_command(void)
+{
+    char next_char;
+    bool mismatch;
+    int size;
+    int i;
+    int first_match;
+    bool completion_happend;
+    char *line_p;
+
+    line_p = line_get_buf(&module.line);
+    size = line_get_length(&module.line);
+
+    /* Find the first command matching given line. */
+    first_match = -1;
+
+    for (i = 0; i < module.number_of_commands; i++) {
+        if (strncmp(module.commands_p[i].name_p, line_p, size) == 0) {
+            first_match = i;
+            break;
+        }
+    }
+
+    /* No command matching the line. */
+    if (first_match == -1) {
+        return;
+    }
+
+    /* Auto-complete given line. Compare the next character each
+       iteration. */
+    completion_happend = false;
+
+    while (true) {
+        mismatch = false;
+        next_char = module.commands_p[first_match].name_p[size];
+
+        /* It's a match if all commands matching line has the same
+           next character. */
+        i = first_match;
+
+        while ((i < module.number_of_commands)
+               && (strncmp(&module.commands_p[i].name_p[0],
+                           line_p,
+                           size) == 0)) {
+            if (module.commands_p[i].name_p[size] != next_char) {
+                mismatch = true;
+                break;
+            }
+
+            i++;
+        }
+
+        /* This character mismatch? */
+        if (mismatch) {
+            break;
+        }
+
+        completion_happend = true;
+
+        /* Append a space on full match. */
+        if (next_char == '\0') {
+            line_insert(&module.line, ' ');
+            break;
+        }
+
+        line_insert(&module.line, next_char);
+        size++;
+    }
+
+    /* Print all alternatives if no completion happened. */
+    if (!completion_happend) {
+        putchar('\n');
+        i = first_match;
+
+        while ((i < module.number_of_commands)
+               && (strncmp(module.commands_p[i].name_p,
+                           line_p,
+                           size) == 0)) {
+            printf("%s\n", module.commands_p[i].name_p);
+            i++;
+        }
+
+        print_prompt();
+        printf("%s", line_get_buf(&module.line));
+    }
+}
+
 static void handle_tab(void)
 {
+    auto_complete_command();
 }
 
 static void handle_carrige_return(void)

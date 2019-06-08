@@ -91,7 +91,7 @@ TEST(various_commands)
               "       Ctrl+K   Cut the line from cursor to end.\n"
               "       Ctrl+T   Swap the last two characters before the "
               "cursor (typo).\n"
-              "          TAB   Tab completion for file/directory names.\n"
+              "          TAB   Tab completion for command names.\n"
               "    BACKSPACE   Delete the character before the cursor.\n"
               "\n"
               "History\n"
