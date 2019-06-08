@@ -1019,7 +1019,7 @@ static bool broadcast_discover(struct ml_dhcp_client_t *self_p)
     buf[276] = 3;
     buf[277] = OPTION_SUBNET_MASK;
     buf[278] = OPTION_DOMAIN_NAME_SERVER;
-    buf[279] = 3;
+    buf[279] = OPTION_ROUTER;
     buf[280] = OPTION_END;
 
     return (broadcast_packet(self_p, &buf[0], sizeof(buf)));
