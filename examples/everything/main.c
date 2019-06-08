@@ -296,13 +296,20 @@ int main()
     lzma_test();
     detools_test();
     openssl_test();
-    ml_network_interface_configure("eth0", "10.0.2.15", "255.255.255.0");
     ml_network_interface_up("eth0");
-    //struct ml_dhcp_client_t dhcp_client;
-    //sleep(4);
-    //ml_dhcp_client_init(&dhcp_client, "eth0", ML_LOG_UPTO(INFO));
-    //ml_dhcp_client_start(&dhcp_client);
-    //sleep(1);
+
+# if 1
+    ml_network_interface_configure("eth0", "10.0.2.15", "255.255.255.0");
+    ml_network_interface_add_route("eth0", "10.0.2.2");
+#else
+    struct ml_dhcp_client_t dhcp_client;
+
+    sleep(4);
+    ml_dhcp_client_init(&dhcp_client, "eth0", ML_LOG_UPTO(DEBUG));
+    ml_dhcp_client_start(&dhcp_client);
+    sleep(1);
+#endif
+
     http_test();
     log_object_test();
 

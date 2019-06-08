@@ -8,10 +8,11 @@ INITRAMFS_FILES=$2
 rm -rf $BUILD/initramfs
 mkdir -p $BUILD/initramfs
 cd $BUILD/initramfs
-mkdir -p {dev,mnt/disk,proc,root,sys/kernel/debug}
+mkdir -p {dev,etc,mnt/disk,proc,root,sys/kernel/debug}
 cp -a /dev/{null,console,tty,sda1,urandom} dev
 cp $BUILD/app init
 chmod +x init
+echo "nameserver 8.8.4.4" > etc/resolv.conf
 cd - > /dev/null
 
 for file in $INITRAMFS_FILES ; do
