@@ -304,10 +304,8 @@ int main()
 #else
     struct ml_dhcp_client_t dhcp_client;
 
-    sleep(4);
-    ml_dhcp_client_init(&dhcp_client, "eth0", ML_LOG_UPTO(DEBUG));
+    ml_dhcp_client_init(&dhcp_client, "eth0", ML_LOG_UPTO(INFO));
     ml_dhcp_client_start(&dhcp_client);
-    sleep(1);
 #endif
 
     http_test();

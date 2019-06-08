@@ -774,7 +774,10 @@ static void update_events(struct ml_dhcp_client_t *self_p)
 
     self_p->packet_type = ml_dhcp_client_packet_type_none_t;
 
-    if (self_p->fds[SOCK_IX].revents & POLLIN) {
+    if (self_p->fds[SOCK_IX].revents & POLLERR) {
+        ML_WARNING("Packet/UDP socket error. Interface likely down.");
+        sleep(1);
+    } else if (self_p->fds[SOCK_IX].revents & POLLIN) {
         size = ml_read(self_p->fds[SOCK_IX].fd, &buf[0], sizeof(buf));
 
         if (size > 0) {
