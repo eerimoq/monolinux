@@ -219,6 +219,13 @@ Disk commands.
    $ ls /mnt/disk
    $ cat /mnt/disk/README
 
+Configuration.
+
+.. code-block:: shell
+
+   # DNS.
+   $ cat /etc/resolv.conf
+
 .. |buildstatus| image:: https://travis-ci.org/eerimoq/monolinux.svg
 .. _buildstatus: https://travis-ci.org/eerimoq/monolinux
 
