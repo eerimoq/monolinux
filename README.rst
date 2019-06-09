@@ -206,10 +206,11 @@ See ``man procfs`` for details of the following commands.
    $ cat /proc/modules
    $ cat /proc/net/arp
    $ cat /proc/net/dev
+   $ cat /proc/net/protocols
    $ cat /proc/net/route
    $ cat /proc/uptime
    $ cat /proc/version
-
+   
 Disk commands.
 
 .. code-block:: shell
