@@ -42,6 +42,8 @@ TEST(multiple_put_get)
     struct ml_uid_t *uid_p;
     void *message_p;
 
+    ml_init();
+
     /* Maximum two messages. */
     ml_queue_init(&queue, 2);
 
@@ -119,6 +121,8 @@ TEST(queue_empty_and_full)
     pthread_t pthread;
     int i;
 
+    ml_init();
+
     /* Maximum one message. */
     ml_queue_init(&queue_1, 1);
     ml_queue_init(&queue_2, 1);
@@ -145,8 +149,6 @@ TEST(queue_empty_and_full)
 
 int main()
 {
-    ml_init();
-
     return RUN_TESTS(
         multiple_put_get,
         queue_empty_and_full

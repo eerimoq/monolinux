@@ -83,6 +83,8 @@
 
 typedef int (*ml_shell_command_callback_t)(int argc, const char *argv[]);
 
+typedef void (*ml_worker_pool_job_entry_t)(void *arg_p);
+
 struct ml_uid_t {
     const char *name_p;
 };
@@ -93,12 +95,13 @@ struct ml_message_header_t {
 };
 
 struct ml_queue_t {
-    int rdpos;
-    int wrpos;
+    volatile int rdpos;
+    volatile int wrpos;
     int length;
     struct ml_message_header_t **messages_p;
     pthread_mutex_t mutex;
-    pthread_cond_t cond;
+    pthread_cond_t full_cond;
+    pthread_cond_t empty_cond;
 };
 
 struct ml_bus_elem_t {
@@ -110,6 +113,10 @@ struct ml_bus_elem_t {
 struct ml_bus_t {
     int number_of_elems;
     struct ml_bus_elem_t *elems_p;
+};
+
+struct ml_worker_pool_t {
+    struct ml_queue_t jobs;
 };
 
 struct ml_log_object_t {
@@ -182,6 +189,11 @@ void ml_subscribe(struct ml_queue_t *queue_p, struct ml_uid_t *uid_p);
 void ml_broadcast(void *message_p);
 
 /**
+ * Spawn a job in the default worker pool.
+ */
+void ml_spawn(ml_worker_pool_job_entry_t entry, void *arg_p);
+
+/**
  * Allocate a message with given id and size.
  */
 void *ml_message_alloc(struct ml_uid_t *uid_p, size_t size);
@@ -227,6 +239,20 @@ void ml_bus_subscribe(struct ml_bus_t *self_p,
  * the message.
  */
 void ml_bus_broadcast(struct ml_bus_t *self_p, void *message_p);
+
+/**
+ * Initialize a worker pool.
+ */
+void ml_worker_pool_init(struct ml_worker_pool_t *self_p,
+                         int number_of_workers,
+                         int job_queue_length);
+
+/**
+ * Spawn a job in given worker pool.
+ */
+void ml_worker_pool_spawn(struct ml_worker_pool_t *self_p,
+                          ml_worker_pool_job_entry_t entry,
+                          void *arg_p);
 
 /**
  * Initialize given log object with given name and mask.

@@ -576,6 +576,8 @@ TEST(start_join)
 {
     struct ml_dhcp_client_t client;
 
+    ml_init();
+
     mock_push_ml_dhcp_client_start();
     mock_push_poll_failure();
 
@@ -593,6 +595,8 @@ TEST(start_failure_last_init_step)
     int yes;
     int interface_index;
     uint8_t mac_address[] = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 };
+
+    ml_init();
 
     interface_index = 5;
     mock_push_ml_network_interface_index("eth0", interface_index, 0);
@@ -629,6 +633,8 @@ TEST(new)
 {
     struct ml_dhcp_client_t client;
 
+    ml_init();
+
     mock_push_ml_dhcp_client_start();
     mock_push_init_to_selecting();
     mock_push_selecting_to_requesting();
@@ -645,6 +651,8 @@ TEST(new)
 TEST(renew)
 {
     struct ml_dhcp_client_t client;
+
+    ml_init();
 
     mock_push_ml_dhcp_client_start();
     mock_push_init_to_selecting();
@@ -664,6 +672,8 @@ TEST(renew)
 TEST(renew_nack)
 {
     struct ml_dhcp_client_t client;
+
+    ml_init();
 
     mock_push_ml_dhcp_client_start();
     mock_push_init_to_selecting();
@@ -686,6 +696,8 @@ TEST(renew_response_timeout)
 {
     struct ml_dhcp_client_t client;
 
+    ml_init();
+
     mock_push_ml_dhcp_client_start();
     mock_push_init_to_selecting();
     mock_push_selecting_to_requesting();
@@ -706,6 +718,8 @@ TEST(renew_response_timeout)
 TEST(rebind_timeout)
 {
     struct ml_dhcp_client_t client;
+
+    ml_init();
 
     mock_push_ml_dhcp_client_start();
     mock_push_init_to_selecting();
@@ -728,6 +742,8 @@ TEST(discovery_response_timeout)
 {
     struct ml_dhcp_client_t client;
 
+    ml_init();
+
     mock_push_ml_dhcp_client_start();
     mock_push_init_to_selecting();
     mock_push_poll_fd(RESP_IX);
@@ -744,12 +760,15 @@ TEST(discovery_response_timeout)
 
 TEST(request_response_timeout)
 {
+    ml_init();
     mock_finalize();
 }
 
 TEST(discard_offers_in_requesting)
 {
     struct ml_dhcp_client_t client;
+
+    ml_init();
 
     mock_push_ml_dhcp_client_start();
     mock_push_init_to_selecting();
@@ -770,6 +789,8 @@ TEST(request_nack)
 {
     struct ml_dhcp_client_t client;
 
+    ml_init();
+
     mock_push_ml_dhcp_client_start();
     mock_push_init_to_selecting();
     mock_push_selecting_to_requesting();
@@ -787,8 +808,6 @@ TEST(request_nack)
 
 int main()
 {
-    ml_init();
-
     return RUN_TESTS(
         start_join,
         start_failure_last_init_step,

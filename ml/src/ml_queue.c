@@ -66,7 +66,8 @@ void ml_queue_init(struct ml_queue_t *self_p, int length)
     self_p->length = (length + 1);
     self_p->messages_p = xmalloc(sizeof(void *) * (length + 1));
     pthread_mutex_init(&self_p->mutex, NULL);
-    pthread_cond_init(&self_p->cond, NULL);
+    pthread_cond_init(&self_p->full_cond, NULL);
+    pthread_cond_init(&self_p->empty_cond, NULL);
 }
 
 struct ml_uid_t *ml_queue_get(struct ml_queue_t *self_p, void **message_pp)
@@ -75,12 +76,13 @@ struct ml_uid_t *ml_queue_get(struct ml_queue_t *self_p, void **message_pp)
 
     pthread_mutex_lock(&self_p->mutex);
 
-    if (is_empty(self_p)) {
-        pthread_cond_wait(&self_p->cond, &self_p->mutex);
+    /* pthread_cond_signal() unblocks at least one thread. */
+    while (is_empty(self_p)) {
+        pthread_cond_wait(&self_p->empty_cond, &self_p->mutex);
     }
 
     header_p = pop_message(self_p);
-    pthread_cond_signal(&self_p->cond);
+    pthread_cond_signal(&self_p->full_cond);
     pthread_mutex_unlock(&self_p->mutex);
 
     *message_pp = message_from_header(header_p);
@@ -92,11 +94,12 @@ void ml_queue_put(struct ml_queue_t *self_p, void *message_p)
 {
     pthread_mutex_lock(&self_p->mutex);
 
-    if (is_full(self_p)) {
-        pthread_cond_wait(&self_p->cond, &self_p->mutex);
+    /* pthread_cond_signal() unblocks *at least one* thread. */
+    while (is_full(self_p)) {
+        pthread_cond_wait(&self_p->full_cond, &self_p->mutex);
     }
 
     push_message(self_p, message_to_header(message_p));
-    pthread_cond_signal(&self_p->cond);
+    pthread_cond_signal(&self_p->empty_cond);
     pthread_mutex_unlock(&self_p->mutex);
 }

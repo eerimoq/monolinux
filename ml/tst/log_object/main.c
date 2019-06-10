@@ -33,6 +33,8 @@ TEST(format)
 {
     struct ml_log_object_t log_object;
 
+    ml_init();
+
     ml_log_object_init(&log_object, "foo", ML_LOG_UPTO(DEBUG));
 
     /* Emergency. */
@@ -96,6 +98,8 @@ TEST(enable_disable)
 {
     struct ml_log_object_t log_object;
 
+    ml_init();
+
     /* Only debug, no info. */
     ml_log_object_init(&log_object, "foo", ML_LOG_MASK(DEBUG));
     ASSERT(ml_log_object_is_enabled_for(&log_object, ML_LOG_DEBUG));
@@ -125,8 +129,6 @@ TEST(enable_disable)
 
 int main()
 {
-    ml_init();
-
     return RUN_TESTS(
         format,
         enable_disable
