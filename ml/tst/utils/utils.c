@@ -1,6 +1,18 @@
 #include <unistd.h>
 #include <unicorn/unicorn.h>
+#include "ml/ml.h"
 #include "utils.h"
+#include "mocks/mock.h"
+
+TEST_FIXTURE(basic_fixture, void)
+{
+    ml_init();
+
+    CLEANUP_FIXTURE(basic_fixture)
+    {
+        mock_finalize();
+    }
+}
 
 int stdin_pipe(void)
 {

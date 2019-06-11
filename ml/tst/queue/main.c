@@ -28,6 +28,7 @@
 
 #include <unistd.h>
 #include <unicorn/unicorn.h>
+#include "utils/utils.h"
 #include "ml/ml.h"
 
 ML_UID(m1);
@@ -35,14 +36,12 @@ ML_UID(m2);
 
 static struct ml_queue_t queue;
 
-TEST(multiple_put_get)
+TEST(multiple_put_get, basic_fixture)
 {
     void *message_1_p;
     void *message_2_p;
     struct ml_uid_t *uid_p;
     void *message_p;
-
-    ml_init();
 
     /* Maximum two messages. */
     ml_queue_init(&queue, 2);
@@ -114,14 +113,12 @@ static void *queue_empty_and_full_main(void *arg_p)
     return (NULL);
 }
 
-TEST(queue_empty_and_full)
+TEST(queue_empty_and_full, basic_fixture)
 {
     struct ml_uid_t *uid_p;
     void *message_p;
     pthread_t pthread;
     int i;
-
-    ml_init();
 
     /* Maximum one message. */
     ml_queue_init(&queue_1, 1);

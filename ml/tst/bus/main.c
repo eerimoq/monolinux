@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <unicorn/unicorn.h>
 #include "ml/ml.h"
+#include "utils/utils.h"
 
 ML_UID(m1);
 
@@ -36,13 +37,11 @@ static struct ml_bus_t bus;
 static struct ml_queue_t queue_1;
 static struct ml_queue_t queue_2;
 
-TEST(broadcast_to_two_subscribers)
+TEST(broadcast_to_two_subscribers, basic_fixture)
 {
     struct ml_uid_t *uid_p;
     void *bmessage_p;
     void *message_p;
-
-    ml_init();
 
     ml_queue_init(&queue_1, 1);
     ml_queue_init(&queue_2, 1);
