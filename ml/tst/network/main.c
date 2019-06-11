@@ -42,6 +42,8 @@ static void mock_push_ml_network_init(void)
                                         "UDP send.");
     mock_push_ml_shell_register_command("udp_recv",
                                         "UDP receive.");
+    mock_push_ml_shell_register_command("tcp_send",
+                                        "TCP send.");
 }
 
 static void create_address_request(struct ifreq *ifreq_p,

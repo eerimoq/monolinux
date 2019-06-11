@@ -31,6 +31,7 @@
 #include <net/route.h>
 #include <sys/ioctl.h>
 #include <net/if.h>
+#include <unistd.h>
 #include <arpa/inet.h>
 #include <poll.h>
 #include <errno.h>
@@ -362,6 +363,64 @@ static int command_udp_recv(int argc, const char *argv[])
     return (res);
 }
 
+static int tcp_send(const char *ip_address_p,
+                    const char *port_p,
+                    const char *data_p)
+{
+    int res;
+    ssize_t size;
+    int sockfd;
+    struct sockaddr_in other;
+
+    res = -1;
+    memset(&other, 0, sizeof(other));
+    other.sin_family = AF_INET;
+    other.sin_port = htons(atoi(port_p));
+
+    if (inet_aton(ip_address_p, &other.sin_addr) != 0) {
+        sockfd = ml_socket(AF_INET, SOCK_STREAM, 0);
+
+        if (sockfd != -1) {
+            res = connect(sockfd,
+                          (struct sockaddr *)&other,
+                          sizeof(other));
+
+            if (res != -1) {
+                size = write(sockfd, data_p, strlen(data_p));
+
+                if (size != -1) {
+                    res = 0;
+                } else {
+                    perror("write failed");
+                }
+            } else {
+                perror("connect");
+            }
+
+            ml_close(sockfd);
+        }
+    }
+
+    return (res);
+}
+
+static int command_tcp_send(int argc, const char *argv[])
+{
+    int res;
+
+    if (argc == 4) {
+        res = tcp_send(argv[1], argv[2], argv[3]);
+    } else {
+        res = -1;
+    }
+
+    if (res != 0) {
+        printf("tcp_send <ip-address> <port> <data>\n");
+    }
+
+    return (res);
+}
+
 void ml_network_init(void)
 {
     ml_shell_register_command("ifconfig",
@@ -376,6 +435,9 @@ void ml_network_init(void)
     ml_shell_register_command("udp_recv",
                               "UDP receive.",
                               command_udp_recv);
+    ml_shell_register_command("tcp_send",
+                              "TCP send.",
+                              command_tcp_send);
 }
 
 int ml_network_interface_configure(const char *name_p,
