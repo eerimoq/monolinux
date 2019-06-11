@@ -408,6 +408,8 @@ static void mock_push_packet_sendto(const uint8_t *buf_p, size_t size)
     addr.sll_family = AF_PACKET;
     addr.sll_protocol = htons(ETH_P_IP);
     addr.sll_ifindex = 5;
+    addr.sll_halen = 6;
+    memset(&addr.sll_addr[0], 0xff, addr.sll_halen);
     mock_push_sendto(SOCK_FD,
                      buf_p,
                      size,

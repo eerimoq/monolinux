@@ -897,6 +897,8 @@ static bool broadcast_packet(struct ml_dhcp_client_t *self_p,
     addr.sll_family = AF_PACKET;
     addr.sll_protocol = htons(ETH_P_IP);
     addr.sll_ifindex = self_p->interface.index;
+    addr.sll_halen = 6;
+    memset(&addr.sll_addr[0], 0xff, addr.sll_halen);
 
     ML_DEBUG("Broadcasting %s packet.",
              message_type_str(buf_p[28 + OPTIONS_OFFSET + 2]));
