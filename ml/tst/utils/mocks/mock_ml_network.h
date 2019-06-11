@@ -42,6 +42,10 @@ void mock_push_ml_network_interface_up(const char *name_p,
 void mock_push_ml_network_interface_down(const char *name_p,
                                          int res);
 
+void mock_push_ml_network_interface_ip_address(const char *name_p,
+                                               struct in_addr *addr_p,
+                                               int res);
+
 void mock_push_ml_network_interface_index(const char *name_p,
                                           int index,
                                           int res);
