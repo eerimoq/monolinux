@@ -42,6 +42,8 @@ TEST(broadcast_to_two_subscribers)
     void *bmessage_p;
     void *message_p;
 
+    ml_init();
+
     ml_queue_init(&queue_1, 1);
     ml_queue_init(&queue_2, 1);
     ml_bus_init(&bus);
@@ -68,8 +70,6 @@ TEST(broadcast_to_two_subscribers)
 
 int main()
 {
-    ml_init();
-
     return RUN_TESTS(
         broadcast_to_two_subscribers
     );

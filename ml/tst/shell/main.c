@@ -61,6 +61,7 @@ TEST(various_commands)
 {
     int fd;
 
+    ml_init();
     ml_shell_init();
     ml_shell_register_command("hello", "My command.", command_hello);
 
@@ -137,6 +138,7 @@ TEST(command_ls)
 {
     int fd;
 
+    ml_init();
     ml_shell_init();
 
     CAPTURE_OUTPUT(output) {
@@ -154,6 +156,7 @@ TEST(command_cat)
 {
     int fd;
 
+    ml_init();
     ml_shell_init();
 
     CAPTURE_OUTPUT(output) {
@@ -183,6 +186,7 @@ TEST(command_hexdump)
 {
     int fd;
 
+    ml_init();
     ml_shell_init();
 
     CAPTURE_OUTPUT(output) {
@@ -222,6 +226,7 @@ TEST(command_editing)
 {
     int fd;
 
+    ml_init();
     ml_shell_init();
 
     CAPTURE_OUTPUT(output) {
@@ -305,6 +310,7 @@ TEST(quotes)
 {
     int fd;
 
+    ml_init();
     ml_shell_init();
     ml_shell_register_command("quotes", ".", command_quotes);
 
@@ -327,6 +333,7 @@ TEST(history)
 {
     int fd;
 
+    ml_init();
     ml_shell_init();
 
     CAPTURE_OUTPUT(output) {
@@ -397,6 +404,7 @@ TEST(history_full)
     int i;
     char buf[64];
 
+    ml_init();
     ml_shell_init();
 
     CAPTURE_OUTPUT(output) {
@@ -690,6 +698,7 @@ TEST(command_insmod)
     mock_push_ml_finit_module(fd, "fie=fum", 0, 0);
     mock_push_ml_close(fd, 0);
 
+    ml_init();
     ml_shell_init();
 
     CAPTURE_OUTPUT(output) {
@@ -721,6 +730,7 @@ TEST(command_df_setmntent_failure)
 
     mock_push_setmntent("/proc/mounts", "r", NULL);
 
+    ml_init();
     ml_shell_init();
 
     CAPTURE_OUTPUT(output) {
@@ -772,6 +782,7 @@ TEST(command_df)
     mock_push_getmntent(f_p, NULL);
     mock_push_endmntent(f_p, 0);
 
+    ml_init();
     ml_shell_init();
 
     CAPTURE_OUTPUT(output) {
@@ -800,6 +811,7 @@ TEST(command_suicide_no_args)
 {
     int fd;
 
+    ml_init();
     ml_shell_init();
 
     CAPTURE_OUTPUT(output) {
@@ -823,6 +835,7 @@ TEST(command_find_too_many_args)
 {
     int fd;
 
+    ml_init();
     ml_shell_init();
 
     CAPTURE_OUTPUT(output) {
@@ -854,6 +867,7 @@ TEST(command_find_no_args)
 
     mock_push_nftw(".", 20, FTW_PHYS, &paths[0], &modes[0], 3, 0);
 
+    ml_init();
     ml_shell_init();
 
     CAPTURE_OUTPUT(output) {
@@ -887,6 +901,7 @@ TEST(command_find_in_dir)
 
     mock_push_nftw("tmp", 20, FTW_PHYS, &paths[0], &modes[0], 3, 0);
 
+    ml_init();
     ml_shell_init();
 
     CAPTURE_OUTPUT(output) {
@@ -912,6 +927,7 @@ TEST(command_mknod_no_args)
 {
     int fd;
 
+    ml_init();
     ml_shell_init();
 
     CAPTURE_OUTPUT(output) {
@@ -935,6 +951,7 @@ TEST(command_mknod_bad_type)
 {
     int fd;
 
+    ml_init();
     ml_shell_init();
 
     CAPTURE_OUTPUT(output) {
@@ -960,6 +977,7 @@ TEST(command_mknod_fifo)
 
     mock_push_ml_mknod("/dev/foo", S_IFIFO | 0666, 0, 0);
 
+    ml_init();
     ml_shell_init();
 
     CAPTURE_OUTPUT(output) {
@@ -984,6 +1002,7 @@ TEST(command_mknod_char)
 
     mock_push_ml_mknod("/dev/bar", S_IFCHR | 0666, makedev(5, 6), 0);
 
+    ml_init();
     ml_shell_init();
 
     CAPTURE_OUTPUT(output) {
@@ -1006,6 +1025,7 @@ TEST(command_mknod_char_no_minor)
 {
     int fd;
 
+    ml_init();
     ml_shell_init();
 
     CAPTURE_OUTPUT(output) {
@@ -1031,6 +1051,7 @@ TEST(command_mknod_block)
 
     mock_push_ml_mknod("/dev/sda1", S_IFBLK | 0666, makedev(8, 1), 0);
 
+    ml_init();
     ml_shell_init();
 
     CAPTURE_OUTPUT(output) {
@@ -1053,6 +1074,7 @@ TEST(command_mount_no_args)
 {
     int fd;
 
+    ml_init();
     ml_shell_init();
 
     CAPTURE_OUTPUT(output) {
@@ -1084,6 +1106,7 @@ TEST(command_mount)
                     1,
                     0);
 
+    ml_init();
     ml_shell_init();
 
     CAPTURE_OUTPUT(output) {
@@ -1104,8 +1127,6 @@ TEST(command_mount)
 
 int main()
 {
-    ml_init();
-
     return RUN_TESTS(
         various_commands,
         command_ls,

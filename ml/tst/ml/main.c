@@ -40,6 +40,8 @@ TEST(strip)
     char string4[] = "   ";
     char *begin_p;
 
+    ml_init();
+
     begin_p = ml_strip(string1, NULL);
     ASSERT_EQ(begin_p, "1");
     ASSERT_EQ(begin_p, string1);
@@ -70,6 +72,8 @@ TEST(lstrip)
     char string3[] = "  ";
     char *begin_p;
 
+    ml_init();
+
     begin_p = ml_lstrip(string1, NULL);
     ASSERT_EQ(begin_p, "1 ");
     ASSERT_EQ(begin_p, string1);
@@ -95,6 +99,8 @@ TEST(rstrip)
     char string2[] = " 1";
     char string3[] = "  ";
 
+    ml_init();
+
     ml_rstrip(string1, NULL);
     ASSERT_EQ(string1, "1");
 
@@ -112,6 +118,8 @@ TEST(rstrip)
 
 TEST(hexdump_empty)
 {
+    ml_init();
+
     CAPTURE_OUTPUT(output) {
         ml_hexdump("", 0);
     }
@@ -123,6 +131,8 @@ TEST(hexdump_empty)
 
 TEST(hexdump_short)
 {
+    ml_init();
+
     CAPTURE_OUTPUT(output) {
         ml_hexdump("1", 1);
     }
@@ -136,6 +146,8 @@ TEST(hexdump_short)
 
 TEST(hexdump_long)
 {
+    ml_init();
+
     CAPTURE_OUTPUT(output) {
         ml_hexdump(
             "110238\x00\x21h0112039jiajsFEWAFWE@#%!45eeeeeeeeeeeeeeeeeeeeeee"
@@ -173,6 +185,8 @@ TEST(hexdump_file_0_0)
 {
     FILE *fin_p;
 
+    ml_init();
+
     fin_p = fopen("hexdump.in", "rb");
     ASSERT(fin_p != NULL);
 
@@ -190,6 +204,8 @@ TEST(hexdump_file_0_0)
 TEST(hexdump_file_0_16)
 {
     FILE *fin_p;
+
+    ml_init();
 
     fin_p = fopen("hexdump.in", "rb");
     ASSERT(fin_p != NULL);
@@ -211,6 +227,8 @@ TEST(hexdump_file_1_16)
 {
     FILE *fin_p;
 
+    ml_init();
+
     fin_p = fopen("hexdump.in", "rb");
     ASSERT(fin_p != NULL);
 
@@ -230,6 +248,8 @@ TEST(hexdump_file_1_16)
 TEST(hexdump_file_0_m1)
 {
     FILE *fin_p;
+
+    ml_init();
 
     fin_p = fopen("hexdump.in", "rb");
     ASSERT(fin_p != NULL);
@@ -253,6 +273,8 @@ TEST(hexdump_file_1_m1)
 {
     FILE *fin_p;
 
+    ml_init();
+
     fin_p = fopen("hexdump.in", "rb");
     ASSERT(fin_p != NULL);
 
@@ -273,6 +295,8 @@ TEST(hexdump_file_1_m1)
 
 TEST(print_file)
 {
+    ml_init();
+
     CAPTURE_OUTPUT(output) {
         ml_print_file("hexdump.in");
     }
@@ -284,6 +308,8 @@ TEST(print_file)
 
 TEST(print_uptime)
 {
+    ml_init();
+
     CAPTURE_OUTPUT(output) {
         ml_print_uptime();
     }
@@ -304,6 +330,7 @@ TEST(bus)
     int *message_p;
     int *rmessage_p;
 
+    ml_init();
     ml_queue_init(&queue, 1);
     ml_subscribe(&queue, &m1);
 
@@ -321,6 +348,8 @@ TEST(bus)
 
 TEST(ml_mount_ok)
 {
+    ml_init();
+
     mock_push_mount("a", "b", "c", 0, "", 1, 0);
 
     ASSERT_EQ(ml_mount("a", "b", "c"), 0);
@@ -332,6 +361,8 @@ TEST(insmod)
 {
     int fd;
 
+    ml_init();
+
     fd = 99;
     mock_push_ml_open("foo.ko", O_RDONLY, fd);
     mock_push_ml_finit_module(fd, "", 0, 0);
@@ -342,10 +373,31 @@ TEST(insmod)
     mock_finalize();
 }
 
-int main()
+static struct ml_queue_t test_spawn_queue;
+static ML_UID(test_spawn_message_id);
+
+static void test_spawn_entry(void *arg_p)
 {
+    PRINT_FILE_LINE();
+    ml_queue_put(&test_spawn_queue, arg_p);
+}
+
+TEST(spawn)
+{
+    void *message_p;
+
     ml_init();
 
+    ml_queue_init(&test_spawn_queue, 10);
+    message_p = ml_message_alloc(&test_spawn_message_id, 0);
+    ml_spawn(test_spawn_entry, message_p);
+    ASSERT_EQ(ml_queue_get(&test_spawn_queue, &message_p),
+              &test_spawn_message_id);
+    ml_message_free(message_p);
+}
+
+int main()
+{
     return RUN_TESTS(
         strip,
         lstrip,
@@ -362,6 +414,7 @@ int main()
         print_uptime,
         bus,
         ml_mount_ok,
-        insmod
+        insmod,
+        spawn
     );
 }

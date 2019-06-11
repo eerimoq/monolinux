@@ -105,6 +105,9 @@ static void mock_push_down(const char *name_p)
 
 TEST(network_interface_configure)
 {
+    ml_init();
+    ml_shell_init();
+
     mock_push_ml_network_init();
     ml_network_init();
 
@@ -119,6 +122,9 @@ TEST(network_interface_configure)
 
 TEST(network_interface_up)
 {
+    ml_init();
+    ml_shell_init();
+
     mock_push_ml_network_init();
     ml_network_init();
 
@@ -131,6 +137,9 @@ TEST(network_interface_up)
 
 TEST(network_interface_down)
 {
+    ml_init();
+    ml_shell_init();
+
     mock_push_ml_network_init();
     ml_network_init();
 
@@ -145,6 +154,9 @@ TEST(command_ifconfig_no_args)
 {
     ml_shell_command_callback_t command_ifconfig;
     const char *argv[] = { "ifconfig" };
+
+    ml_init();
+    ml_shell_init();
 
     mock_push_ml_network_init();
     ml_network_init();
@@ -168,6 +180,9 @@ TEST(command_ifconfig_configure)
     ml_shell_command_callback_t command_ifconfig;
     const char *argv[] = { "ifconfig", "eth2", "192.168.0.4", "255.255.255.0" };
 
+    ml_init();
+    ml_shell_init();
+
     mock_push_ml_network_init();
     ml_network_init();
 
@@ -188,6 +203,9 @@ TEST(command_ifconfig_up)
 {
     ml_shell_command_callback_t command_ifconfig;
     const char *argv[] = { "ifconfig", "eth2", "up" };
+
+    ml_init();
+    ml_shell_init();
 
     mock_push_ml_network_init();
     ml_network_init();
@@ -210,6 +228,9 @@ TEST(command_ifconfig_down)
     ml_shell_command_callback_t command_ifconfig;
     const char *argv[] = { "ifconfig", "eth1", "down" };
 
+    ml_init();
+    ml_shell_init();
+
     mock_push_ml_network_init();
     ml_network_init();
 
@@ -230,6 +251,9 @@ TEST(command_ifconfig_foobar)
 {
     ml_shell_command_callback_t command_ifconfig;
     const char *argv[] = { "ifconfig", "eth1", "foobar" };
+
+    ml_init();
+    ml_shell_init();
 
     mock_push_ml_network_init();
     ml_network_init();
@@ -253,6 +277,9 @@ TEST(command_udp_send_no_args)
     ml_shell_command_callback_t command_udp_send;
     const char *argv[] = { "udp_send" };
 
+    ml_init();
+    ml_shell_init();
+
     mock_push_ml_network_init();
     ml_network_init();
 
@@ -272,6 +299,9 @@ TEST(command_udp_send_bad_ip_address)
     ml_shell_command_callback_t command_udp_send;
     const char *argv[] = { "udp_send", "b.b.c.d", "9999", "Hello" };
 
+    ml_init();
+    ml_shell_init();
+
     mock_push_ml_network_init();
     ml_network_init();
 
@@ -290,6 +320,9 @@ TEST(command_udp_send_open_socket_failure)
 {
     ml_shell_command_callback_t command_udp_send;
     const char *argv[] = { "udp_send", "1.2.3.4", "9999", "Hello" };
+
+    ml_init();
+    ml_shell_init();
 
     mock_push_ml_network_init();
     ml_network_init();
@@ -313,6 +346,9 @@ TEST(command_udp_send_sendto_failure)
     ml_shell_command_callback_t command_udp_send;
     const char *argv[] = { "udp_send", "1.2.3.4", "1234", "Hello!" };
     struct sockaddr_in other;
+
+    ml_init();
+    ml_shell_init();
 
     mock_push_ml_network_init();
     ml_network_init();
@@ -349,6 +385,9 @@ TEST(command_udp_send)
     const char *argv[] = { "udp_send", "1.2.3.4", "1234", "Hello!" };
     struct sockaddr_in other;
 
+    ml_init();
+    ml_shell_init();
+
     mock_push_ml_network_init();
     ml_network_init();
 
@@ -381,6 +420,9 @@ TEST(command_udp_recv_no_args)
     ml_shell_command_callback_t command_udp_recv;
     const char *argv[] = { "udp_recv" };
 
+    ml_init();
+    ml_shell_init();
+
     mock_push_ml_network_init();
     ml_network_init();
 
@@ -400,6 +442,9 @@ TEST(command_udp_recv_open_socket_failure)
     ml_shell_command_callback_t command_udp_recv;
     const char *argv[] = { "udp_recv", "9999" };
 
+    ml_init();
+    ml_shell_init();
+
     mock_push_ml_network_init();
     ml_network_init();
 
@@ -418,9 +463,6 @@ TEST(command_udp_recv_open_socket_failure)
 
 int main()
 {
-    ml_init();
-    ml_shell_init();
-
     return RUN_TESTS(
         network_interface_configure,
         network_interface_up,
