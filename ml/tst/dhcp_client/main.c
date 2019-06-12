@@ -30,6 +30,7 @@
 #include <linux/if_packet.h>
 #include <unicorn/unicorn.h>
 #include "ml/ml.h"
+#include "utils/utils.h"
 #include "utils/mocks/mock_libc.h"
 #include "utils/mocks/mock_ml_network.h"
 #include "utils/mocks/mock.h"
@@ -408,6 +409,8 @@ static void mock_push_packet_sendto(const uint8_t *buf_p, size_t size)
     addr.sll_family = AF_PACKET;
     addr.sll_protocol = htons(ETH_P_IP);
     addr.sll_ifindex = 5;
+    addr.sll_halen = 6;
+    memset(&addr.sll_addr[0], 0xff, addr.sll_halen);
     mock_push_sendto(SOCK_FD,
                      buf_p,
                      size,
@@ -572,11 +575,9 @@ static void mock_push_poll_failure(void)
     mock_push_poll(&fds[0], 5, -1, -1);
 }
 
-TEST(start_join)
+TEST(start_join, basic_fixture)
 {
     struct ml_dhcp_client_t client;
-
-    ml_init();
 
     mock_push_ml_dhcp_client_start();
     mock_push_poll_failure();
@@ -584,19 +585,15 @@ TEST(start_join)
     ml_dhcp_client_init(&client, "eth0", ML_LOG_ALL);
     ml_dhcp_client_start(&client);
     ml_dhcp_client_join(&client);
-
-    mock_finalize();
 }
 
-TEST(start_failure_last_init_step)
+TEST(start_failure_last_init_step, basic_fixture)
 {
     struct ml_dhcp_client_t client;
     struct sockaddr_ll addr;
     int yes;
     int interface_index;
     uint8_t mac_address[] = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 };
-
-    ml_init();
 
     interface_index = 5;
     mock_push_ml_network_interface_index("eth0", interface_index, 0);
@@ -625,15 +622,11 @@ TEST(start_failure_last_init_step)
 
     ml_dhcp_client_init(&client, "eth0", ML_LOG_ALL);
     ml_dhcp_client_start(&client);
-
-    mock_finalize();
 }
 
-TEST(new)
+TEST(new, basic_fixture)
 {
     struct ml_dhcp_client_t client;
-
-    ml_init();
 
     mock_push_ml_dhcp_client_start();
     mock_push_init_to_selecting();
@@ -644,15 +637,11 @@ TEST(new)
     ml_dhcp_client_init(&client, "eth0", ML_LOG_ALL);
     ml_dhcp_client_start(&client);
     ml_dhcp_client_join(&client);
-
-    mock_finalize();
 }
 
-TEST(renew)
+TEST(renew, basic_fixture)
 {
     struct ml_dhcp_client_t client;
-
-    ml_init();
 
     mock_push_ml_dhcp_client_start();
     mock_push_init_to_selecting();
@@ -665,15 +654,11 @@ TEST(renew)
     ml_dhcp_client_init(&client, "eth0", ML_LOG_ALL);
     ml_dhcp_client_start(&client);
     ml_dhcp_client_join(&client);
-
-    mock_finalize();
 }
 
-TEST(renew_nack)
+TEST(renew_nack, basic_fixture)
 {
     struct ml_dhcp_client_t client;
-
-    ml_init();
 
     mock_push_ml_dhcp_client_start();
     mock_push_init_to_selecting();
@@ -688,15 +673,11 @@ TEST(renew_nack)
     ml_dhcp_client_init(&client, "eth0", ML_LOG_ALL);
     ml_dhcp_client_start(&client);
     ml_dhcp_client_join(&client);
-
-    mock_finalize();
 }
 
-TEST(renew_response_timeout)
+TEST(renew_response_timeout, basic_fixture)
 {
     struct ml_dhcp_client_t client;
-
-    ml_init();
 
     mock_push_ml_dhcp_client_start();
     mock_push_init_to_selecting();
@@ -711,15 +692,11 @@ TEST(renew_response_timeout)
     ml_dhcp_client_init(&client, "eth0", ML_LOG_ALL);
     ml_dhcp_client_start(&client);
     ml_dhcp_client_join(&client);
-
-    mock_finalize();
 }
 
-TEST(rebind_timeout)
+TEST(rebind_timeout, basic_fixture)
 {
     struct ml_dhcp_client_t client;
-
-    ml_init();
 
     mock_push_ml_dhcp_client_start();
     mock_push_init_to_selecting();
@@ -734,15 +711,11 @@ TEST(rebind_timeout)
     ml_dhcp_client_init(&client, "eth0", ML_LOG_ALL);
     ml_dhcp_client_start(&client);
     ml_dhcp_client_join(&client);
-
-    mock_finalize();
 }
 
-TEST(discovery_response_timeout)
+TEST(discovery_response_timeout, basic_fixture)
 {
     struct ml_dhcp_client_t client;
-
-    ml_init();
 
     mock_push_ml_dhcp_client_start();
     mock_push_init_to_selecting();
@@ -754,14 +727,10 @@ TEST(discovery_response_timeout)
     ml_dhcp_client_init(&client, "eth0", ML_LOG_ALL);
     ml_dhcp_client_start(&client);
     ml_dhcp_client_join(&client);
-
-    mock_finalize();
 }
 
-TEST(request_response_timeout)
+TEST(request_response_timeout, basic_fixture)
 {
-    ml_init();
-    mock_finalize();
 }
 
 TEST(discard_offers_in_requesting)
@@ -781,8 +750,6 @@ TEST(discard_offers_in_requesting)
     ml_dhcp_client_init(&client, "eth0", ML_LOG_ALL);
     ml_dhcp_client_start(&client);
     ml_dhcp_client_join(&client);
-
-    mock_finalize();
 }
 
 TEST(request_nack)
@@ -802,8 +769,6 @@ TEST(request_nack)
     ml_dhcp_client_init(&client, "eth0", ML_LOG_ALL);
     ml_dhcp_client_start(&client);
     ml_dhcp_client_join(&client);
-
-    mock_finalize();
 }
 
 int main()

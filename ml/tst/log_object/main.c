@@ -27,13 +27,12 @@
  */
 
 #include <unicorn/unicorn.h>
+#include "utils/utils.h"
 #include "ml/ml.h"
 
-TEST(format)
+TEST(format, basic_fixture)
 {
     struct ml_log_object_t log_object;
-
-    ml_init();
 
     ml_log_object_init(&log_object, "foo", ML_LOG_UPTO(DEBUG));
 
@@ -94,11 +93,9 @@ TEST(format)
     ASSERT_SUBSTRING(output8, " DEBUG foo bar 8\n");
 }
 
-TEST(enable_disable)
+TEST(enable_disable, basic_fixture)
 {
     struct ml_log_object_t log_object;
-
-    ml_init();
 
     /* Only debug, no info. */
     ml_log_object_init(&log_object, "foo", ML_LOG_MASK(DEBUG));

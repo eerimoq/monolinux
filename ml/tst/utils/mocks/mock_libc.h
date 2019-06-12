@@ -30,16 +30,12 @@
 #define MOCK_LIBC_H
 
 #include <mntent.h>
-#include <sys/statvfs.h>
-#include <string.h>
-#include <net/if.h>
-#include <sys/ioctl.h>
-
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
+#include <sys/statvfs.h>
 #include <net/if.h>
 #include <arpa/inet.h>
 #include "ml/ml.h"
@@ -68,7 +64,8 @@ void mock_push_setsockopt(int sockfd,
 
 void mock_push_ioctl(int fd,
                      unsigned long request,
-                     void *data_p,
+                     void *in_data_p,
+                     void *out_data_p,
                      size_t data_size,
                      int res);
 

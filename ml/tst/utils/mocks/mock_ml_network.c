@@ -111,6 +111,33 @@ int __wrap_ml_network_interface_down(const char *name_p)
     return (res);
 }
 
+void mock_push_ml_network_interface_ip_address(const char *name_p,
+                                               struct in_addr *ip_address_p,
+                                               int res)
+{
+    mock_push("ml_network_interface_ip_address(name_p)",
+              name_p,
+              strlen(name_p) + 1);
+    mock_push("ml_network_interface_ip_address(ip_address_p)",
+              ip_address_p,
+              sizeof(*ip_address_p));
+    mock_push("ml_network_interface_ip_address(): return (res)",
+              &res,
+              sizeof(res));
+}
+
+int __wrap_ml_network_interface_ip_address(const char *name_p,
+                                           struct in_addr *ip_address_p)
+{
+    int res;
+
+    mock_pop_assert("ml_network_interface_ip_address(name_p)", name_p);
+    mock_pop("ml_network_interface_ip_address(ip_address_p)", ip_address_p);
+    mock_pop("ml_network_interface_ip_address(): return (res)", &res);
+
+    return (res);
+}
+
 void mock_push_ml_network_interface_index(const char *name_p,
                                           int index,
                                           int res)

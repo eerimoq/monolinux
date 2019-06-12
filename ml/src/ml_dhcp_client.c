@@ -370,19 +370,19 @@ static int unpack_option(struct ml_dhcp_client_t *self_p,
 
 static int unpack_all_options(struct ml_dhcp_client_t *self_p,
                               struct options_t *options_p,
-                              int fd)
+                              FILE *file_p)
 {
     ssize_t res;
-    uint8_t option;
-    uint8_t length;
+    int option;
+    int length;
     uint8_t buf[255];
 
     memset(options_p, 0, sizeof(*options_p));
 
     while (true) {
-        res = read(fd, &option, sizeof(option));
+        option = fgetc(file_p);
 
-        if (res != sizeof(option)) {
+        if (option == EOF) {
             return (-1);
         }
 
@@ -390,15 +390,15 @@ static int unpack_all_options(struct ml_dhcp_client_t *self_p,
             break;
         }
 
-        res = read(fd, &length, sizeof(length));
+        length = fgetc(file_p);
 
-        if (res != sizeof(length)) {
+        if (length == EOF) {
             return (-1);
         }
 
-        res = read(fd, &buf[0], length);
+        res = fread(&buf[0], length, 1, file_p);
 
-        if (res != length) {
+        if (res != 1) {
             return (-1);
         }
 
@@ -453,20 +453,15 @@ static int unpack_options(struct ml_dhcp_client_t *self_p,
                           const uint8_t *buf_p,
                           size_t size)
 {
-    int fd;
+    FILE *file_p;
     int res;
 
     res = -1;
-    fd = memfd_create("packet", 0);
+    file_p = fmemopen((uint8_t *)buf_p, size, "r");
 
-    if (fd != -1) {
-        if (write(fd, buf_p, size) == (ssize_t)size) {
-            if (lseek(fd, 0, SEEK_SET) != -1) {
-                res = unpack_all_options(self_p, options_p, fd);
-            }
-        }
-
-        close(fd);
+    if (file_p != NULL) {
+        res = unpack_all_options(self_p, options_p, file_p);
+        fclose(file_p);
     }
 
     return (res);
@@ -897,6 +892,8 @@ static bool broadcast_packet(struct ml_dhcp_client_t *self_p,
     addr.sll_family = AF_PACKET;
     addr.sll_protocol = htons(ETH_P_IP);
     addr.sll_ifindex = self_p->interface.index;
+    addr.sll_halen = 6;
+    memset(&addr.sll_addr[0], 0xff, addr.sll_halen);
 
     ML_DEBUG("Broadcasting %s packet.",
              message_type_str(buf_p[28 + OPTIONS_OFFSET + 2]));
