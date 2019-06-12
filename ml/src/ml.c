@@ -37,18 +37,12 @@
 #include "ml/ml.h"
 #include "internal.h"
 
-struct worker_pool_job_message_t {
-    ml_worker_pool_job_entry_t entry;
-    void *arg_p;
-};
-
 struct module_t {
     struct ml_bus_t bus;
     struct ml_worker_pool_t worker_pool;
 };
 
 static struct module_t module;
-static ML_UID(worker_pool_job_mid);
 
 static inline bool char_in_string(char c, const char *str_p)
 {
@@ -133,48 +127,6 @@ void ml_subscribe(struct ml_queue_t *queue_p, struct ml_uid_t *uid_p)
 void ml_spawn(ml_worker_pool_job_entry_t entry, void *arg_p)
 {
     ml_worker_pool_spawn(&module.worker_pool, entry, arg_p);
-}
-
-static void *worker_pool_main(void *arg_p)
-{
-    struct ml_worker_pool_t *self_p;
-    struct worker_pool_job_message_t *message_p;
-
-    self_p = (struct ml_worker_pool_t *)arg_p;
-
-    while (true) {
-        (void)ml_queue_get(&self_p->jobs, (void **)&message_p);
-        message_p->entry(message_p->arg_p);
-        ml_message_free(message_p);
-    }
-
-    return (NULL);
-}
-
-void ml_worker_pool_init(struct ml_worker_pool_t *self_p,
-                         int number_of_workers,
-                         int job_queue_length)
-{
-    pthread_t pthread;
-    int i;
-
-    ml_queue_init(&self_p->jobs, job_queue_length);
-
-    for (i = 0; i < number_of_workers; i++) {
-        pthread_create(&pthread, NULL, worker_pool_main, self_p);
-    }
-}
-
-void ml_worker_pool_spawn(struct ml_worker_pool_t *self_p,
-                          ml_worker_pool_job_entry_t entry,
-                          void *arg_p)
-{
-    struct worker_pool_job_message_t *message_p;
-
-    message_p = ml_message_alloc(&worker_pool_job_mid, sizeof(*message_p));
-    message_p->entry = entry;
-    message_p->arg_p = arg_p;
-    ml_queue_put(&self_p->jobs, message_p);
 }
 
 char *ml_strip(char *str_p, const char *strip_p)

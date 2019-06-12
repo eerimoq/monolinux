@@ -120,6 +120,12 @@ static void http_get(const char *url_p)
     curl_global_cleanup();
 }
 
+static void http_get_main(void *arg_p)
+{
+    http_get(arg_p);
+    free(arg_p);
+}
+
 static int command_http_get(int argc, const char *argv[])
 {
     if (argc != 2) {
@@ -128,7 +134,7 @@ static int command_http_get(int argc, const char *argv[])
         return (-1);
     }
 
-    http_get(argv[1]);
+    ml_spawn(http_get_main, strdup(argv[1]));
 
     return (0);
 }
