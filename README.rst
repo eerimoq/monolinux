@@ -210,7 +210,7 @@ See ``man procfs`` for details of the following commands.
    $ cat /proc/net/route
    $ cat /proc/uptime
    $ cat /proc/version
-   
+
 Disk commands.
 
 .. code-block:: shell
@@ -226,6 +226,12 @@ Configuration.
 
    # DNS.
    $ cat /etc/resolv.conf
+
+Device tree.
+
+.. code-block:: shell
+
+   $ cat /sys/firmware/devicetree/base/...
 
 .. |buildstatus| image:: https://travis-ci.org/eerimoq/monolinux.svg
 .. _buildstatus: https://travis-ci.org/eerimoq/monolinux
