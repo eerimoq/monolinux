@@ -26,35 +26,44 @@
  * This file is part of the Monolinux project.
  */
 
+#include <unistd.h>
 #include <unicorn/unicorn.h>
 #include "ml/ml.h"
 #include "utils/mocks/mock.h"
+#include "utils/utils.h"
 
-static struct ml_queue_t test_spawn_queue;
-static ML_UID(test_spawn_message_id);
+static struct ml_queue_t queue;
+static ML_UID(mid);
 
-static void test_spawn_entry(void *arg_p)
+static void test_full_entry(void *arg_p)
 {
-    ml_queue_put(&test_spawn_queue, arg_p);
+    usleep(500);
+    ml_queue_put(&queue, arg_p);
 }
 
-TEST(spawn)
+TEST(full, basic_fixture)
 {
     void *message_p;
+    struct ml_worker_pool_t worker_pool;
+    int i;
 
-    ml_init();
+    ml_queue_init(&queue, 100);
+    ml_worker_pool_init(&worker_pool, 4, 10);
 
-    ml_queue_init(&test_spawn_queue, 10);
-    message_p = ml_message_alloc(&test_spawn_message_id, 0);
-    ml_spawn(test_spawn_entry, message_p);
-    ASSERT_EQ(ml_queue_get(&test_spawn_queue, &message_p),
-              &test_spawn_message_id);
-    ml_message_free(message_p);
+    for (i = 0; i < 100; i++) {
+        message_p = ml_message_alloc(&mid, 0);
+        ml_worker_pool_spawn(&worker_pool, test_full_entry, message_p);
+    }
+
+    for (i = 0; i < 100; i++) {
+        ASSERT_EQ(ml_queue_get(&queue, &message_p), &mid);
+        ml_message_free(message_p);
+    }
 }
 
 int main()
 {
     return RUN_TESTS(
-        spawn
+        full
     );
 }

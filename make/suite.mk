@@ -1,7 +1,7 @@
 BUILD = $(shell readlink -f build)
 PACKAGES = $(BUILD)/packages
 EXE = $(BUILD)/suite
-CFLAGS += -fsanitize=address -fno-omit-frame-pointer
+CFLAGS += -fno-omit-frame-pointer
 CFLAGS += -coverage
 CFLAGS += -Wall -Wextra -std=gnu11
 CFLAGS += -g -Og
