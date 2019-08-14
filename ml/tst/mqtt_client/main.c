@@ -35,7 +35,6 @@ TEST(start_stop_join, basic_fixture)
     struct ml_mqtt_client_t client;
 
     /* mock_push_ml_mqtt_client_start(); */
-    /* mock_push_poll_failure(); */
 
     ml_mqtt_client_init(&client, "localhost", 1883, ML_LOG_ALL, NULL, 0);
     ml_mqtt_client_start(&client);

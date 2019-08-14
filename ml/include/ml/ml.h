@@ -185,9 +185,14 @@ struct ml_mqtt_client_message_t {
 struct ml_mqtt_client_t {
     const char *host_p;
     int port;
+    int ping_period_s;
     struct ml_mqtt_client_subscription_t *subscriptions_p;
     size_t number_of_subscriptions;
+    struct pollfd fds[5];
     struct ml_queue_t queue;
+    pthread_t client_pthread;
+    pthread_t reader_pthread;
+    pthread_t keep_alive_pthread;
     struct ml_log_object_t log_object;
 };
 
@@ -523,7 +528,7 @@ void ml_mqtt_client_init(struct ml_mqtt_client_t *self_p,
 /**
  * Start given client.
  */
-void ml_mqtt_client_start(struct ml_mqtt_client_t *self_p);
+int ml_mqtt_client_start(struct ml_mqtt_client_t *self_p);
 
 /**
  * Stop given client.
