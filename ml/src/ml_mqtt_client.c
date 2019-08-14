@@ -47,6 +47,21 @@ void ml_mqtt_client_init(struct ml_mqtt_client_t *self_p,
     self_p->number_of_subscriptions = number_of_subscriptions;
 }
 
+void ml_mqtt_client_start(struct ml_mqtt_client_t *self_p)
+{
+    ML_INFO("Starting...");
+}
+
+void ml_mqtt_client_stop(struct ml_mqtt_client_t *self_p)
+{
+    ML_INFO("Stopping...");
+}
+
+void ml_mqtt_client_join(struct ml_mqtt_client_t *self_p)
+{
+    (void)self_p;
+}
+
 bool ml_mqtt_client_message_is_topic(
     struct ml_mqtt_client_message_t *message_p,
     const char *topic_p)

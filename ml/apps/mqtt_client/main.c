@@ -72,13 +72,15 @@ static void loop(void)
     struct ml_uid_t *uid_p;
     void *message_p;
 
+    printf("Waiting for messages.\n");
+
     while (true) {
         uid_p = ml_queue_get(&messages, &message_p);
 
         if (uid_p == ml_mqtt_client_message_uid()) {
             handle_mqtt_message(message_p);
         } else {
-            ML_WARNING("");
+            printf("Unknown message %s.\n", ml_uid_str(uid_p));
         }
     }
 }
