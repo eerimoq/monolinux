@@ -8,6 +8,7 @@ SRC += \
 	$(ML_ROOT)/ml/src/ml_libc.c \
 	$(ML_ROOT)/ml/src/ml_log_object.c \
 	$(ML_ROOT)/ml/src/ml_message.c \
+	$(ML_ROOT)/ml/src/ml_mqtt_client.c \
 	$(ML_ROOT)/ml/src/ml_network.c \
 	$(ML_ROOT)/ml/src/ml_queue.c \
 	$(ML_ROOT)/ml/src/ml_shell.c \

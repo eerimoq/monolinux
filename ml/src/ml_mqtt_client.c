@@ -26,65 +26,42 @@
  * This file is part of the Monolinux project.
  */
 
-#include <stdlib.h>
+#include <stdint.h>
 #include "ml/ml.h"
 #include "internal.h"
 
-struct module_t {
-    pthread_mutex_t mutex;
-};
-
-static struct module_t module;
-
-void ml_message_init(void)
+void ml_mqtt_client_init(struct ml_mqtt_client_t *self_p,
+                         const char *host_p,
+                         int port,
+                         int log_mask,
+                         struct ml_mqtt_client_subscription_t *subscriptions_p,
+                         size_t number_of_subscriptions)
 {
-    pthread_mutex_init(&module.mutex, NULL);
+    ml_queue_init(&self_p->queue, 32);
+    self_p->host_p = host_p;
+    self_p->port = port;
+    ml_log_object_init(&self_p->log_object,
+                       "mqtt_client",
+                       log_mask);
+    self_p->subscriptions_p = subscriptions_p;
+    self_p->number_of_subscriptions = number_of_subscriptions;
 }
 
-void *ml_message_alloc(struct ml_uid_t *uid_p, size_t size)
+bool ml_mqtt_client_message_is_topic(
+    struct ml_mqtt_client_message_t *message_p,
+    const char *topic_p)
 {
-    struct ml_message_header_t *header_p;
-
-    header_p = xmalloc(sizeof(*header_p) + size);
-    header_p->count = 1;
-    header_p->uid_p = uid_p;
-    header_p->on_free = NULL;
-
-    return (message_from_header(header_p));
+    return (strcmp(message_p->topic_p, topic_p) == 0);
 }
 
-void ml_message_set_on_free(void *message_p, ml_message_on_free_t on_free)
+struct ml_uid_t *ml_mqtt_client_message_uid(void)
 {
-    struct ml_message_header_t *header_p;
-
-    header_p = message_to_header(message_p);
-    header_p->on_free = on_free;
+    return (NULL);
 }
 
-void ml_message_free(void *message_p)
+void ml_mqtt_client_publish(struct ml_mqtt_client_t *self_p,
+                            struct ml_mqtt_client_message_t *message_p)
 {
-    struct ml_message_header_t *header_p;
-    int count;
-
-    header_p = message_to_header(message_p);
-
-    pthread_mutex_lock(&module.mutex);
-    header_p->count--;
-    count = header_p->count;
-    pthread_mutex_unlock(&module.mutex);
-
-    if (count == 0) {
-        if (header_p->on_free != NULL) {
-            header_p->on_free(message_p);
-        }
-
-        free(header_p);
-    }
-}
-
-void ml_message_share(void *message_p, int count)
-{
-    pthread_mutex_lock(&module.mutex);
-    message_to_header(message_p)->count += count;
-    pthread_mutex_unlock(&module.mutex);
+    (void)self_p;
+    (void)message_p;
 }

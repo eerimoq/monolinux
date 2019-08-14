@@ -85,6 +85,8 @@ typedef int (*ml_shell_command_callback_t)(int argc, const char *argv[]);
 
 typedef void (*ml_worker_pool_job_entry_t)(void *arg_p);
 
+typedef void (*ml_message_on_free_t)(void *message_p);
+
 struct ml_uid_t {
     const char *name_p;
 };
@@ -92,6 +94,7 @@ struct ml_uid_t {
 struct ml_message_header_t {
     struct ml_uid_t *uid_p;
     int count;
+    ml_message_on_free_t on_free;
 };
 
 struct ml_queue_t {
@@ -167,6 +170,27 @@ struct ml_dhcp_client_t {
     struct ml_log_object_t log_object;
 };
 
+struct ml_mqtt_client_subscription_t {
+    const char *topic_p;
+};
+
+struct ml_mqtt_client_message_t {
+    const char *topic_p;
+    struct {
+        const uint8_t *buf_p;
+        size_t size;
+    } message;
+};
+
+struct ml_mqtt_client_t {
+    const char *host_p;
+    int port;
+    struct ml_mqtt_client_subscription_t *subscriptions_p;
+    size_t number_of_subscriptions;
+    struct ml_queue_t queue;
+    struct ml_log_object_t log_object;
+};
+
 /**
  * Initialize the Monolinux module. This must be called before any
  * other function in this module.
@@ -197,6 +221,12 @@ void ml_spawn(ml_worker_pool_job_entry_t entry, void *arg_p);
  * Allocate a message with given id and size.
  */
 void *ml_message_alloc(struct ml_uid_t *uid_p, size_t size);
+
+/**
+ * Set the on free callback. Must be called before putting the message
+ * on a queue or broadcasting it on a bus.
+ */
+void ml_message_set_on_free(void *message_p, ml_message_on_free_t on_free);
 
 /**
  * Free given message.
@@ -479,5 +509,42 @@ int ml_mknod(const char *path_p, mode_t mode, dev_t dev);
 #if defined(__GNU_LIBRARY__) && (__GLIBC__ <= 2) && (__GLIBC_MINOR__ <= 26)
 int memfd_create(const char *name, unsigned flags);
 #endif
+
+/**
+ * Initialize an MQTT client.
+ */
+void ml_mqtt_client_init(struct ml_mqtt_client_t *self_p,
+                         const char *host_p,
+                         int port,
+                         int log_mask,
+                         struct ml_mqtt_client_subscription_t *subscriptions_p,
+                         size_t number_of_subscriptions);
+
+/**
+ * Start given client.
+ */
+void ml_mqtt_client_start(struct ml_mqtt_client_t *self_p);
+
+/**
+ * Stop given client.
+ */
+void ml_mqtt_client_stop(struct ml_mqtt_client_t *self_p);
+
+/**
+ * Join given client.
+ */
+void ml_mqtt_client_join(struct ml_mqtt_client_t *self_p);
+
+bool ml_mqtt_client_message_is_topic(
+    struct ml_mqtt_client_message_t *message_p,
+    const char *topic_p);
+
+struct ml_uid_t *ml_mqtt_client_message_uid(void);
+
+/**
+ * Publish given MQTT message.
+ */
+void ml_mqtt_client_publish(struct ml_mqtt_client_t *self_p,
+                            struct ml_mqtt_client_message_t *message_p);
 
 #endif
