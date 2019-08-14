@@ -27,7 +27,7 @@
  */
 
 #include <stdint.h>
-#include <unicorn/unicorn.h>
+#include <narwhal/narwhal.h>
 #include "ml/ml.h"
 #include "mock.h"
 

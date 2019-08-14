@@ -36,11 +36,11 @@
 #include <ftw.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <unicorn/unicorn.h>
+#include <narwhal/narwhal.h>
 #include "mock.h"
 #include "mock_libc.h"
 
-/* socket() and close() may be used by unicorn. Should not use wrap,
+/* socket() and close() may be used by narwhal. Should not use wrap,
    but instead only replace symbols in tested files. Possibly examine
    the backtrace. Both variants are dirty. */
 

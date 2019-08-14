@@ -6,7 +6,7 @@ CFLAGS += -coverage
 CFLAGS += -Wall -Wextra -std=gnu11
 CFLAGS += -g -Og
 CFLAGS += -DUNIT_TEST
-LDFLAGS += -lunicorn
+LDFLAGS += -lnarwhal
 COVERAGE_FILTERS +=
 
 .PHONY: all run build coverage

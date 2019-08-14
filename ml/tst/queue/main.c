@@ -27,7 +27,7 @@
  */
 
 #include <unistd.h>
-#include <unicorn/unicorn.h>
+#include <narwhal/narwhal.h>
 #include "utils/utils.h"
 #include "ml/ml.h"
 

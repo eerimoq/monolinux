@@ -28,7 +28,7 @@
 
 #include <netinet/if_ether.h>
 #include <linux/if_packet.h>
-#include <unicorn/unicorn.h>
+#include <narwhal/narwhal.h>
 #include "ml/ml.h"
 #include "utils/utils.h"
 #include "utils/mocks/mock_libc.h"
