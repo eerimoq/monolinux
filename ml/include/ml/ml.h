@@ -196,6 +196,29 @@ struct ml_mqtt_client_t {
     struct ml_log_object_t log_object;
 };
 
+struct ml_timer_timeout_message_t {
+    bool stopped;
+    struct ml_timer_t *timer_p;
+    struct ml_timer_timeout_message_t *next_p;
+    struct ml_timer_timeout_message_t *prev_p;
+};
+
+struct ml_timer_t {
+    int timeout_ms;
+    struct ml_uid_t *timeout_p;
+    struct ml_queue_t *queue_p;
+    int flags;
+    struct {
+        struct ml_timer_timeout_message_t list;
+        pthread_mutex_t mutex;
+    } expired;
+};
+
+struct ml_timer_handler_t {
+    int timeout_ms;
+    pthread_t ticker_pthread;
+};
+
 /**
  * Initialize the Monolinux module. This must be called before any
  * other function in this module.
@@ -551,5 +574,38 @@ struct ml_uid_t *ml_mqtt_client_message_uid(void);
  */
 void ml_mqtt_client_publish(struct ml_mqtt_client_t *self_p,
                             struct ml_mqtt_client_message_t *message_p);
+
+/**
+ * Initialize given timer using the default timer handler.
+ */
+void ml_timer_init(struct ml_timer_t *self_p,
+                   int timeout_ms,
+                   struct ml_uid_t *timeout_p,
+                   struct ml_queue_t *queue_p,
+                   int flags);
+
+void ml_timer_init_with_handler(struct ml_timer_t *self_p,
+                                struct ml_timer_handler_t *handler_p,
+                                int timeout_ms,
+                                struct ml_uid_t *timeout_p,
+                                struct ml_queue_t *queue_p,
+                                int flags);
+
+/**
+ * Start given timer.
+ */
+void ml_timer_start(struct ml_timer_t *self_p);
+
+/**
+ * Stop given timer.
+ */
+void ml_timer_stop(struct ml_timer_t *self_p);
+
+void ml_timer_handler_init(struct ml_timer_handler_t *self_p,
+                           int period_ms);
+
+void ml_timer_handler_start(struct ml_timer_handler_t *self_p);
+
+void ml_timer_handler_stop(struct ml_timer_handler_t *self_p);
 
 #endif

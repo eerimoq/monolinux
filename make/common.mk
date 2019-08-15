@@ -12,6 +12,7 @@ SRC += \
 	$(ML_ROOT)/ml/src/ml_network.c \
 	$(ML_ROOT)/ml/src/ml_queue.c \
 	$(ML_ROOT)/ml/src/ml_shell.c \
+	$(ML_ROOT)/ml/src/ml_timer.c \
 	$(ML_ROOT)/ml/src/ml_worker_pool.c
 OBJ = $(patsubst %,$(BUILD)%,$(abspath $(SRC:%.c=%.o)))
 CFLAGS += $(INC:%=-I%)
