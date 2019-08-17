@@ -30,6 +30,12 @@
 #include "ml/ml.h"
 #include "internal.h"
 
+struct module_t {
+    pthread_t ticker_pthread;
+};
+
+static struct module_t module;
+
 static void expired_list_insert(struct ml_timer_t *self_p,
                                 struct ml_timer_timeout_message_t *message_p)
 {
@@ -96,7 +102,6 @@ void ml_timer_init(struct ml_timer_t *self_p,
                    struct ml_queue_t *queue_p,
                    int flags)
 {
-    self_p->handler_p = &module.timer_handler;
     self_p->timeout_ms = timeout_ms;
     self_p->timeout_p = timeout_p;
     self_p->queue_p = queue_p;

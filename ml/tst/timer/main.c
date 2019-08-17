@@ -37,9 +37,8 @@ TEST(single_shot, basic_fixture)
 {
     struct ml_timer_t timer;
     struct ml_queue_t queue;
-    /* struct ml_uid_t *uid_p; */
-    /* void *message_p; */
-    /* struct ml_timer_timeout_message_t *timeout_p; */
+    struct ml_uid_t *uid_p;
+    struct ml_timer_timeout_message_t *message_p;
 
     ml_queue_init(&queue, 1);
     ml_timer_init(&timer,
@@ -48,15 +47,39 @@ TEST(single_shot, basic_fixture)
                   &queue,
                   0);
     ml_timer_start(&timer);
-    /* uid_p = ml_queue_get(&queue, &message_p); */
-    /* ASSERT_EQ(uid_p, &timeout_1); */
-    /* timeout_p = (struct ml_timer_timeout_message_t *)message_p; */
-    /* ASSERT_EQ(timeout_p->stopped, false); */
+    uid_p = ml_queue_get(&queue, &message_p);
+    ASSERT_EQ(uid_p, &timeout);
+    ASSERT_EQ(message_p->stopped, false);
+}
+
+TEST(periodic, basic_fixture)
+{
+    struct ml_timer_t timer;
+    struct ml_queue_t queue;
+    struct ml_uid_t *uid_p;
+    struct ml_timer_timeout_message_t *message_p;
+
+    ml_queue_init(&queue, 1);
+    ml_timer_init(&timer,
+                  1,
+                  &timeout,
+                  &queue,
+                  ML_TIMER_PERIODIC);
+    ml_timer_start(&timer);
+
+    for (i = 0; i < 10; i++) {
+        uid_p = ml_queue_get(&queue, &message_p);
+        ASSERT_EQ(uid_p, &timeout);
+        ASSERT_EQ(message_p->stopped, false);
+    }
+
+    ml_timer_stop(&timer);
 }
 
 int main()
 {
     return RUN_TESTS(
-        single_shot
+        single_shot,
+        periodic
     );
 }

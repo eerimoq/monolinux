@@ -50,16 +50,6 @@ static void destroy(struct ml_mqtt_client_t *self_p)
     (void)self_p;
 }
 
-static void update_events(struct ml_mqtt_client_t *self_p)
-{
-    (void)self_p;
-}
-
-static void process_events(struct ml_mqtt_client_t *self_p)
-{
-    (void)self_p;
-}
-
 static void *reader_main(void *arg_p)
 {
     struct ml_mqtt_client_t *self_p;
@@ -90,6 +80,79 @@ static void *keep_alive_main(void *arg_p)
     return (NULL);
 }
 
+static void write_publish(struct ml_mqtt_client_t *self_p,
+                          struct ml_mqtt_client_message_t *message_p)
+{
+    struct iovec iovec[4];
+    uint8_t fixed_header[8];
+    uint8_t properties[16];
+
+    iovec[0].iov_base = &header[0];
+    iovec[0].iov_len = pack_fixed_header(&header[0],
+                                         CONTROL_PACKET_TYPE_PUBLISH,
+                                         0,
+                                         size);
+    iovec[1].iov_base = message_p->topic_p;
+    iovec[1].iov_len = strlen(message_p->topic_p);
+    iovec[2].iov_base = &properties[0];
+    iovec[2].iov_len = pack_properties(&properties[0]);
+    iovec[3].iov_base = message_p->message.buf_p;
+    iovec[3].iov_len = message_p->message.size;
+
+    writev(self_p->broker_fd, &iovec[0], membersof(iovec));
+}
+
+static void handle_publish(struct ml_mqtt_client_t *self_p)
+{
+    struct ml_mqtt_client_message_t *message_p;
+
+    pthread_mutex_lock(&self_p->publish.mutex);
+    message_p = self_p->publish.head.next_p;
+    self_p->publish.head.next_p = NULL;
+    self_p->publish.tail_p = &self_p->publish.head;
+    pthread_mutex_unlock(&self_p->publish.mutex);
+
+    while (message_p != NULL) {
+        write_publish(self_p, message_p);
+        message_p = message_p->next_p;
+    }
+}
+
+static void handle_input(struct ml_mqtt_client_t *self_p)
+{
+    read_packet();
+
+    switch (packet_type) {
+
+    case CONTROL_PACKET_TYPE_CONNACK:
+        on_connack(self_p);
+        break;
+        
+    case CONTROL_PACKET_TYPE_PUBLISH:
+        on_publish(self_p);
+        break;
+        
+    case CONTROL_PACKET_TYPE_SUBACK:
+        on_suback(self_p);
+        break;
+        
+    case CONTROL_PACKET_TYPE_UNSUBACK:
+        on_unsuback(self_p);
+        break;
+        
+    case CONTROL_PACKET_TYPE_PINGRESP:
+        on_pingresp(self_p);
+        break;
+        
+    case CONTROL_PACKET_TYPE_DISCONNECT:
+        on_disconnect(self_p);
+        break;
+
+    default:
+        break;
+    }
+}
+
 static void *client_main(void *arg_p)
 {
     int res;
@@ -105,8 +168,13 @@ static void *client_main(void *arg_p)
             break;
         }
 
-        update_events(self_p);
-        process_events(self_p);
+        if (self_p->fds[PUBLISH_IX].revents & POLLIN) {
+            handle_publish_event(self_p);
+        }
+
+        if (self_p->fds[INPUT_IX].revents & POLLIN) {
+            handle_input(self_p);
+        }
     }
 
     return (NULL);
@@ -128,6 +196,10 @@ void ml_mqtt_client_init(struct ml_mqtt_client_t *self_p,
                        log_mask);
     self_p->subscriptions_p = subscriptions_p;
     self_p->number_of_subscriptions = number_of_subscriptions;
+    self_p->publish.eventfd = eventfd(0, 0);
+    pthread_mutex_init(&self_p->publish.mutex);
+    self_p->publish.head.next_p = NULL;
+    self_p->publish.tail_p = &self_p->publish.head;
 }
 
 int ml_mqtt_client_start(struct ml_mqtt_client_t *self_p)
@@ -196,6 +268,10 @@ struct ml_uid_t *ml_mqtt_client_message_uid(void)
 void ml_mqtt_client_publish(struct ml_mqtt_client_t *self_p,
                             struct ml_mqtt_client_message_t *message_p)
 {
-    (void)self_p;
-    (void)message_p;
+    message_p->next_p = NULL;
+    pthread_mutex_lock(&self_p->publish.mutex);
+    self_p->publish.tail_p->next_p = message_p;
+    self_p->publish.tail_p = message_p;
+    pthread_mutex_unlock(&self_p->publish.mutex);
+    write(self_p->publish.eventfd, 0, sizeof(uint64_t));
 }
