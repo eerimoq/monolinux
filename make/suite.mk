@@ -8,7 +8,7 @@ CFLAGS += -g -Og
 CFLAGS += -DUNIT_TEST
 COVERAGE_FILTERS +=
 INC += $(ML_ROOT)/ml/tst/utils
-SRC += $(ML_ROOT)/ml/tst/utils/narwhal/narwhal.c
+SRC += $(ML_ROOT)/ml/tst/utils/narwhal.c
 
 .PHONY: all run build coverage
 

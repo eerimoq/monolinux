@@ -26,7 +26,7 @@
  * This file is part of the Monolinux project.
  */
 
-#include <narwhal/narwhal.h>
+#include "narwhal.h"
 #include "utils/utils.h"
 #include "ml/ml.h"
 

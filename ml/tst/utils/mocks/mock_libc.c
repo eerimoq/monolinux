@@ -36,7 +36,7 @@
 #include <ftw.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <narwhal/narwhal.h>
+#include "narwhal.h"
 #include "mock.h"
 #include "mock_libc.h"
 

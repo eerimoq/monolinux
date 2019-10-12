@@ -27,7 +27,7 @@
  */
 
 #include <unistd.h>
-#include <narwhal/narwhal.h>
+#include "narwhal.h"
 #include "ml/ml.h"
 #include "utils/mocks/mock.h"
 #include "utils/utils.h"

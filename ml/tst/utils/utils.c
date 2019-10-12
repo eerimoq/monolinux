@@ -1,5 +1,5 @@
 #include <unistd.h>
-#include <narwhal/narwhal.h>
+#include "narwhal.h"
 #include "ml/ml.h"
 #include "utils.h"
 #include "mocks/mock.h"
