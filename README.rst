@@ -49,8 +49,6 @@ Install all prerequisites:
    $ sudo apt install curl qemu-system-x86 flex bison gcovr
 
    # Only required for unit testing:
-   $ git clone https://github.com/eerimoq/narwhal
-   $ (cd narwhal && make && sudo make install)
    $ sudo pip3 install pyinotify
    $ wget https://musl.cc/x86_64-linux-musl-cross.tgz
    $ tar xf x86_64-linux-musl-cross.tgz

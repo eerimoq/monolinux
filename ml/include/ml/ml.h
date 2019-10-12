@@ -170,32 +170,6 @@ struct ml_dhcp_client_t {
     struct ml_log_object_t log_object;
 };
 
-struct ml_mqtt_client_subscription_t {
-    const char *topic_p;
-};
-
-struct ml_mqtt_client_message_t {
-    const char *topic_p;
-    struct {
-        const uint8_t *buf_p;
-        size_t size;
-    } message;
-};
-
-struct ml_mqtt_client_t {
-    const char *host_p;
-    int port;
-    int ping_period_s;
-    struct ml_mqtt_client_subscription_t *subscriptions_p;
-    size_t number_of_subscriptions;
-    struct pollfd fds[5];
-    struct ml_queue_t queue;
-    pthread_t client_pthread;
-    pthread_t reader_pthread;
-    pthread_t keep_alive_pthread;
-    struct ml_log_object_t log_object;
-};
-
 /**
  * Initialize the Monolinux module. This must be called before any
  * other function in this module.
@@ -514,42 +488,5 @@ int ml_mknod(const char *path_p, mode_t mode, dev_t dev);
 #if defined(__GNU_LIBRARY__) && (__GLIBC__ <= 2) && (__GLIBC_MINOR__ <= 26)
 int memfd_create(const char *name, unsigned flags);
 #endif
-
-/**
- * Initialize an MQTT client.
- */
-void ml_mqtt_client_init(struct ml_mqtt_client_t *self_p,
-                         const char *host_p,
-                         int port,
-                         int log_mask,
-                         struct ml_mqtt_client_subscription_t *subscriptions_p,
-                         size_t number_of_subscriptions);
-
-/**
- * Start given client.
- */
-int ml_mqtt_client_start(struct ml_mqtt_client_t *self_p);
-
-/**
- * Stop given client.
- */
-void ml_mqtt_client_stop(struct ml_mqtt_client_t *self_p);
-
-/**
- * Join given client.
- */
-void ml_mqtt_client_join(struct ml_mqtt_client_t *self_p);
-
-bool ml_mqtt_client_message_is_topic(
-    struct ml_mqtt_client_message_t *message_p,
-    const char *topic_p);
-
-struct ml_uid_t *ml_mqtt_client_message_uid(void);
-
-/**
- * Publish given MQTT message.
- */
-void ml_mqtt_client_publish(struct ml_mqtt_client_t *self_p,
-                            struct ml_mqtt_client_message_t *message_p);
 
 #endif

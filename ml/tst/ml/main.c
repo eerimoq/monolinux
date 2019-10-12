@@ -43,11 +43,11 @@ TEST(strip, basic_fixture)
 
     begin_p = ml_strip(string1, NULL);
     ASSERT_EQ(begin_p, "1");
-    ASSERT_EQ(begin_p, string1);
+    ASSERT_EQ(begin_p, &string1[0]);
 
     begin_p = ml_strip(string1, "1");
     ASSERT_EQ(begin_p, "");
-    ASSERT_EQ(begin_p, string1);
+    ASSERT_EQ(begin_p, &string1[0]);
 
     begin_p = ml_strip(string2, NULL);
     ASSERT_EQ(begin_p, "1");
@@ -71,7 +71,7 @@ TEST(lstrip, basic_fixture)
 
     begin_p = ml_lstrip(string1, NULL);
     ASSERT_EQ(begin_p, "1 ");
-    ASSERT_EQ(begin_p, string1);
+    ASSERT_EQ(begin_p, &string1[0]);
 
     begin_p = ml_lstrip(string1, "1");
     ASSERT_EQ(begin_p, " ");
@@ -93,16 +93,16 @@ TEST(rstrip, basic_fixture)
     char string3[] = "  ";
 
     ml_rstrip(string1, NULL);
-    ASSERT_EQ(string1, "1");
+    ASSERT_EQ(&string1[0], "1");
 
     ml_rstrip(string2, NULL);
-    ASSERT_EQ(string2, " 1");
+    ASSERT_EQ(&string2[0], " 1");
 
     ml_rstrip(string2, "1");
-    ASSERT_EQ(string2, " ");
+    ASSERT_EQ(&string2[0], " ");
 
     ml_rstrip(string3, NULL);
-    ASSERT_EQ(string3, "");
+    ASSERT_EQ(&string3[0], "");
 }
 
 TEST(hexdump_empty, basic_fixture)
