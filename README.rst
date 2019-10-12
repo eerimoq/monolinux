@@ -47,11 +47,11 @@ Install all prerequisites:
 .. code-block:: shell
 
    $ sudo apt install curl qemu-system-x86 flex bison gcovr
+   $ wget https://musl.cc/x86_64-linux-musl-cross.tgz
+   $ tar xf x86_64-linux-musl-cross.tgz
 
    # Only required for unit testing:
    $ sudo pip3 install pyinotify
-   $ wget https://musl.cc/x86_64-linux-musl-cross.tgz
-   $ tar xf x86_64-linux-musl-cross.tgz
 
 Source the development environment setup script.
 
