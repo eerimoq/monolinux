@@ -51,7 +51,7 @@ Install all prerequisites:
    $ tar xf x86_64-linux-musl-cross.tgz
 
    # Only required for unit testing:
-   $ sudo pip3 install pyinotify
+   $ sudo pip3 install pyinotify narmock
 
 Source the development environment setup script.
 
