@@ -1,18 +1,18 @@
-INC += $(ML_ROOT)/ml/ml/include $(BUILD)/root/include
+INC += $(ML_ROOT)/ml/include $(BUILD)/root/include
 SRC += \
 	main.c \
-	$(ML_ROOT)/ml/ml/src/ml.c \
-	$(ML_ROOT)/ml/ml/src/ml_bus.c \
-	$(ML_ROOT)/ml/ml/src/ml_dhcp_client.c \
-	$(ML_ROOT)/ml/ml/src/ml_inet.c \
-	$(ML_ROOT)/ml/ml/src/ml_libc.c \
-	$(ML_ROOT)/ml/ml/src/ml_log_object.c \
-	$(ML_ROOT)/ml/ml/src/ml_message.c \
-	$(ML_ROOT)/ml/ml/src/ml_network.c \
-	$(ML_ROOT)/ml/ml/src/ml_queue.c \
-	$(ML_ROOT)/ml/ml/src/ml_shell.c \
-	$(ML_ROOT)/ml/ml/src/ml_timer.c \
-	$(ML_ROOT)/ml/ml/src/ml_worker_pool.c
+	$(ML_ROOT)/ml/src/ml.c \
+	$(ML_ROOT)/ml/src/ml_bus.c \
+	$(ML_ROOT)/ml/src/ml_dhcp_client.c \
+	$(ML_ROOT)/ml/src/ml_inet.c \
+	$(ML_ROOT)/ml/src/ml_libc.c \
+	$(ML_ROOT)/ml/src/ml_log_object.c \
+	$(ML_ROOT)/ml/src/ml_message.c \
+	$(ML_ROOT)/ml/src/ml_network.c \
+	$(ML_ROOT)/ml/src/ml_queue.c \
+	$(ML_ROOT)/ml/src/ml_shell.c \
+	$(ML_ROOT)/ml/src/ml_timer.c \
+	$(ML_ROOT)/ml/src/ml_worker_pool.c
 OBJ = $(patsubst %,$(BUILD)%,$(abspath $(SRC:%.c=%.o)))
 CFLAGS += $(INC:%=-I%)
 CFLAGS += -ffunction-sections -fdata-sections
