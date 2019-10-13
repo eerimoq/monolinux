@@ -32,11 +32,13 @@
 
 static ML_UID(timeout_1);
 static ML_UID(timeout_2);
+static ML_UID(timeout_3);
 
 int main()
 {
     struct ml_timer_t timer_1;
     struct ml_timer_t timer_2;
+    struct ml_timer_t timer_3;
     struct ml_queue_t queue;
     struct ml_uid_t *uid_p;
     struct ml_timer_timeout_message_t *message_p;
@@ -45,12 +47,16 @@ int main()
     ml_queue_init(&queue, 16);
     ml_timer_init(&timer_1, 1000, &timeout_1, &queue, ML_TIMER_PERIODIC);
     ml_timer_init(&timer_2, 3000, &timeout_2, &queue, ML_TIMER_PERIODIC);
+    ml_timer_init(&timer_3, 5000, &timeout_3, &queue, 0);
 
     printf("Starting timer 1.\n");
     ml_timer_start(&timer_1);
 
     printf("Starting timer 2.\n");
     ml_timer_start(&timer_2);
+
+    printf("Starting timer 3.\n");
+    ml_timer_start(&timer_3);
 
     while (true) {
         uid_p = ml_queue_get(&queue, (void **)&message_p);
@@ -59,6 +65,8 @@ int main()
             printf("Timer 1 expired.\n");
         } else if (uid_p == &timeout_2) {
             printf("Timer 2 expired.\n");
+        } else if (uid_p == &timeout_3) {
+            printf("Timer 3 expired.\n");
         }
 
         ml_message_free(message_p);
