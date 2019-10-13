@@ -1,5 +1,4 @@
 |buildstatus|_
-|codecov|_
 
 Monolinux
 =========
@@ -190,9 +189,6 @@ Sources can be found here: https://github.com/eerimoq/monolinux-sources
 
 .. |buildstatus| image:: https://travis-ci.org/eerimoq/monolinux.svg
 .. _buildstatus: https://travis-ci.org/eerimoq/monolinux
-
-.. |codecov| image:: https://codecov.io/gh/eerimoq/monolinux/branch/master/graph/badge.svg
-.. _codecov: https://codecov.io/gh/eerimoq/monolinux
 
 .. _Monolinux Jiffy: https://github.com/eerimoq/monolinux-jiffy
 
