@@ -10,8 +10,4 @@ before_install:
   - env | grep ML_
 
 script:
-  - make -j $(cat /proc/cpuinfo | grep processor | wc -l) run
   - make -C examples/hello_world -j $(cat /proc/cpuinfo | grep processor | wc -l) build
-
-after_success:
-  - bash <(curl -s https://codecov.io/bash)

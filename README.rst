@@ -23,7 +23,7 @@ Features:
 
 - Libraries to statically link with your application.
 
-  - `ml`_ (the Monolinux library)
+  - `ml`_ (the Monolinux C library)
 
   - `curl`_ (HTTP, FTP, ...)
 
@@ -46,12 +46,9 @@ Install all prerequisites:
 
 .. code-block:: shell
 
-   $ sudo apt install curl qemu-system-x86 flex bison gcovr
+   $ sudo apt install curl qemu-system-x86 flex bison
    $ wget https://musl.cc/x86_64-linux-musl-cross.tgz
    $ tar xf x86_64-linux-musl-cross.tgz
-
-   # Only required for unit testing:
-   $ sudo pip3 install pyinotify narmock
 
 Source the development environment setup script.
 
@@ -72,51 +69,6 @@ and run everything in QEMU.
    ...
 
 Exit QEMU with Ctrl-A C and then q <Enter>.
-
-Unit testing
-============
-
-Execute all unit tests.
-
-.. code-block:: shell
-
-   $ make -s -j4
-   ...
-
-Automatically build and run a test suite when one of its files has
-been modified.
-
-.. code-block:: text
-
-   $ cd ml/tst/shell
-   $ ml test
-   ...
-   ============================================================
-   CC main.c
-   LD /home/erik/workspace/monolinux/ml/tst/shell/build/suite
-
-   Running tests...
-
-        1 - 6 |  ......
-
-   Test results:
-
-       PASS various_commands (50.85ms)
-       PASS ls (50.77ms)
-       PASS cat (50.95ms)
-       PASS command_editing (50.90ms)
-       PASS quotes (50.73ms)
-       PASS history (50.62ms)
-
-   Tests: 6 passed, 6 total
-   Time:  352.57ms
-   ============================================================
-   CC main.c
-   LD /home/erik/workspace/monolinux/ml/tst/shell/build/suite
-
-   Running tests...
-
-   <more output>
 
 File tree
 =========
@@ -246,7 +198,7 @@ Sources can be found here: https://github.com/eerimoq/monolinux-sources
 
 .. _Linux kernel: https://www.kernel.org/
 
-.. _ml: https://github.com/eerimoq/monolinux/tree/master/ml
+.. _ml: https://github.com/eerimoq/monolinux-c-library
 
 .. _curl: https://curl.haxx.se/
 
