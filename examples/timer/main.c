@@ -42,7 +42,6 @@ int main()
     struct ml_timer_timeout_message_t *message_p;
 
     ml_init();
-
     ml_queue_init(&queue, 16);
     ml_timer_init(&timer_1, 1000, &timeout_1, &queue, ML_TIMER_PERIODIC);
     ml_timer_init(&timer_2, 3000, &timeout_2, &queue, ML_TIMER_PERIODIC);
