@@ -10,6 +10,7 @@ SRC += \
 	$(ML_ROOT)/ml/src/ml_message.c \
 	$(ML_ROOT)/ml/src/ml_network.c \
 	$(ML_ROOT)/ml/src/ml_queue.c \
+	$(ML_ROOT)/ml/src/ml_rtc.c \
 	$(ML_ROOT)/ml/src/ml_shell.c \
 	$(ML_ROOT)/ml/src/ml_timer.c \
 	$(ML_ROOT)/ml/src/ml_worker_pool.c

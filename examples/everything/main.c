@@ -29,9 +29,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/mount.h>
 #include <stdlib.h>
+#include <sys/mount.h>
 #include <sys/stat.h>
+#include <sys/sysmacros.h>
 #include <fcntl.h>
 #include <termios.h>
 #include <time.h>
@@ -272,6 +273,25 @@ static void openssl_test(void)
     printf("=============== openssl test end ===============\n\n");
 }
 
+static void rtc_test(void)
+{
+    struct tm tm;
+
+    printf("================ RTC test begin ================\n");
+    printf("RTC sysfs date: ");
+    ml_print_file("/sys/class/rtc/rtc0/date");
+    printf("RTC sysfs time: ");
+    ml_print_file("/sys/class/rtc/rtc0/time");
+    ml_mknod("/dev/rtc0", S_IFCHR | 0666, makedev(254, 0));
+    ml_rtc_get_time("/dev/rtc0", &tm);
+    printf("RTC date and time: %s", asctime(&tm));
+    tm.tm_year++;
+    ml_rtc_set_time("/dev/rtc0", &tm);
+    ml_rtc_get_time("/dev/rtc0", &tm);
+    printf("RTC date and time: %s", asctime(&tm));
+    printf("================= RTC test end =================\n\n");
+}
+
 static void http_test(void)
 {
     printf("================ http test begin ===============\n");
@@ -303,6 +323,7 @@ int main()
     detools_test();
     openssl_test();
     ml_network_interface_up("eth0");
+    rtc_test();
 
 # if 1
     ml_network_interface_configure("eth0", "10.0.2.15", "255.255.255.0");
