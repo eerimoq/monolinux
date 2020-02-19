@@ -142,8 +142,6 @@ static int command_http_get(int argc, const char *argv[])
 
 static void init(void)
 {
-    int res;
-
     curl_global_init(CURL_GLOBAL_DEFAULT);
 
     ml_init();
@@ -161,6 +159,7 @@ static void init(void)
     ml_mount("none", "/sys", "sysfs");
     ml_mount("none", "/sys/kernel/debug", "debugfs");
     insert_modules();
+    ml_mknod("/dev/sda1", S_IFBLK | 0666, makedev(8, 1));
     ml_mount("/dev/sda1", "/mnt/disk", "ext4");
 }
 

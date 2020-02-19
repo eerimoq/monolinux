@@ -28,7 +28,7 @@ run: build
 	    -kernel $(BZIMAGE) \
 	    -initrd $(INITRAMFS) \
 	    -nographic -append "console=ttyS0" \
-	    $(QEMU_DISK:%=-drive format=raw,file=%,media=disk,index=0)
+	    $(QEMU_DISK:%=-drive format=raw,file=%)
 
 $(LINUX_SRC): $(ML_SOURCES)/$(LINUX).tar.xz
 	$(MAKE) $(LINUX)-all
