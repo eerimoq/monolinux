@@ -155,12 +155,31 @@ static void init(void)
                               command_http_get);
     ml_shell_start();
 
-    ml_mount("none", "/proc", "proc");
-    ml_mount("none", "/sys", "sysfs");
-    ml_mount("none", "/sys/kernel/debug", "debugfs");
+    ml_mount("none", "/proc", "proc", 0);
+    ml_mount("none", "/sys", "sysfs", 0);
+    ml_mount("none", "/sys/kernel/debug", "debugfs", 0);
     insert_modules();
+
     ml_mknod("/dev/sda1", S_IFBLK | 0666, makedev(8, 1));
-    ml_mount("/dev/sda1", "/mnt/disk", "ext4");
+    ml_mknod("/dev/sdb1", S_IFBLK | 0666, makedev(8, 16));
+    ml_mknod("/dev/sdc1", S_IFBLK | 0666, makedev(8, 32));
+    ml_mknod("/dev/mapper/control", S_IFCHR | 0666, makedev(10, 236));
+
+    ml_device_mapper_create(
+        "erik",
+        "00000000-1111-2222-3333-444444444444",
+        "/dev/sdb1",
+        8192,
+        "/dev/sdc1",
+        0,
+        "af4f26725d8ce706744b54d313ba47ab3be890b76c592ede8aca52779f4e93c9",
+        "7891234871263971625789623497586239875698273465987234658792364598");
+
+    ml_mount("/dev/sda1", "/mnt/disk1", "ext4", 0);
+    ml_mount("/dev/mapper/00000000-1111-2222-3333-444444444444",
+             "/mnt/disk2",
+             "squashfs",
+             MS_RDONLY);
 }
 
 static void print_banner(void)
@@ -199,7 +218,7 @@ static void disk_test(void)
 {
     printf("================ disk test begin ===============\n");
     ml_print_file_systems_space_usage();
-    ml_print_file("/mnt/disk/README");
+    ml_print_file("/mnt/disk1/README");
     printf("================= disk test end ================\n\n");
 }
 
@@ -238,9 +257,9 @@ static void lzma_test(void)
 static void detools_test(void)
 {
     int res;
-    const char from[] = "/mnt/disk/detools/v1.txt";
-    const char patch[] = "/mnt/disk/detools/v1-v2.patch";
-    const char to[] = "/mnt/disk/detools/v2.txt";
+    const char from[] = "/mnt/disk1/detools/v1.txt";
+    const char patch[] = "/mnt/disk1/detools/v1-v2.patch";
+    const char to[] = "/mnt/disk1/detools/v2.txt";
 
     printf("============== detools test begin ==============\n");
     printf("From:  %s\n", from);

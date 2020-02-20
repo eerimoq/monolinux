@@ -2,6 +2,7 @@ INC += $(ML_ROOT)/ml/include $(BUILD)/root/include
 SRC += main.c
 SRC += $(ML_ROOT)/ml/src/ml.c
 SRC += $(ML_ROOT)/ml/src/ml_bus.c
+SRC += $(ML_ROOT)/ml/src/ml_device_mapper.c
 SRC += $(ML_ROOT)/ml/src/ml_dhcp_client.c
 SRC += $(ML_ROOT)/ml/src/ml_inet.c
 SRC += $(ML_ROOT)/ml/src/ml_libc.c

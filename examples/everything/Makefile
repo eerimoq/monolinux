@@ -3,6 +3,9 @@ INITRAMFS_FILES += build/linux-5.1.3/fs/ext4/ext4.ko
 INITRAMFS_FILES += build/linux-5.1.3/fs/jbd2/jbd2.ko
 INITRAMFS_FILES += build/linux-5.1.3/fs/mbcache.ko
 QEMU_DISK = build/mldisk.img
+QEMU_DISKS += $(QEMU_DISK)
+QEMU_DISKS += fs.img
+QEMU_DISKS += table.img
 CLEAN = $(QEMU_DISK)
 
 default: $(QEMU_DISK)
