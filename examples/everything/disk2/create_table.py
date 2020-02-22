@@ -1,10 +1,56 @@
+import os
+import sys
 from hashlib import sha256
-from binascii import hexlify
-from io import BytesIO
 
 
-def bin_to_hex(data):
-    return hexlify(data).decode('ascii')
+class BlockReader:
+    """Reads one block at a time from the end of the file towards the
+    beginning.
+
+    """
+
+    def __init__(self, fin, offset, size):
+        self._fin = fin
+        self._offset = offset
+        self._size = size
+        self._left = size
+
+    def __len__(self):
+        return self._size // 4096
+
+    def __iter__(self):
+        while self._left > 0:
+            self._left -= 4096
+            self._fin.seek(self._offset + self._left, os.SEEK_SET)
+
+            yield self._fin.read(4096)
+
+
+class HashTree:
+    """Writes hashes (or padding) from the end of the file towards the
+    beginning.
+
+    """
+
+    def __init__(self, ftree, size, salt):
+        self.ftree = ftree
+        self._size = size
+        self._salt = salt
+        self._left = size
+
+    def write(self, data):
+        self._left -= len(data)
+        self.ftree.seek(self._left, os.SEEK_SET)
+
+        return self.ftree.write(data)
+
+    def tell(self):
+        return self._left
+
+    def read_first_block(self):
+        self.ftree.seek(0)
+
+        return self.ftree.read(4096)
 
 
 def padding_size(size):
@@ -16,48 +62,70 @@ def padding_size(size):
     return rest
 
 
-def create_hash_tree(fin, salt):
+def round_up(number):
+    return number + padding_size(number)
+
+
+def calc_hash_tree_size(size):
+    """Calculate the hash tree size, not including the top/root hash.
+
+    """
+
+    number_of_hashes = (size // 4096)
+    tree_size = 0
+
+    while number_of_hashes > 1:
+        size = round_up(32 * number_of_hashes)
+        tree_size += size
+        number_of_hashes = (size // 4096)
+
+    return tree_size
+
+
+def create_hash_tree(block_reader, hash_tree, salt):
     """Create a hash tree, not including the top/root hash.
 
     """
 
-    fout = BytesIO()
+    offset_end = hash_tree.tell()
+    hash_tree.write(b'\x00' * padding_size(32 * len(block_reader)))
 
-    while True:
-        block = fin.read(4096)
+    for block in block_reader:
+        hash_tree.write(sha256(salt + block).digest())
 
-        if len(block) == 0:
-            break
-        elif len(block) != 4096:
-            raise Exception('Input file must be a multiple of 4096 bytes.')
+    offset = hash_tree.tell()
 
-        fout.write(sha256(salt + block).digest())
-
-    fout.write(b'\x00' * padding_size(fout.tell()))
-
-    if fout.tell() == 4096:
-        return fout.getvalue()
-    else:
-        fout.seek(0)
-
-        return create_hash_tree(fout, salt) + fout.getvalue()
+    if offset > 0:
+        create_hash_tree(BlockReader(hash_tree.ftree,
+                                     offset,
+                                     offset_end - offset),
+                         hash_tree,
+                         salt)
 
 
 def main():
-    salt = (
-        b'\x78\x91\x23\x48\x71\x26\x39\x71\x62\x57\x89\x62\x34\x97\x58\x62'
-        b'\x39\x87\x56\x98\x27\x34\x65\x98\x72\x34\x65\x87\x92\x36\x45\x98')
+    image_path = sys.argv[1]
+    tree_path = sys.argv[2]
+    salt = bytes.fromhex(sys.argv[3])
 
-    with open('fs.img', 'rb') as fin:
-        tree = create_hash_tree(fin, salt)
+    image_size = os.stat(image_path).st_size
 
-    with open('table.img', 'wb') as fout:
-        fout.write(tree)
+    if padding_size(image_size) != 0:
+        sys.exit('Input size must be a multiple of 4096 bytes.')
 
-    root_hash = sha256(salt + tree[:4096]).digest()
+    tree_size = calc_hash_tree_size(image_size)
 
-    print('Salt:     ', bin_to_hex(salt))
-    print('Root hash:', bin_to_hex(root_hash))
+    with open(image_path, 'rb') as fin:
+        with open(tree_path, 'w+b') as ftree:
+            ftree.truncate(tree_size)
+            hash_tree = HashTree(ftree, tree_size, salt)
+            create_hash_tree(BlockReader(fin, 0, image_size),
+                             hash_tree,
+                             salt)
+            root_hash = sha256(salt + hash_tree.read_first_block()).digest()
+
+    print('Salt:     ', salt.hex())
+    print('Root hash:', root_hash.hex())
 
 
 if __name__ == '__main__':

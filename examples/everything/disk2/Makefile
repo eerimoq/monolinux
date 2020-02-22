@@ -1,5 +1,6 @@
 create_table:
-	python3 create_table.py
+	python3 create_table.py \
+	    fs.img table.img 7891234871263971625789623497586239875698273465987234658792364598
 
 unpack-fs:
 	unsquashfs fs.img
