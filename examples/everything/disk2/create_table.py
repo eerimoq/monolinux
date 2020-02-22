@@ -32,10 +32,9 @@ class HashTree:
 
     """
 
-    def __init__(self, ftree, size, salt):
+    def __init__(self, ftree, size):
         self.ftree = ftree
         self._size = size
-        self._salt = salt
         self._left = size
 
     def write(self, data):
@@ -118,7 +117,7 @@ def main():
     with open(image_path, 'rb') as fin:
         with open(tree_path, 'w+b') as ftree:
             ftree.truncate(tree_size)
-            hash_tree = HashTree(ftree, tree_size, salt)
+            hash_tree = HashTree(ftree, tree_size)
             create_hash_tree(BlockReader(fin, 0, image_size),
                              hash_tree,
                              salt)
