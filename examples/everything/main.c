@@ -262,6 +262,7 @@ static void detools_test(void)
     const char to[] = "/mnt/disk1/detools/v2.txt";
 
     printf("============== detools test begin ==============\n");
+    printf("Library version: %s\n", DETOOLS_VERSION);
     printf("From:  %s\n", from);
     printf("Patch: %s\n", patch);
     printf("To:    %s\n", to);
