@@ -22,3 +22,4 @@ include $(ML_ROOT)/make/packages/xz-5.2.4.mk
 include $(ML_ROOT)/make/packages/detools-0.29.0.mk
 include $(ML_ROOT)/make/packages/openssl-1.1.1b.mk
 include $(ML_ROOT)/make/packages/zlib-1.2.11.mk
+include $(ML_ROOT)/make/packages/mbedtls-2.16.5.mk

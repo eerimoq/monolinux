@@ -100,7 +100,7 @@ static void http_get(const char *url_p)
         curl_easy_setopt(curl_p, CURLOPT_URL, url_p);
         curl_easy_setopt(curl_p, CURLOPT_WRITEFUNCTION, on_write);
 
-        /* WARNING: Makes the connection unsecure! */
+        /* WARNING: Makes the connection insecure! */
         curl_easy_setopt(curl_p, CURLOPT_SSL_VERIFYPEER, 0);
         curl_easy_setopt(curl_p, CURLOPT_SSL_VERIFYHOST, 0);
 
