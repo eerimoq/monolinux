@@ -18,13 +18,13 @@ $(QEMU_DISK):
 	create_file_storage.sh $@ detools
 
 include $(ML_ROOT)/make/app.mk
-include $(ML_ROOT)/make/packages/curl-7.65.0.mk
-include $(ML_ROOT)/make/packages/heatshrink-0.4.1.mk
-include $(ML_ROOT)/make/packages/xz-5.2.4.mk
-include $(ML_ROOT)/make/packages/detools-0.45.0.mk
-include $(ML_ROOT)/make/packages/zlib-1.2.11.mk
-include $(ML_ROOT)/make/packages/async-0.6.0.mk
-include $(ML_ROOT)/make/packages/mbedtls-2.16.5.mk
-include $(ML_ROOT)/make/packages/monolinux-c-library-0.7.0.mk
-include $(ML_ROOT)/make/packages/bitstream-0.7.0.mk
-include $(ML_ROOT)/make/packages/humanfriendly-0.3.0.mk
+include $(ML_ROOT)/make/packages/curl.mk
+include $(ML_ROOT)/make/packages/heatshrink.mk
+include $(ML_ROOT)/make/packages/xz.mk
+include $(ML_ROOT)/make/packages/detools.mk
+include $(ML_ROOT)/make/packages/zlib.mk
+include $(ML_ROOT)/make/packages/async.mk
+include $(ML_ROOT)/make/packages/mbedtls.mk
+include $(ML_ROOT)/make/packages/monolinux-c-library.mk
+include $(ML_ROOT)/make/packages/bitstream.mk
+include $(ML_ROOT)/make/packages/humanfriendly.mk

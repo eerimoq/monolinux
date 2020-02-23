@@ -57,9 +57,9 @@ int main()
     ml_shell_register_command("hello", "My command.", command_hello);
     ml_shell_start();
 
-    ml_mount("none", "/proc", "proc");
-    ml_mount("none", "/sys", "sysfs");
-    ml_mount("none", "/sys/kernel/debug", "debugfs");
+    ml_mount("none", "/proc", "proc", 0);
+    ml_mount("none", "/sys", "sysfs", 0);
+    ml_mount("none", "/sys/kernel/debug", "debugfs", 0);
 
     while (true) {
         sleep(10);

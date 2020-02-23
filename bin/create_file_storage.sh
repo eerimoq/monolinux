@@ -4,7 +4,7 @@ set -e
 
 DISK=$1
 DATA_DIR=$2
-LOOP_DEV=$(losetup -f)
+LOOP_DEV=$(sudo losetup -f)
 MOUNT_POINT=mldisk
 SIZE=10M
 

@@ -26,8 +26,6 @@ Features:
 
   - `curl`_ (HTTP, FTP, ...)
 
-  - `OpenSSL`_ (TLS, SSL, crypto, ...)
-
   - `mbedTLS`_ (TLS, SSL, crypto, ...)
 
   - `zlib`_
