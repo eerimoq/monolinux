@@ -9,6 +9,7 @@ $(PACKAGES)/$(MBEDTLS): $(ML_SOURCES)/$(MBEDTLS).tar.gz
 $(MBEDTLS)-all:
 	@echo "Building $(MBEDTLS)."
 	$(MAKE) $(MBEDTLS)-unpack
+	$(MAKE) $(MBEDTLS)-configure
 	$(MAKE) $(MBEDTLS)-build
 
 $(MBEDTLS)-clean:
@@ -23,9 +24,14 @@ $(MBEDTLS)-unpack:
 	cd $(PACKAGES) && \
 	tar xf $(ML_SOURCES)/$(MBEDTLS).tar.gz
 
+# Programs are not wanted.
+$(MBEDTLS)-configure:
+	sed -i "s|install: no_test|install:|g" $(PACKAGES)/$(MBEDTLS)/Makefile
+
 $(MBEDTLS)-build:
 	mkdir -p $(SYSROOT)
 	cd $(PACKAGES) && \
 	touch $(MBEDTLS) && \
 	cd $(MBEDTLS) && \
+	$(MAKE) lib CC=$(CROSS_COMPILE)gcc && \
 	$(MAKE) install DESTDIR=$(SYSROOT)

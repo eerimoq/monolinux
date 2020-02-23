@@ -28,6 +28,8 @@ Features:
 
   - `OpenSSL`_ (TLS, SSL, crypto, ...)
 
+  - `mbedTLS`_ (TLS, SSL, crypto, ...)
+
   - `zlib`_
 
   - `xz`_ (LZMA)
@@ -199,6 +201,8 @@ Sources can be found here: https://github.com/eerimoq/monolinux-sources
 .. _curl: https://curl.haxx.se/
 
 .. _OpenSSL: https://www.openssl.org/
+
+.. _mbedTLS: https://tls.mbed.org/
 
 .. _zlib: https://zlib.net/
 

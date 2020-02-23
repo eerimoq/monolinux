@@ -43,8 +43,7 @@
 #include <heatshrink_decoder.h>
 #include <lzma.h>
 #include <detools.h>
-#include <openssl/ssl.h>
-#include <openssl/aes.h>
+#include "async_main.h"
 #include "ml/ml.h"
 
 extern int command_lzma_compress(int argc, const char *argv[]);
@@ -285,13 +284,6 @@ static void detools_test(void)
     printf("=============== detools test end ===============\n\n");
 }
 
-static void openssl_test(void)
-{
-    printf("============== openssl test begin ==============\n");
-    printf("openssl AES options: '%s'\n", AES_options());
-    printf("=============== openssl test end ===============\n\n");
-}
-
 static void rtc_test(void)
 {
     struct tm tm;
@@ -340,7 +332,6 @@ int main()
     heatshrink_test();
     lzma_test();
     detools_test();
-    openssl_test();
     ml_network_interface_up("eth0");
     rtc_test();
 
@@ -357,9 +348,5 @@ int main()
     http_test();
     log_object_test();
 
-    while (1) {
-        sleep(10);
-    }
-
-    return (0);
+    return (async_main());
 }
