@@ -1,7 +1,5 @@
-BUILD = $(shell readlink -f build)
-PACKAGES = $(BUILD)/packages
 EXE = $(BUILD)/app
-LINUX_SRC = $(BUILD)/linux-$(ML_LINUX_VERSION)
+LINUX_SRC = $(BUILD)/linux
 BZIMAGE ?= $(LINUX_SRC)/arch/x86/boot/bzImage
 INITRAMFS = $(BUILD)/initramfs.cpio
 INITRAMFS_FILES ?=
@@ -10,10 +8,9 @@ CC = $(CROSS_COMPILE)gcc
 CFLAGS += -O2
 LDFLAGS += -static
 SYSROOT = $(BUILD)/root
-LINUX = linux-$(ML_LINUX_VERSION)
 QEMU_DISKS ?= # mldisk.img
 
-.PHONY: all unpack kernel initrd run build packages
+.PHONY: all unpack kernel initrd run build packages $(LINUX_SRC)
 
 all: build
 
@@ -30,35 +27,29 @@ run: build
 	    -nographic -append "console=ttyS0" \
 	    $(QEMU_DISKS:%=-drive format=raw,file=%)
 
-$(LINUX_SRC): $(ML_SOURCES)/$(LINUX).tar.xz
-	$(MAKE) $(LINUX)-all
+$(LINUX_SRC):
+	$(MAKE) linux-all
 
-$(LINUX)-all:
-	@echo "Building the Linux kernel."
-	$(MAKE) $(LINUX)-unpack
-	$(MAKE) $(LINUX)-configure
-	$(MAKE) $(LINUX)-build
+linux-all:
+	mkdir -p $(BUILD)
+	if [ -n "$$(rsync -ariOu $(ML_ROOT)/3pp/linux $(BUILD))" ] ; then \
+	    echo "Building the Linux kernel." ; \
+	    cd $(BUILD) && \
+	    cp $(ML_LINUX_CONFIG) $(LINUX_SRC)/.config && \
+	    $(MAKE) -C $(LINUX_SRC) ; \
+	fi
 
-$(LINUX)-clean:
+linux-clean:
 	rm -rf $(LINUX_SRC)
 
-$(ML_SOURCES)/$(LINUX).tar.xz:
-	mkdir -p $(dir $@)
-	wget -O $@ $(ML_LINUX_URL)
-
-$(LINUX)-unpack:
+linux-build:
+	echo "Building the Linux kernel."
 	mkdir -p $(BUILD)
-	cd $(BUILD) && \
-	tar xf $(ML_SOURCES)/$(LINUX).tar.xz
-
-$(LINUX)-configure:
-	cp $(ML_LINUX_CONFIG) $(LINUX_SRC)/.config
-
-$(LINUX)-build:
+	rsync -ariOu $(ML_ROOT)/3pp/linux $(BUILD) > /dev/null
 	$(MAKE) -C $(LINUX_SRC)
 
 $(INITRAMFS): $(EXE)
 	@echo "Creating the initramfs."
 	fakeroot $(ML_ROOT)/make/create_initramfs.sh $(BUILD) "$(INITRAMFS_FILES)"
 
-include $(ML_ROOT)/make/common.mk
+include $(ML_ROOT)/make/build.mk

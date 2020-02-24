@@ -1,51 +1,45 @@
 LIBS += curl
-CURL_TAR_XZ = $(ML_SOURCES)/curl-7.65.0.tar.xz
+LIBCURL = $(BUILD)/root/lib/libcurl.a
+
+.PHONY: $(PACKAGES)/curl
 
 packages: $(PACKAGES)/curl
 
-$(PACKAGES)/curl: $(PACKAGES)/mbedtls
-$(PACKAGES)/curl: $(PACKAGES)/zlib
-$(PACKAGES)/curl:
-	$(MAKE) curl-all
+$(PACKAGES)/curl: $(LIBCURL)
 
+$(LIBCURL): curl-all
+
+curl-all: $(PACKAGES)/mbedtls
+curl-all: $(PACKAGES)/zlib
 curl-all:
-	@echo "Building curl."
-	$(MAKE) curl-fetch
-	$(MAKE) curl-unpack
-	$(MAKE) curl-configure
-	$(MAKE) curl-build
+	mkdir -p $(PACKAGES)
+	if [ -n "$$(rsync -ariOu $(ML_ROOT)/3pp/curl $(PACKAGES))" ] ; then \
+	    echo "Building curl." ; \
+	    cd $(PACKAGES)/curl && \
+	    ./buildconf && \
+	    ./configure \
+		CFLAGS="-ffunction-sections -fdata-sections" \
+		CPPFLAGS="-I$(SYSROOT)/include" \
+		LDFLAGS="-L$(SYSROOT)/lib" \
+		--prefix=$(SYSROOT) \
+		--host=$(ML_AUTOTOOLS_HOST) --build=i586-pc-linux-gnu \
+		--without-ssl --with-mbedtls \
+		--with-zlib --disable-shared --disable-manual \
+		--disable-ftp --disable-ldap --disable-telnet --disable-dict \
+		--disable-file --disable-tftp --disable-imap --disable-pop3 \
+		--disable-smtp --disable-rtsp --disable-gopher \
+		--with-random=/dev/urandom && \
+	    $(MAKE) ; \
+	    $(MAKE) install ; \
+	fi
 
 curl-clean:
-	rm -rf $(PACKAGES)/curl
-
-curl-fetch: $(CURL_TAR_XZ)
-
-$(CURL_TAR_XZ):
-	mkdir -p $(dir $@)
-	wget -O $@ https://curl.haxx.se/download/curl-7.65.0.tar.xz
-
-curl-unpack:
-	mkdir -p $(PACKAGES)
-	cd $(PACKAGES) && \
-	tar xf $(CURL_TAR_XZ) && \
-	mv curl-7.65.0 curl
-
-curl-configure:
-	cd $(PACKAGES)/curl && \
-	./configure \
-	    CFLAGS="-ffunction-sections -fdata-sections" \
-	    CPPFLAGS="-I$(SYSROOT)/include" \
-	    LDFLAGS="-L$(SYSROOT)/lib" \
-	    --prefix=$(SYSROOT) \
-	    --host=$(ML_AUTOTOOLS_HOST) --build=i586-pc-linux-gnu \
-	    --without-ssl --with-mbedtls \
-	    --with-zlib --disable-shared --disable-manual \
-	    --disable-ftp --disable-ldap --disable-telnet --disable-dict \
-	    --disable-file --disable-tftp --disable-imap --disable-pop3 \
-	    --disable-smtp --disable-rtsp --disable-gopher \
-	    --with-random=/dev/urandom
+	rm -rf $(PACKAGES)/curl $(LIBCURL)
 
 curl-build:
+	echo "Building curl."
+	mkdir -p $(PACKAGES)
+	rsync -ariOu $(ML_ROOT)/3pp/curl $(PACKAGES)
 	cd $(PACKAGES)/curl && \
-	$(MAKE) && \
-	$(MAKE) install
+	    $(MAKE) ; \
+	    $(MAKE) install ; \

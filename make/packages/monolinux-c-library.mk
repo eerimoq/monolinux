@@ -1,36 +1,21 @@
 LIBS += ml
-ML_TAR_GZ = $(ML_SOURCES)/monolinux-c-library-0.7.0.tar.gz
+LIBML = $(BUILD)/root/lib/libml.a
 
-packages: $(PACKAGES)/ml
+packages: $(PACKAGES)/monolinux-c-library
 
-$(PACKAGES)/ml:
-	$(MAKE) ml-all
+$(PACKAGES)/monolinux-c-library: $(LIBML)
 
-ml-all:
-	@echo "Building ml."
-	$(MAKE) ml-fetch
-	$(MAKE) ml-unpack
-	$(MAKE) ml-build
+$(LIBML): monolinux-c-library-all
 
-ml-clean:
-	cd $(PACKAGES)/ml
+monolinux-c-library-all:
+	mkdir -p $(PACKAGES) $(SYSROOT)/lib
+	if [ -n "$$(rsync -ariOu $(ML_ROOT)/3pp/monolinux-c-library $(PACKAGES))" ] ; then \
+	    echo "Building monolinux-c-library." ; \
+	    $(MAKE) -C $(PACKAGES)/monolinux-c-library library \
+		CC=$(CROSS_COMPILE)gcc ML_ROOT=. ; \
+	    $(MAKE) -C $(PACKAGES)/monolinux-c-library install \
+		ML_ROOT=. PREFIX=$(SYSROOT) ; \
+	fi
 
-ml-fetch: $(ML_TAR_GZ)
-
-$(ML_TAR_GZ):
-	mkdir -p $(dir $@)
-	wget -O $@ https://github.com/eerimoq/monolinux-c-library/archive/0.7.0.tar.gz
-
-ml-unpack:
-	mkdir -p $(PACKAGES)
-	cd $(PACKAGES) && \
-	tar xf $(ML_TAR_GZ) && \
-	mv monolinux-c-library-0.7.0 ml
-
-ml-build:
-	mkdir -p $(SYSROOT)
-	cd $(PACKAGES) && \
-	touch ml && \
-	cd ml && \
-	$(MAKE) library CC=$(CROSS_COMPILE)gcc ML_ROOT=. && \
-	$(MAKE) install ML_ROOT=. PREFIX=$(SYSROOT)
+monolinux-c-library-clean:
+	rm -rf $(PACKAGES)/monolinux-c-library $(LIBML)

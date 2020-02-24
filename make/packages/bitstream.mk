@@ -1,36 +1,21 @@
 LIBS += bitstream
-BITSTREAM_TAR_GZ = $(ML_SOURCES)/bitstream-0.7.0.tar.gz
+LIBBITSTREAM = $(BUILD)/root/lib/libbitstream.a
+
+.PHONY: $(PACKAGES)/bitstream
 
 packages: $(PACKAGES)/bitstream
 
-$(PACKAGES)/bitstream:
-	$(MAKE) bitstream-all
+$(PACKAGES)/bitstream: $(LIBBITSTREAM)
+
+$(LIBBITSTREAM): bitstream-all
 
 bitstream-all:
-	@echo "Building bitstream."
-	$(MAKE) bitstream-fetch
-	$(MAKE) bitstream-unpack
-	$(MAKE) bitstream-build
+	mkdir -p $(PACKAGES) $(SYSROOT)/lib
+	if [ -n "$$(rsync -ariOu $(ML_ROOT)/3pp/bitstream $(PACKAGES))" ] ; then \
+	    echo "Building bitstream." ; \
+	    $(MAKE) -C $(PACKAGES)/bitstream library ; \
+	    $(MAKE) -C $(PACKAGES)/bitstream install PREFIX=$(SYSROOT) ; \
+	fi
 
 bitstream-clean:
-	cd $(PACKAGES)/bitstream
-
-bitstream-fetch: $(BITSTREAM_TAR_GZ)
-
-$(BITSTREAM_TAR_GZ):
-	mkdir -p $(dir $@)
-	wget -O $@ https://github.com/eerimoq/bitstream/archive/0.7.0.tar.gz
-
-bitstream-unpack:
-	mkdir -p $(PACKAGES)
-	cd $(PACKAGES) && \
-	tar xf $(BITSTREAM_TAR_GZ) && \
-	mv bitstream-0.7.0 bitstream
-
-bitstream-build:
-	mkdir -p $(SYSROOT)
-	cd $(PACKAGES) && \
-	touch bitstream && \
-	cd bitstream && \
-	$(MAKE) library && \
-	$(MAKE) install PREFIX=$(SYSROOT)
+	rm -rf $(PACKAGES)/bitstream $(LIBBITSTREAM)

@@ -1,38 +1,24 @@
 LIBS += detools
-DETOOLS_TAR_GZ = $(ML_SOURCES)/detools-0.45.0.tar.gz
+LIBDETOOLS = $(BUILD)/root/lib/libdetools.a
+
+.PHONY: $(PACKAGES)/detools
 
 packages: $(PACKAGES)/detools
 
-$(PACKAGES)/detools: $(PACKAGES)/xz
-$(PACKAGES)/detools: $(PACKAGES)/heatshrink
-$(PACKAGES)/detools:
-	$(MAKE) detools-all
+$(PACKAGES)/detools: $(LIBDETOOLS)
 
+$(LIBDETOOLS): detools-all
+
+detools-all: $(PACKAGES)/xz
+detools-all: $(PACKAGES)/heatshrink
 detools-all:
-	@echo "Building detools."
-	$(MAKE) detools-fetch
-	$(MAKE) detools-unpack
-	$(MAKE) detools-build
+	mkdir -p $(PACKAGES) $(SYSROOT)/lib
+	if [ -n "$$(rsync -ariOu $(ML_ROOT)/3pp/detools $(PACKAGES))" ] ; then \
+	    echo "Building detools." ; \
+	    $(MAKE) -C $(PACKAGES)/detools/src/c library \
+		CFLAGS_EXTRA=-I$(SYSROOT)/include ; \
+	    $(MAKE) -C $(PACKAGES)/detools/src/c install PREFIX=$(SYSROOT) ; \
+	fi
 
 detools-clean:
-	cd $(PACKAGES)/detools
-
-detools-fetch: $(DETOOLS_TAR_GZ)
-
-$(DETOOLS_TAR_GZ):
-	mkdir -p $(dir $@)
-	wget -O $@ https://github.com/eerimoq/detools/archive/0.45.0.tar.gz
-
-detools-unpack:
-	mkdir -p $(PACKAGES)
-	cd $(PACKAGES) && \
-	tar xf $(DETOOLS_TAR_GZ) && \
-	mv detools-0.45.0 detools
-
-detools-build:
-	mkdir -p $(SYSROOT)
-	cd $(PACKAGES) && \
-	touch detools && \
-	cd detools && \
-	$(MAKE) -C src/c library CFLAGS_EXTRA=-I$(SYSROOT)/include && \
-	$(MAKE) -C src/c install PREFIX=$(SYSROOT)
+	rm -rf $(PACKAGES)/detools $(LIBDETOOLS)

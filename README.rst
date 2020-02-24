@@ -182,11 +182,6 @@ Device tree.
 
    $ cat /sys/firmware/devicetree/base/...
 
-Sources
-=======
-
-Sources can be found here: https://github.com/eerimoq/monolinux-sources
-
 .. |buildstatus| image:: https://travis-ci.org/eerimoq/monolinux.svg
 .. _buildstatus: https://travis-ci.org/eerimoq/monolinux
 
