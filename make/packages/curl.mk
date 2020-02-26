@@ -14,7 +14,7 @@ curl-all: $(PACKAGES)/zlib
 curl-all:
 	mkdir -p $(PACKAGES)
 	if [ -n "$$(rsync -ariOu $(ML_ROOT)/3pp/curl $(PACKAGES))" ] ; then \
-	    echo "Building curl." ; \
+	    echo "Building curl." && \
 	    cd $(PACKAGES)/curl && \
 	    ./buildconf && \
 	    ./configure \

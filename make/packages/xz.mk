@@ -12,7 +12,7 @@ $(LIBXZ): xz-all
 xz-all:
 	mkdir -p $(PACKAGES)
 	if [ -n "$$(rsync -ariOu $(ML_ROOT)/3pp/xz $(PACKAGES))" ] ; then \
-	    echo "Building xz." ; \
+	    echo "Building xz." && \
 	    cd $(PACKAGES)/xz && \
 	    ./autogen.sh && \
 	    ./configure \

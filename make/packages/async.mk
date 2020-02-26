@@ -16,9 +16,9 @@ async-all: $(PACKAGES)/mbedtls
 async-all:
 	mkdir -p $(PACKAGES) $(SYSROOT)/lib
 	if [ -n "$$(rsync -ariOu $(ML_ROOT)/3pp/async $(PACKAGES))" ] ; then \
-	    echo "Building async." ; \
+	    echo "Building async." && \
 	    $(MAKE) -C $(PACKAGES)/async library \
-		ASYNC_ROOT=. CFLAGS_EXTRA=-I$(SYSROOT)/include ; \
+		ASYNC_ROOT=. CFLAGS_EXTRA=-I$(SYSROOT)/include && \
 	    $(MAKE) -C $(PACKAGES)/async install PREFIX=$(SYSROOT) ; \
 	fi
 

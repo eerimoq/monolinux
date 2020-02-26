@@ -12,7 +12,7 @@ $(LIBZLIB): zlib-all
 zlib-all:
 	mkdir -p $(PACKAGES)
 	if [ -n "$$(rsync -ariOu $(ML_ROOT)/3pp/zlib $(PACKAGES))" ] ; then \
-	    echo "Building zlib." ; \
+	    echo "Building zlib." && \
 	    cd $(PACKAGES)/zlib && \
 	    CHOST=$(ML_AUTOTOOLS_HOST) ./configure \
 		--prefix=$(SYSROOT) --static && \

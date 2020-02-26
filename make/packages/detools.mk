@@ -14,9 +14,9 @@ detools-all: $(PACKAGES)/heatshrink
 detools-all:
 	mkdir -p $(PACKAGES) $(SYSROOT)/lib
 	if [ -n "$$(rsync -ariOu $(ML_ROOT)/3pp/detools $(PACKAGES))" ] ; then \
-	    echo "Building detools." ; \
+	    echo "Building detools." && \
 	    $(MAKE) -C $(PACKAGES)/detools/src/c library \
-		CFLAGS_EXTRA=-I$(SYSROOT)/include ; \
+		CFLAGS_EXTRA=-I$(SYSROOT)/include && \
 	    $(MAKE) -C $(PACKAGES)/detools/src/c install PREFIX=$(SYSROOT) ; \
 	fi
 

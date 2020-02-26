@@ -163,8 +163,9 @@ static void init(void)
     ml_mknod("/dev/sdb1", S_IFBLK | 0666, makedev(8, 16));
     ml_mknod("/dev/sdc1", S_IFBLK | 0666, makedev(8, 32));
     ml_mknod("/dev/mapper/control", S_IFCHR | 0666, makedev(10, 236));
+    ml_mknod("/dev/urandom", S_IFCHR | 0644, makedev(1, 9));
 
-    ml_device_mapper_create(
+    ml_device_mapper_verity_create(
         "erik",
         "00000000-1111-2222-3333-444444444444",
         "/dev/sdb1",
@@ -311,6 +312,15 @@ static void http_test(void)
     printf("================= http test end ================\n\n");
 }
 
+static void ntp_client_test(void)
+{
+    printf("================ ntp client test begin ===============\n");
+    ml_log_set_mask(ML_LOG_UPTO(DEBUG));
+    ml_ntp_client_sync("0.se.pool.ntp.org");
+    ml_log_set_mask(ML_LOG_UPTO(INFO));
+    printf("================= ntp client test end ================\n\n");
+}
+
 static void log_object_test(void)
 {
     struct ml_log_object_t log_object;
@@ -346,6 +356,7 @@ int main()
 #endif
 
     http_test();
+    ntp_client_test();
     log_object_test();
 
     return (async_main());

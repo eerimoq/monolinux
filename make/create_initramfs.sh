@@ -9,7 +9,7 @@ rm -rf $BUILD/initramfs
 mkdir -p $BUILD/initramfs
 cd $BUILD/initramfs
 mkdir -p {dev/mapper,etc,mnt/disk1,mnt/disk2,proc,root,sys/kernel/debug}
-cp -a /dev/{null,console,tty,urandom,kmsg} dev
+cp -a /dev/{null,console,tty,kmsg} dev
 cp $BUILD/app init
 chmod +x init
 echo "nameserver 8.8.4.4" > etc/resolv.conf
