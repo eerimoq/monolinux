@@ -29,8 +29,9 @@ curl-all:
 		--disable-file --disable-tftp --disable-imap --disable-pop3 \
 		--disable-smtp --disable-rtsp --disable-gopher \
 		--with-random=/dev/urandom && \
-	    $(MAKE) ; \
-	    $(MAKE) install ; \
+	    $(MAKE) -C lib && \
+	    $(MAKE) -C lib install && \
+	    $(MAKE) -C include install ; \
 	fi
 
 curl-clean:
@@ -41,5 +42,6 @@ curl-build:
 	mkdir -p $(PACKAGES)
 	rsync -ariOu $(ML_ROOT)/3pp/curl $(PACKAGES)
 	cd $(PACKAGES)/curl && \
-	    $(MAKE) ; \
-	    $(MAKE) install ; \
+	    $(MAKE) -C lib && \
+	    $(MAKE) -C lib install && \
+	    $(MAKE) -C include install

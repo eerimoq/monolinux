@@ -8,7 +8,6 @@ QEMU_DISK = build/mldisk.img
 QEMU_DISKS += $(QEMU_DISK)
 QEMU_DISKS += disk2/fs.img
 QEMU_DISKS += disk2/table.img
-CLEAN = $(QEMU_DISK)
 
 default: $(QEMU_DISK)
 	$(MAKE) all
