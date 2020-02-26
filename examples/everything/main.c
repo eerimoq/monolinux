@@ -314,10 +314,15 @@ static void http_test(void)
 
 static void ntp_client_test(void)
 {
+    int res;
+
     printf("================ ntp client test begin ===============\n");
-    ml_log_set_mask(ML_LOG_UPTO(DEBUG));
-    ml_ntp_client_sync("0.se.pool.ntp.org");
-    ml_log_set_mask(ML_LOG_UPTO(INFO));
+    res = ml_ntp_client_sync("0.se.pool.ntp.org");
+
+    if (res != 0) {
+        printf("NTP client failed!\n");
+    }
+
     printf("================= ntp client test end ================\n\n");
 }
 
