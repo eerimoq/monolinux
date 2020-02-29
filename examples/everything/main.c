@@ -116,8 +116,6 @@ static void http_get(const char *url_p)
 
         curl_easy_cleanup(curl_p);
     }
-
-    curl_global_cleanup();
 }
 
 static void http_get_main(void *arg_p)
