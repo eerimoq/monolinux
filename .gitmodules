@@ -30,4 +30,4 @@
 	url = https://github.com/madler/zlib.git
 [submodule "3pp/linux"]
 	path = 3pp/linux
-	url = https://kernel.googlesource.com/pub/scm/linux/kernel/git/stable/linux-stable
+	url = https://github.com/gregkh/linux.git
