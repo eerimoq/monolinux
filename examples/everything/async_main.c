@@ -28,6 +28,7 @@
 
 #include <stdarg.h>
 #include <async.h>
+#include "async/runtimes/monolinux.h"
 #include "async_main.h"
 #include "publisher.h"
 
@@ -78,7 +79,7 @@ int async_main()
     async_ssl_module_init();
     async_init(&async);
     /* async_set_log_object_callbacks(&async, log_stdout, NULL); */
-    async_set_runtime(&async, async_runtime_create());
+    async_set_runtime(&async, async_runtime_monolinux_create());
     publisher_init(&publishers[0],
                    "tcp",
                    1883,
