@@ -11,7 +11,7 @@ $(LIBBITSTREAM): bitstream-all
 
 bitstream-all:
 	mkdir -p $(PACKAGES) $(SYSROOT)/lib
-	if [ -n "$$(rsync -ariOu $(ML_ROOT)/3pp/bitstream $(PACKAGES))" ] ; then \
+	if [ -n "$$(rsync -ariOu $(ML_SOURCES)/bitstream $(PACKAGES))" ] ; then \
 	    echo "Building bitstream." && \
 	    $(MAKE) -C $(PACKAGES)/bitstream library && \
 	    $(MAKE) -C $(PACKAGES)/bitstream install PREFIX=$(SYSROOT) ; \

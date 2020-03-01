@@ -45,19 +45,6 @@ Two projects using Monolinux:
 
 - `Monolinux Jiffy`_.
 
-File tree
-=========
-
-This is the file tree of the Monolinux repository.
-
-.. code-block:: text
-
-   monolinux/                   - this repository
-   ├── bin/                     - executables
-   ├── LICENSE                  - license
-   └── make/                    - build system
-       └── packages/            - packages build specifications
-
 Tips and tricks
 ===============
 

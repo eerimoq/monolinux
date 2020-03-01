@@ -15,7 +15,7 @@ async-all: $(PACKAGES)/monolinux-c-library
 async-all: $(PACKAGES)/mbedtls
 async-all:
 	mkdir -p $(PACKAGES) $(SYSROOT)/lib
-	if [ -n "$$(rsync -ariOu $(ML_ROOT)/3pp/async $(PACKAGES))" ] ; then \
+	if [ -n "$$(rsync -ariOu $(ML_SOURCES)/async $(PACKAGES))" ] ; then \
 	    echo "Building async." && \
 	    $(MAKE) -C $(PACKAGES)/async library \
 		ASYNC_ROOT=. CFLAGS_EXTRA=-I$(SYSROOT)/include && \

@@ -11,7 +11,7 @@ $(LIBXZ): xz-all
 
 xz-all:
 	mkdir -p $(PACKAGES)
-	if [ -n "$$(rsync -ariOu $(ML_ROOT)/3pp/xz $(PACKAGES))" ] ; then \
+	if [ -n "$$(rsync -ariOu $(ML_SOURCES)/xz $(PACKAGES))" ] ; then \
 	    echo "Building xz." && \
 	    cd $(PACKAGES)/xz && \
 	    ./autogen.sh && \
@@ -32,7 +32,7 @@ xz-clean:
 xz-build:
 	echo "Building xz."
 	mkdir -p $(PACKAGES)
-	rsync -ariOu $(ML_ROOT)/3pp/xz $(PACKAGES)
+	rsync -ariOu $(ML_SOURCES)/xz $(PACKAGES)
 	cd $(PACKAGES)/xz && \
 	$(MAKE) && \
 	$(MAKE) install

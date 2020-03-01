@@ -9,7 +9,7 @@ $(LIBHF): humanfriendly-all
 
 humanfriendly-all:
 	mkdir -p $(PACKAGES) $(SYSROOT)/lib
-	if [ -n "$$(rsync -ariOu $(ML_ROOT)/3pp/humanfriendly $(PACKAGES))" ] ; then \
+	if [ -n "$$(rsync -ariOu $(ML_SOURCES)/humanfriendly $(PACKAGES))" ] ; then \
 	    echo "Building humanfriendly." && \
 	    $(MAKE) -C $(PACKAGES)/humanfriendly library && \
 	    $(MAKE) -C $(PACKAGES)/humanfriendly install PREFIX=$(SYSROOT) ; \
