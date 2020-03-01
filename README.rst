@@ -112,9 +112,9 @@ User project file tree after build.
    │   │   ├── app                  - the one and only executable
    │   │   ├── initramfs/           - unpacked ramfs
    │   │   ├── initramfs.cpio       - packed ramfs
-   │   │   ├── linux-5.1.3/         - Linux source and build output
+   │   │   ├── linux/               - Linux source and build output
    │   │   ├── packages/            - packages source and objects
-   │   │   │   └── curl-7.65.0/
+   │   │   │   └── curl/
    │   │   └── root/                - headers and libraries container
    │   │       ├── bin/
    │   │       ├── include/         - include files
