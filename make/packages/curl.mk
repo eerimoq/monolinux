@@ -13,7 +13,7 @@ curl-all: $(PACKAGES)/mbedtls
 curl-all: $(PACKAGES)/zlib
 curl-all:
 	mkdir -p $(PACKAGES)
-	if [ -n "$$(rsync -ariOu $(ML_ROOT)/3pp/curl $(PACKAGES))" ] ; then \
+	if [ -n "$$(rsync -ariOu $(ML_SOURCES)/curl $(PACKAGES))" ] ; then \
 	    echo "Building curl." && \
 	    cd $(PACKAGES)/curl && \
 	    ./buildconf && \
@@ -40,7 +40,7 @@ curl-clean:
 curl-build:
 	echo "Building curl."
 	mkdir -p $(PACKAGES)
-	rsync -ariOu $(ML_ROOT)/3pp/curl $(PACKAGES)
+	rsync -ariOu $(ML_SOURCES)/curl $(PACKAGES)
 	cd $(PACKAGES)/curl && \
 	    $(MAKE) -C lib && \
 	    $(MAKE) -C lib install && \

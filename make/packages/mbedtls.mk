@@ -13,7 +13,7 @@ $(LIBMBEDTLS): mbedtls-all
 
 mbedtls-all:
 	mkdir -p $(PACKAGES) $(SYSROOT)/lib
-	if [ -n "$$(rsync -ariOu $(ML_ROOT)/3pp/mbedtls $(PACKAGES))" ] ; then \
+	if [ -n "$$(rsync -ariOu $(ML_SOURCES)/mbedtls $(PACKAGES))" ] ; then \
 	    echo "Building mbedtls." && \
 	    sed -i "s|install: no_test|install:|g" $(PACKAGES)/mbedtls/Makefile && \
 	    $(MAKE) -C $(PACKAGES)/mbedtls lib CC=$(CROSS_COMPILE)gcc && \

@@ -11,7 +11,7 @@ $(LIBZLIB): zlib-all
 
 zlib-all:
 	mkdir -p $(PACKAGES)
-	if [ -n "$$(rsync -ariOu $(ML_ROOT)/3pp/zlib $(PACKAGES))" ] ; then \
+	if [ -n "$$(rsync -ariOu $(ML_SOURCES)/zlib $(PACKAGES))" ] ; then \
 	    echo "Building zlib." && \
 	    cd $(PACKAGES)/zlib && \
 	    CHOST=$(ML_AUTOTOOLS_HOST) ./configure \
@@ -26,7 +26,7 @@ zlib-clean:
 zlib-build:
 	echo "Building zlib."
 	mkdir -p $(PACKAGES)
-	rsync -ariOu $(ML_ROOT)/3pp/zlib $(PACKAGES)
+	rsync -ariOu $(ML_SOURCES)/zlib $(PACKAGES)
 	cd $(PACKAGES)/zlib && \
 	$(MAKE) && \
 	$(MAKE) install

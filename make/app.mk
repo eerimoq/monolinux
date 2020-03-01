@@ -32,9 +32,8 @@ $(LINUX_SRC):
 
 linux-all:
 	mkdir -p $(BUILD)
-	if [ -n "$$(rsync -ariOu $(ML_ROOT)/3pp/linux $(BUILD))" ] ; then \
+	if [ -n "$$(rsync -ariOu $(ML_SOURCES)/linux $(BUILD))" ] ; then \
 	    echo "Building the Linux kernel." ; \
-	    cd $(BUILD) && \
 	    cp $(ML_LINUX_CONFIG) $(LINUX_SRC)/.config && \
 	    $(MAKE) -C $(LINUX_SRC) ; \
 	fi
@@ -45,7 +44,7 @@ linux-clean:
 linux-build:
 	echo "Building the Linux kernel."
 	mkdir -p $(BUILD)
-	rsync -ariOu $(ML_ROOT)/3pp/linux $(BUILD) > /dev/null
+	rsync -ariOu $(ML_SOURCES)/linux $(BUILD) > /dev/null
 	$(MAKE) -C $(LINUX_SRC)
 
 $(INITRAMFS): $(EXE)
