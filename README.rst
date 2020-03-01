@@ -1,5 +1,3 @@
-|buildstatus|_
-
 Monolinux
 =========
 
@@ -38,36 +36,14 @@ ToDo:
 
 - ...
 
-Build and run
-=============
+Example projects
+================
 
-Install all prerequisites:
+Two projects using Monolinux:
 
-.. code-block:: shell
+- `An Monolinux example project`_.
 
-   $ sudo apt install curl qemu-system-x86 flex bison libelf-dev
-   $ wget https://musl.cc/x86_64-linux-musl-cross.tgz
-   $ tar xf x86_64-linux-musl-cross.tgz
-
-Source the development environment setup script.
-
-.. code-block:: shell
-
-   $ source setup.sh
-
-Run the commands below to create a file system, build the Linux kernel
-and run everything in QEMU.
-
-.. code-block:: shell
-
-   $ make -C examples/hello_world run
-   ...
-   Hello world!
-   Hello world!
-   Hello world!
-   ...
-
-Exit QEMU with Ctrl-A C and then q <Enter>.
+- `Monolinux Jiffy`_.
 
 File tree
 =========
@@ -78,70 +54,9 @@ This is the file tree of the Monolinux repository.
 
    monolinux/                   - this repository
    ├── bin/                     - executables
-   ├── configs/                 - a few Linux kernel configs
-   ├── examples/                - example applications
    ├── LICENSE                  - license
-   ├── make/                    - build system
-   │   └── packages/            - packages build specifications
-   ├── ml/                      - the Monolinux C library
-   └── setup.sh                 - development environment setup script
-
-User project file tree before build. These files are normally under
-version control.
-
-See `Monolinux Jiffy`_ for a real example project.
-
-.. code-block:: text
-
-   my-project/                  - my Monolinux project
-   ├── app/
-   │   ├── main.c               - application entry point
-   │   └── Makefile             - project makefile
-   ├── Makefile                 - top level makefile
-   ├── monolinux/               - Monolinux
-   ├── README.rst               - readme
-   └── setup.sh                 - environment setup script
-
-User project file tree after build.
-
-.. code-block:: text
-
-   my-project/
-   ├── app/
-   │   ├── build/                   - all build output
-   │   │   ├── app                  - the one and only executable
-   │   │   ├── initramfs/           - unpacked ramfs
-   │   │   ├── initramfs.cpio       - packed ramfs
-   │   │   ├── linux/               - Linux source and build output
-   │   │   ├── packages/            - packages source and objects
-   │   │   │   └── curl/
-   │   │   └── root/                - headers and libraries container
-   │   │       ├── bin/
-   │   │       ├── include/         - include files
-   │   │       │   └── curl/
-   │   │       │       └── curl.h
-   │   │       ├── lib/             - static libraries
-   │   │       │   └── libcurl.a
-   │   │       └── share/
-   │   ├── main.c
-   │   └── Makefile
-   ├── Makefile
-   ├── monolinux/
-   ├── README.rst
-   └── setup.sh
-
-Configuration
-=============
-
-In general, just modify any files in this repository to match your
-project's needs.
-
-There are a few environment variables exported in ``setup.sh``.
-
-Cross compilation
-=================
-
-See `Monolinux Jiffy`_ for an example project.
+   └── make/                    - build system
+       └── packages/            - packages build specifications
 
 Tips and tricks
 ===============
@@ -182,11 +97,6 @@ Device tree.
 
    $ cat /sys/firmware/devicetree/base/...
 
-.. |buildstatus| image:: https://travis-ci.org/eerimoq/monolinux.svg
-.. _buildstatus: https://travis-ci.org/eerimoq/monolinux
-
-.. _Monolinux Jiffy: https://github.com/eerimoq/monolinux-jiffy
-
 .. _Linux kernel: https://www.kernel.org/
 
 .. _ml: https://github.com/eerimoq/monolinux-c-library
@@ -202,3 +112,7 @@ Device tree.
 .. _xz: https://tukaani.org/xz/
 
 .. _detools: https://github.com/eerimoq/detools
+
+.. _An Monolinux example project: https://github.com/eerimoq/monolinux-example-project
+
+.. _Monolinux Jiffy: https://github.com/eerimoq/monolinux-jiffy
