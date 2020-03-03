@@ -1,21 +1,29 @@
 LIBS += bitstream
 LIBBITSTREAM = $(BUILD)/root/lib/libbitstream.a
 
-.PHONY: $(PACKAGES)/bitstream
+packages-rsync: bitstream-rsync
 
-packages: $(PACKAGES)/bitstream
-
-$(PACKAGES)/bitstream: $(LIBBITSTREAM)
-
-$(LIBBITSTREAM): bitstream-all
+packages-build: bitstream-build
 
 bitstream-all:
-	mkdir -p $(PACKAGES) $(SYSROOT)/lib
+	$(MAKE) bitstream-rsync
+	$(MAKE) bitstream-build
+
+bitstream-build: $(BITSTREAM_BUILD)
+
+bitstream-rsync:
+	mkdir -p $(PACKAGES)
 	if [ -n "$$(rsync -ariOu $(ML_SOURCES)/bitstream $(PACKAGES))" ] ; then \
-	    echo "Building bitstream." && \
-	    $(MAKE) -C $(PACKAGES)/bitstream library && \
-	    $(MAKE) -C $(PACKAGES)/bitstream install PREFIX=$(SYSROOT) ; \
+	    echo "bitstream sources updated." && \
+	    touch $(BITSTREAM_RSYNC) ; \
 	fi
+
+$(BITSTREAM_BUILD): $(BITSTREAM_RSYNC)
+	echo "Building bitstream."
+	mkdir -p $(SYSROOT)/lib
+	$(MAKE) -C $(PACKAGES)/bitstream library
+	$(MAKE) -C $(PACKAGES)/bitstream install PREFIX=$(SYSROOT)
+	touch $@
 
 bitstream-clean:
 	rm -rf $(PACKAGES)/bitstream $(LIBBITSTREAM)

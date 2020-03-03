@@ -15,9 +15,18 @@ QEMU_DISKS ?= # mldisk.img
 all: build
 
 packages:
+	$(MAKE) packages-rsync
+	$(MAKE) packages-build
+
+packages-rsync:
+
+packages-build:
+
+packages-clean:
+	rm -rf $(BUILD)/packages $(BUILD)/root
 
 build:
-	$(MAKE) $(LINUX_SRC) packages
+	$(MAKE) linux-all packages
 	$(MAKE) $(INITRAMFS)
 
 run: build
@@ -26,9 +35,6 @@ run: build
 	    -initrd $(INITRAMFS) \
 	    -nographic -append "console=ttyS0" \
 	    $(QEMU_DISKS:%=-drive format=raw,file=%)
-
-$(LINUX_SRC):
-	$(MAKE) linux-all
 
 linux-all:
 	mkdir -p $(BUILD)
@@ -45,6 +51,7 @@ linux-build:
 	echo "Building the Linux kernel."
 	mkdir -p $(BUILD)
 	rsync -ariOu $(ML_SOURCES)/linux $(BUILD) > /dev/null
+	cp $(ML_LINUX_CONFIG) $(LINUX_SRC)/.config
 	$(MAKE) -C $(LINUX_SRC)
 
 $(INITRAMFS): $(EXE)

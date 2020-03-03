@@ -1,23 +1,30 @@
 LIBS += curl
 LIBCURL = $(BUILD)/root/lib/libcurl.a
 
-.PHONY: $(PACKAGES)/curl
+packages-rsync: curl-rsync
 
-packages: $(PACKAGES)/curl
+packages-build: curl-build
 
-$(PACKAGES)/curl: $(LIBCURL)
-
-$(LIBCURL): curl-all
-
-curl-all: $(PACKAGES)/mbedtls
-curl-all: $(PACKAGES)/zlib
 curl-all:
+	$(MAKE) curl-rsync
+	$(MAKE) curl-build
+
+curl-build: $(CURL_BUILD)
+
+curl-rsync:
 	mkdir -p $(PACKAGES)
 	if [ -n "$$(rsync -ariOu $(ML_SOURCES)/curl $(PACKAGES))" ] ; then \
-	    echo "Building curl." && \
-	    cd $(PACKAGES)/curl && \
-	    ./buildconf && \
-	    ./configure \
+	    echo "curl sources updated." && \
+	    touch $(CURL_RSYNC) ; \
+	fi
+
+$(CURL_BUILD): $(MBEDTLS_BUILD)
+$(CURL_BUILD): $(ZLIB_BUILD)
+$(CURL_BUILD): $(CURL_RSYNC)
+	echo "Building curl."
+	cd $(PACKAGES)/curl && \
+	./buildconf && \
+	./configure \
 		CFLAGS="-ffunction-sections -fdata-sections" \
 		CPPFLAGS="-I$(SYSROOT)/include" \
 		LDFLAGS="-L$(SYSROOT)/lib" \
@@ -28,20 +35,11 @@ curl-all:
 		--disable-ftp --disable-ldap --disable-telnet --disable-dict \
 		--disable-file --disable-tftp --disable-imap --disable-pop3 \
 		--disable-smtp --disable-rtsp --disable-gopher \
-		--with-random=/dev/urandom && \
-	    $(MAKE) -C lib && \
-	    $(MAKE) -C lib install && \
-	    $(MAKE) -C include install ; \
-	fi
+		--with-random=/dev/urandom
+	$(MAKE) -C $(PACKAGES)/curl/lib
+	$(MAKE) -C $(PACKAGES)/curl/lib install
+	$(MAKE) -C $(PACKAGES)/curl/include install
+	touch $@
 
 curl-clean:
 	rm -rf $(PACKAGES)/curl $(LIBCURL)
-
-curl-build:
-	echo "Building curl."
-	mkdir -p $(PACKAGES)
-	rsync -ariOu $(ML_SOURCES)/curl $(PACKAGES)
-	cd $(PACKAGES)/curl && \
-	    $(MAKE) -C lib && \
-	    $(MAKE) -C lib install && \
-	    $(MAKE) -C include install

@@ -1,24 +1,32 @@
 LIBS += detools
 LIBDETOOLS = $(BUILD)/root/lib/libdetools.a
 
-.PHONY: $(PACKAGES)/detools
+packages-rsync: detools-rsync
 
-packages: $(PACKAGES)/detools
+packages-build: detools-build
 
-$(PACKAGES)/detools: $(LIBDETOOLS)
-
-$(LIBDETOOLS): detools-all
-
-detools-all: $(PACKAGES)/xz
-detools-all: $(PACKAGES)/heatshrink
 detools-all:
-	mkdir -p $(PACKAGES) $(SYSROOT)/lib
+	$(MAKE) detools-rsync
+	$(MAKE) detools-build
+
+detools-build: $(DETOOLS_BUILD)
+
+detools-rsync:
+	mkdir -p $(PACKAGES)
 	if [ -n "$$(rsync -ariOu $(ML_SOURCES)/detools $(PACKAGES))" ] ; then \
-	    echo "Building detools." && \
-	    $(MAKE) -C $(PACKAGES)/detools/src/c library \
-		CFLAGS_EXTRA=-I$(SYSROOT)/include && \
-	    $(MAKE) -C $(PACKAGES)/detools/src/c install PREFIX=$(SYSROOT) ; \
+	    echo "detools sources updated." && \
+	    touch $(DETOOLS_RSYNC) ; \
 	fi
+
+$(DETOOLS_BUILD): $(XZ_BUILD)
+$(DETOOLS_BUILD): $(HEATSHRINK_BUILD)
+$(DETOOLS_BUILD): $(DETOOLS_RSYNC)
+	echo "Building detools."
+	mkdir -p $(SYSROOT)/lib
+	$(MAKE) -C $(PACKAGES)/detools/src/c library \
+	    CFLAGS_EXTRA=-I$(SYSROOT)/include
+	$(MAKE) -C $(PACKAGES)/detools/src/c install PREFIX=$(SYSROOT)
+	touch $@
 
 detools-clean:
 	rm -rf $(PACKAGES)/detools $(LIBDETOOLS)
