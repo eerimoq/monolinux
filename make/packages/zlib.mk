@@ -1,22 +1,7 @@
 LIBS += z
 LIBZLIB = $(BUILD)/root/lib/libz.a
 
-packages-rsync: zlib-rsync
-
-packages-build: zlib-build
-
-zlib-all:
-	$(MAKE) zlib-rsync
-	$(MAKE) zlib-build
-
-zlib-build: $(ZLIB_BUILD)
-
-zlib-rsync:
-	mkdir -p $(PACKAGES)
-	if [ -n "$$(rsync -ariOu $(ML_SOURCES)/zlib $(PACKAGES))" ] ; then \
-	    echo "zlib sources updated." && \
-	    touch $(ZLIB_RSYNC) ; \
-	fi
+$(eval $(call PACKAGE_template,zlib,$(ZLIB_RSYNC),$(ZLIB_BUILD),$(LIBZLIB)))
 
 $(ZLIB_BUILD): $(ZLIB_RSYNC)
 	echo "Building zlib."
@@ -25,6 +10,3 @@ $(ZLIB_BUILD): $(ZLIB_RSYNC)
 	$(MAKE) -C $(PACKAGES)/zlib
 	$(MAKE) -C $(PACKAGES)/zlib install
 	touch $@
-
-zlib-clean:
-	rm -rf $(PACKAGES)/zlib $(LIBZLIB)

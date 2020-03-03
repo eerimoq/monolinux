@@ -1,22 +1,7 @@
 LIBS += lzma
 LIBXZ = $(BUILD)/root/lib/liblzma.a
 
-packages-rsync: xz-rsync
-
-packages-build: xz-build
-
-xz-all:
-	$(MAKE) xz-rsync
-	$(MAKE) xz-build
-
-xz-build: $(XZ_BUILD)
-
-xz-rsync:
-	mkdir -p $(PACKAGES)
-	if [ -n "$$(rsync -ariOu $(ML_SOURCES)/xz $(PACKAGES))" ] ; then \
-	    echo "xz sources updated." && \
-	    touch $(XZ_RSYNC) ; \
-	fi
+$(eval $(call PACKAGE_template,xz,$(XZ_RSYNC),$(XZ_BUILD),$(LIBXZ)))
 
 $(XZ_BUILD): $(XZ_RSYNC)
 	echo "Building xz."
@@ -33,6 +18,3 @@ $(XZ_BUILD): $(XZ_RSYNC)
 	$(MAKE) -C $(PACKAGES)/xz
 	$(MAKE) -C $(PACKAGES)/xz install
 	touch $@
-
-xz-clean:
-	rm -rf $(PACKAGES)/xz $(LIBXZ)

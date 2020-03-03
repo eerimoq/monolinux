@@ -18,3 +18,25 @@ XZ_RSYNC = $(BUILD)/packages/xz/monolinux.rsync
 XZ_BUILD = $(BUILD)/packages/xz/monolinux.build
 ZLIB_RSYNC = $(BUILD)/packages/zlib/monolinux.rsync
 ZLIB_BUILD = $(BUILD)/packages/zlib/monolinux.build
+
+define PACKAGE_template
+packages-rsync: $1-rsync
+
+packages-build: $1-build
+
+$1-all:
+	$$(MAKE) $1-rsync
+	$$(MAKE) $1-build
+
+$1-build: $3
+
+$1-rsync:
+	mkdir -p $$(PACKAGES)
+	if [ -n "$$$$(rsync -ariOu $$(ML_SOURCES)/$1 $$(PACKAGES))" ] ; then \
+	    echo "$1 sources updated" && \
+	    touch $2 ; \
+	fi
+
+$1-clean:
+	rm -rf $$(PACKAGES)/$1 $4
+endef

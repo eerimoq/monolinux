@@ -1,22 +1,7 @@
 LIBS += curl
 LIBCURL = $(BUILD)/root/lib/libcurl.a
 
-packages-rsync: curl-rsync
-
-packages-build: curl-build
-
-curl-all:
-	$(MAKE) curl-rsync
-	$(MAKE) curl-build
-
-curl-build: $(CURL_BUILD)
-
-curl-rsync:
-	mkdir -p $(PACKAGES)
-	if [ -n "$$(rsync -ariOu $(ML_SOURCES)/curl $(PACKAGES))" ] ; then \
-	    echo "curl sources updated." && \
-	    touch $(CURL_RSYNC) ; \
-	fi
+$(eval $(call PACKAGE_template,curl,$(CURL_RSYNC),$(CURL_BUILD),$(LIBCURL)))
 
 $(CURL_BUILD): $(MBEDTLS_BUILD)
 $(CURL_BUILD): $(ZLIB_BUILD)
@@ -40,6 +25,3 @@ $(CURL_BUILD): $(CURL_RSYNC)
 	$(MAKE) -C $(PACKAGES)/curl/lib install
 	$(MAKE) -C $(PACKAGES)/curl/include install
 	touch $@
-
-curl-clean:
-	rm -rf $(PACKAGES)/curl $(LIBCURL)
