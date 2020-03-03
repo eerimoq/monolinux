@@ -36,27 +36,31 @@ ToDo:
 
 - ...
 
-Example projects
-================
+Creating a project
+==================
 
-Two projects using Monolinux:
-
-- `An Monolinux example project`_.
-
-- `Monolinux Jiffy`_.
-
-File tree
-=========
-
-This is the file tree of the Monolinux repository.
+A minimal Monolinux project's file tree looks like below. Add needed
+libraries to the `3pp`.
 
 .. code-block:: text
 
-   monolinux/                   - this repository
-   ├── bin/                     - executables
-   ├── LICENSE                  - license
-   └── make/                    - build system
-       └── packages/            - packages build specifications
+   my-project/
+   ├── 3pp/
+   │   ├── arm-linux-musleabi-cross.tgz  - a toolchain (if needed)
+   │   ├── linux/                        - the linux kernel
+   │   └── monolinux/                    - this repository as a submodule
+   ├── app/                              - your application
+   │   ├── main.c
+   │   └── Makefile
+   ├── LICENSE
+   ├── Makefile
+   └── setup.sh                          - development environment setup script
+
+Here are two example projects:
+
+- `An Monolinux example project`_
+
+- `Monolinux Jiffy`_
 
 Tips and tricks
 ===============
@@ -102,8 +106,6 @@ Device tree.
 .. _ml: https://github.com/eerimoq/monolinux-c-library
 
 .. _curl: https://curl.haxx.se/
-
-.. _OpenSSL: https://www.openssl.org/
 
 .. _mbedTLS: https://tls.mbed.org/
 
