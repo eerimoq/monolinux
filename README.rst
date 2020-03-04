@@ -20,27 +20,31 @@ Features:
 
 - Libraries to statically link with your application.
 
-  - `ml`_ (the Monolinux C library)
+  - `async`_ (asynchronous framework)
+
+  - `bitstream`_
 
   - `curl`_ (HTTP, FTP, ...)
 
+  - `detools`_ (delta encoding)
+
+  - `heatshrink`_ (a compression algorithm)
+
+  - `humanfriendly`_ (various utilities)
+
   - `mbedTLS`_ (TLS, SSL, crypto, ...)
 
-  - `zlib`_
+  - `ml`_ (the Monolinux C library)
 
   - `xz`_ (LZMA)
 
-  - `detools`_ (delta encoding)
-
-ToDo:
-
-- ...
+  - `zlib`_
 
 Creating a project
 ==================
 
 A minimal Monolinux project's file tree looks like below. Add needed
-libraries to the `3pp`.
+software packages to the `3pp` folder.
 
 .. code-block:: text
 
@@ -103,17 +107,25 @@ Device tree.
 
 .. _Linux kernel: https://www.kernel.org/
 
-.. _ml: https://github.com/eerimoq/monolinux-c-library
+.. _async: https://github.com/eerimoq/async
+
+.. _bitstream: https://github.com/eerimoq/bitstream
 
 .. _curl: https://curl.haxx.se/
 
+.. _detools: https://github.com/eerimoq/detools
+
+.. _heatshrink: https://github.com/atomicobject/heatshrink
+
+.. _humanfriendly: https://github.com/eerimoq/humanfriendly
+
 .. _mbedTLS: https://tls.mbed.org/
 
-.. _zlib: https://zlib.net/
+.. _ml: https://github.com/eerimoq/monolinux-c-library
 
 .. _xz: https://tukaani.org/xz/
 
-.. _detools: https://github.com/eerimoq/detools
+.. _zlib: https://zlib.net/
 
 .. _An Monolinux example project: https://github.com/eerimoq/monolinux-example-project
 
