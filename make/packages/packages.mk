@@ -18,6 +18,8 @@ XZ_RSYNC = $(BUILD)/packages/xz/monolinux.rsync
 XZ_BUILD = $(BUILD)/packages/xz/monolinux.build
 ZLIB_RSYNC = $(BUILD)/packages/zlib/monolinux.rsync
 ZLIB_BUILD = $(BUILD)/packages/zlib/monolinux.build
+LINUX_RSYNC = $(BUILD)/linux/monolinux.rsync
+LINUX_BUILD = $(BUILD)/linux/monolinux.build
 
 define PACKAGE_template
 packages-rsync: $1-rsync
@@ -39,4 +41,6 @@ $1-rsync:
 
 $1-clean:
 	rm -rf $$(PACKAGES)/$1 $4
+
+$3: $(LINUX_BUILD)
 endef

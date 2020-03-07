@@ -7,7 +7,7 @@ CC = $(CROSS_COMPILE)gcc
 CFLAGS += -O2
 LDFLAGS += -static
 SYSROOT = $(BUILD)/root
-QEMU_DISKS ?= # mldisk.img
+QEMU_DISKS ?=
 
 .PHONY: all run build packages
 
@@ -25,7 +25,8 @@ packages-clean:
 	rm -rf $(BUILD)/packages $(BUILD)/root
 
 build:
-	$(MAKE) linux-all packages
+	$(MAKE) linux-all
+	$(MAKE) packages
 	$(MAKE) $(INITRAMFS)
 
 run: build

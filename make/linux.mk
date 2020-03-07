@@ -1,19 +1,20 @@
 LINUX_SRC = $(BUILD)/linux
-LINUX_RSYNC = $(BUILD)/linux/monolinux.rsync
-LINUX_BUILD = $(BUILD)/linux/monolinux.build
 
 linux-all:
 	$(MAKE) linux-rsync
 	$(MAKE) linux-build
 
+linux-rsync: $(LINUX_RSYNC)
+
 linux-build: $(LINUX_BUILD)
 
-linux-rsync:
+$(LINUX_RSYNC):
 	mkdir -p $(BUILD)
 	if [ -n "$$(rsync -ariOu $(ML_SOURCES)/linux $(BUILD))" ] ; then \
 	    echo "linux sources updated" && \
 	    touch $(LINUX_RSYNC) ; \
 	fi
+
 
 $(LINUX_BUILD): $(ML_LINUX_CONFIG)
 $(LINUX_BUILD): $(LINUX_RSYNC)
