@@ -4,11 +4,9 @@ linux-all:
 	$(MAKE) linux-rsync
 	$(MAKE) linux-build
 
-linux-rsync: $(LINUX_RSYNC)
-
 linux-build: $(LINUX_BUILD)
 
-$(LINUX_RSYNC):
+linux-rsync:
 	mkdir -p $(BUILD)
 	if [ -n "$$(rsync -ariOu $(ML_SOURCES)/linux $(BUILD))" ] ; then \
 	    echo "linux sources updated" && \

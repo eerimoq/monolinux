@@ -41,6 +41,4 @@ $1-rsync:
 
 $1-clean:
 	rm -rf $$(PACKAGES)/$1 $4
-
-$3: $(LINUX_BUILD)
 endef
