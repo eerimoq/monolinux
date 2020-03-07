@@ -8,10 +8,8 @@ LOOP_DEV=$(sudo losetup -f)
 MOUNT_POINT=mldisk
 SIZE=10M
 
-echo "Creating $SIZE file storage $DISK."
-
 # Create a partition.
-qemu-img create -f raw $DISK $SIZE
+qemu-img create -q -f raw $DISK $SIZE
 fdisk $DISK <<EOF
 n
 
@@ -23,7 +21,7 @@ EOF
 
 # Create a file system. 2048 * 512 = 1048576.
 sudo losetup -o 1048576 $LOOP_DEV $DISK
-sudo mkfs.ext4 $LOOP_DEV
+sudo mkfs.ext4 -q $LOOP_DEV
 
 # Write an empty file to the file system.
 mkdir $MOUNT_POINT
@@ -40,13 +38,8 @@ sudo sh -c "cat <<EOF > $MOUNT_POINT/README
 +---------------------------------------------------+
 EOF"
 
-echo "Data dir: $DATA_DIR"
-
 if [ -e "$DATA_DIR" ] ; then
-    echo "Copying files from $DATA_DIR to disk."
     sudo cp -r $DATA_DIR $MOUNT_POINT
-else
-    echo "No files to copy. "
 fi
 
 sudo umount $MOUNT_POINT
