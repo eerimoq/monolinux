@@ -1,8 +1,8 @@
 Monolinux
 =========
 
-An embedded Linux distro with a single statically linked executable,
-because smaller is better!
+Create embedded Linux systems with a single statically linked
+executable, because smaller is better!
 
 Monolinux is primarily targeting the `C` programming language.
 
