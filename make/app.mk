@@ -33,7 +33,8 @@ run: build
 	qemu-system-x86_64 \
 	    -kernel $(BZIMAGE) \
 	    -initrd $(INITRAMFS) \
-	    -nographic -append "console=ttyS0" \
+	    -nographic \
+	    -append "console=ttyS0" \
 	    $(QEMU_DISKS:%=-drive format=raw,file=%)
 
 size:
