@@ -36,6 +36,9 @@ run: build
 	    -nographic -append "console=ttyS0" \
 	    $(QEMU_DISKS:%=-drive format=raw,file=%)
 
+size:
+	ls -lh $(BZIMAGE) $(INITRAMFS) $(EXE)
+
 $(INITRAMFS): $(EXE)
 	@echo "Creating the initramfs."
 	fakeroot $(ML_ROOT)/make/create_initramfs.sh $(BUILD) "$(INITRAMFS_FILES)"
