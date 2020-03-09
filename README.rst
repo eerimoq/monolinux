@@ -82,6 +82,7 @@ See ``man procfs`` for details of the following commands.
    $ cat /proc/net/route
    $ cat /proc/uptime
    $ cat /proc/version
+   $ cat /proc/mounts
 
 Disk commands.
 
