@@ -14,9 +14,8 @@ chmod +x init
 cd - > /dev/null
 
 for file in $INITRAMFS_FILES ; do
-    echo "Copying $file to /root in the initramfs."
     cp $file $BUILD/initramfs/root
 done
 
 cd $BUILD/initramfs
-find . | cpio -H newc -o > ../initramfs.cpio
+find . | cpio --quiet -H newc -o > ../initramfs.cpio
