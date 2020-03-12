@@ -7,7 +7,7 @@ $(CURL_BUILD): $(MBEDTLS_BUILD)
 $(CURL_BUILD): $(ZLIB_BUILD)
 $(CURL_BUILD): $(CURL_RSYNC)
 	echo "Building curl."
-	cd $(PACKAGES)/curl && \
+	cd $(PACKAGES_DIR)/curl && \
 	./buildconf && \
 	./configure \
 		CFLAGS="-ffunction-sections -fdata-sections" \
@@ -21,7 +21,7 @@ $(CURL_BUILD): $(CURL_RSYNC)
 		--disable-file --disable-tftp --disable-imap --disable-pop3 \
 		--disable-smtp --disable-rtsp --disable-gopher \
 		--with-random=/dev/urandom
-	$(MAKE) -C $(PACKAGES)/curl/lib
-	$(MAKE) -C $(PACKAGES)/curl/lib install
-	$(MAKE) -C $(PACKAGES)/curl/include install
+	$(MAKE) -C $(PACKAGES_DIR)/curl/lib
+	$(MAKE) -C $(PACKAGES_DIR)/curl/lib install
+	$(MAKE) -C $(PACKAGES_DIR)/curl/include install
 	touch $@

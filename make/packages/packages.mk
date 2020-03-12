@@ -33,12 +33,12 @@ $1-all:
 $1-build: $3
 
 $1-rsync:
-	mkdir -p $$(PACKAGES)
-	if [ -n "$$$$(rsync -ariOu $$(ML_SOURCES)/$1 $$(PACKAGES))" ] ; then \
+	mkdir -p $$(PACKAGES_DIR)
+	if [ -n "$$$$(rsync -ariOu $$(ML_SOURCES)/$1 $$(PACKAGES_DIR))" ] ; then \
 	    echo "$1 sources updated" && \
 	    touch $2 ; \
 	fi
 
 $1-clean:
-	rm -rf $$(PACKAGES)/$1 $4
+	rm -rf $$(PACKAGES_DIR)/$1 $4
 endef

@@ -8,7 +8,7 @@ $(eval $(call PACKAGE_template,mbedtls,$(MBEDTLS_RSYNC),$(MBEDTLS_BUILD),$(LIBMB
 $(MBEDTLS_BUILD): $(MBEDTLS_RSYNC)
 	echo "Building mbedtls."
 	mkdir -p $(SYSROOT)/lib
-	sed -i "s|install: no_test|install:|g" $(PACKAGES)/mbedtls/Makefile
-	$(MAKE) -C $(PACKAGES)/mbedtls lib CC=$(CROSS_COMPILE)gcc
-	$(MAKE) -C $(PACKAGES)/mbedtls install DESTDIR=$(SYSROOT)
+	sed -i "s|install: no_test|install:|g" $(PACKAGES_DIR)/mbedtls/Makefile
+	$(MAKE) -C $(PACKAGES_DIR)/mbedtls lib CC=$(CROSS_COMPILE)gcc
+	$(MAKE) -C $(PACKAGES_DIR)/mbedtls install DESTDIR=$(SYSROOT)
 	touch $@

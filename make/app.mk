@@ -8,6 +8,8 @@ CFLAGS += -O2
 LDFLAGS += -static
 SYSROOT = $(BUILD)/root
 QEMU_DISKS ?=
+BUILD = $(shell readlink -f build)
+PACKAGES_DIR = $(BUILD)/packages
 
 .PHONY: all run build packages
 
@@ -43,6 +45,13 @@ size:
 $(INITRAMFS): $(EXE)
 	@echo "Creating the initramfs."
 	fakeroot $(ML_ROOT)/make/create_initramfs.sh $(BUILD) "$(INITRAMFS_FILES)"
+
+include $(ML_ROOT)/make/packages/packages.mk
+
+define PACKAGE_IMPORT_template
+include $(ML_ROOT)/make/packages/$1.mk
+endef
+$(foreach package,$(PACKAGES),$(eval $(call PACKAGE_IMPORT_template,$(package))))
 
 include $(ML_ROOT)/make/linux.mk
 include $(ML_ROOT)/make/build.mk

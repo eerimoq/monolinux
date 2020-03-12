@@ -6,8 +6,8 @@ $(eval $(call PACKAGE_template,monolinux-c-library,$(MONOLINUX_C_LIBRARY_RSYNC),
 $(MONOLINUX_C_LIBRARY_BUILD): $(MONOLINUX_C_LIBRARY_RSYNC)
 	echo "Building monolinux-c-library."
 	mkdir -p $(SYSROOT)/lib
-	$(MAKE) -C $(PACKAGES)/monolinux-c-library library \
+	$(MAKE) -C $(PACKAGES_DIR)/monolinux-c-library library \
 	    CC=$(CROSS_COMPILE)gcc ML_ROOT=.
-	$(MAKE) -C $(PACKAGES)/monolinux-c-library install \
+	$(MAKE) -C $(PACKAGES_DIR)/monolinux-c-library install \
 	    ML_ROOT=. PREFIX=$(SYSROOT)
 	touch $@

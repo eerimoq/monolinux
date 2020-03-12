@@ -6,6 +6,6 @@ $(eval $(call PACKAGE_template,humanfriendly,$(HUMANFRIENDLY_RSYNC),$(HUMANFRIEN
 $(HUMANFRIENDLY_BUILD): $(HUMANFRIENDLY_RSYNC)
 	echo "Building humanfriendly."
 	mkdir -p $(SYSROOT)/lib
-	$(MAKE) -C $(PACKAGES)/humanfriendly library
-	$(MAKE) -C $(PACKAGES)/humanfriendly install PREFIX=$(SYSROOT)
+	$(MAKE) -C $(PACKAGES_DIR)/humanfriendly library
+	$(MAKE) -C $(PACKAGES_DIR)/humanfriendly install PREFIX=$(SYSROOT)
 	touch $@
