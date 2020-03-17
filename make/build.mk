@@ -26,7 +26,7 @@ $(patsubst %.c,$(BUILD)%.o,$(abspath $1)): $1
 	mkdir -p $(BUILD)$(abspath $(dir $1))
 	mkdir -p $(DEPSDIR)$(abspath $(dir $1))
 	$$(CC) $$(CFLAGS) -c -o $$@ $$<
-	gcc -MM -MT $$@ $$(CFLAGS) -o $(patsubst %.c,$(DEPSDIR)%.o.dep,$(abspath $1)) $$<
+	$$(CC) -MM -MT $$@ $$(CFLAGS) -o $(patsubst %.c,$(DEPSDIR)%.o.dep,$(abspath $1)) $$<
 endef
 $(foreach file,$(SRC),$(eval $(call COMPILE_template,$(file))))
 
