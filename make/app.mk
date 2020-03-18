@@ -42,7 +42,7 @@ run: build
 size:
 	ls -lh $(BZIMAGE) $(INITRAMFS) $(EXE)
 
-$(INITRAMFS): $(EXE)
+$(INITRAMFS): $(EXE) $(INITRAMFS_FILES)
 	@echo "Creating the initramfs."
 	fakeroot $(ML_ROOT)/make/create_initramfs.sh $(BUILD) "$(INITRAMFS_FILES)"
 
