@@ -18,4 +18,5 @@ for file in $INITRAMFS_FILES ; do
 done
 
 cd $BUILD/initramfs
+# find . | cpio --quiet -H newc -o | lz4 -9 -l > ../initramfs.cpio.lz4
 find . | cpio --quiet -H newc -o > ../initramfs.cpio
