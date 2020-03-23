@@ -21,6 +21,13 @@ ZLIB_BUILD = $(BUILD)/packages/zlib/monolinux.build
 LINUX_RSYNC = $(BUILD)/linux/monolinux.rsync
 LINUX_BUILD = $(BUILD)/linux/monolinux.build
 
+# Common package definitions.
+#
+# $1: Package name.
+# $2: Package rsync file.
+# $3: Package build file.
+# $4: Provided static libraries.
+#
 define PACKAGE_template
 packages-rsync: $1-rsync
 
@@ -35,7 +42,7 @@ $1-build: $3
 $1-rsync:
 	mkdir -p $$(PACKAGES_DIR)
 	if [ -n "$$$$(rsync -ariOu $$(ML_SOURCES)/$1 $$(PACKAGES_DIR))" ] ; then \
-	    echo "$1 sources updated" && \
+	    echo "$1 sources updated." && \
 	    touch $2 ; \
 	fi
 

@@ -9,7 +9,7 @@ linux-build: $(LINUX_BUILD)
 linux-rsync:
 	mkdir -p $(BUILD)
 	if [ -n "$$(rsync -ariOu $(ML_SOURCES)/linux $(BUILD))" ] ; then \
-	    echo "linux sources updated" && \
+	    echo "linux sources updated." && \
 	    touch $(LINUX_RSYNC) ; \
 	fi
 
