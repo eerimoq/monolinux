@@ -5,6 +5,7 @@ LIBMBEDTLS += $(BUILD)/root/lib/libmbedcrypto.a
 
 $(eval $(call PACKAGE_template,mbedtls,$(MBEDTLS_RSYNC),$(MBEDTLS_BUILD),$(LIBMBEDTLS)))
 
+$(MBEDTLS_BUILD): $(DBG_MACRO_BUILD)
 $(MBEDTLS_BUILD): $(MBEDTLS_RSYNC)
 	echo "Building mbedtls."
 	mkdir -p $(SYSROOT)/lib

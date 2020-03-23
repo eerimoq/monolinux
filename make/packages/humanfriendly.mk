@@ -3,6 +3,7 @@ LIBHF = $(BUILD)/root/lib/humanfriendly/libhf.a
 
 $(eval $(call PACKAGE_template,humanfriendly,$(HUMANFRIENDLY_RSYNC),$(HUMANFRIENDLY_BUILD),$(LIBHF)))
 
+$(HUMANFRIENDLY_BUILD): $(DBG_MACRO_BUILD)
 $(HUMANFRIENDLY_BUILD): $(HUMANFRIENDLY_RSYNC)
 	echo "Building humanfriendly."
 	mkdir -p $(SYSROOT)/lib

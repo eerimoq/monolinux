@@ -3,6 +3,7 @@ LIBCURL = $(BUILD)/root/lib/libcurl.a
 
 $(eval $(call PACKAGE_template,curl,$(CURL_RSYNC),$(CURL_BUILD),$(LIBCURL)))
 
+$(CURL_BUILD): $(DBG_MACRO_BUILD)
 $(CURL_BUILD): $(MBEDTLS_BUILD)
 $(CURL_BUILD): $(ZLIB_BUILD)
 $(CURL_BUILD): $(CURL_RSYNC)

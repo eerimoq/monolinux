@@ -3,6 +3,7 @@ LIBXZ = $(BUILD)/root/lib/liblzma.a
 
 $(eval $(call PACKAGE_template,xz,$(XZ_RSYNC),$(XZ_BUILD),$(LIBXZ)))
 
+$(XZ_BUILD): $(DBG_MACRO_BUILD)
 $(XZ_BUILD): $(XZ_RSYNC)
 	echo "Building xz."
 	mkdir -p $(PACKAGES_DIR)
