@@ -60,9 +60,11 @@ software packages to the `3pp` folder.
    ├── Makefile
    └── setup.sh                          - development environment setup script
 
-Here are two example projects:
+Here are more example projects:
 
 - `An Monolinux example project`_
+
+- `Monolinux Raspberry Pi 3`_
 
 - `Monolinux Jiffy`_
 
@@ -129,5 +131,7 @@ Device tree.
 .. _zlib: https://zlib.net/
 
 .. _An Monolinux example project: https://github.com/eerimoq/monolinux-example-project
+
+.. _Monolinux Raspberry Pi 3: https://github.com/eerimoq/monolinux-raspberry-pi-3
 
 .. _Monolinux Jiffy: https://github.com/eerimoq/monolinux-jiffy
