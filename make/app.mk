@@ -37,6 +37,8 @@ run: build
 	    -initrd $(INITRAMFS) \
 	    -nographic \
 	    -append "console=ttyS0" \
+	    -device e1000,netdev=net0 \
+	    -netdev user,id=net0,hostfwd=tcp::15000-:15000 \
 	    $(QEMU_DISKS:%=-drive format=raw,file=%)
 
 size:
