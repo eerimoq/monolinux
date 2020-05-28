@@ -7,6 +7,7 @@ CC = $(CROSS_COMPILE)gcc
 CFLAGS += -O2
 LDFLAGS += -static
 SYSROOT = $(BUILD)/root
+QEMU_NETDEV ?=
 QEMU_DISKS ?=
 BUILD = $(shell readlink -f build)
 PACKAGES_DIR = $(BUILD)/packages
@@ -38,7 +39,7 @@ run: build
 	    -nographic \
 	    -append "console=ttyS0" \
 	    -device e1000,netdev=net0 \
-	    -netdev user,id=net0,hostfwd=tcp::15000-:15000 \
+	    $(QEMU_NETDEV) \
 	    $(QEMU_DISKS:%=-drive format=raw,file=%)
 
 size:
