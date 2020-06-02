@@ -3,6 +3,7 @@ LIBBUNGA = $(BUILD)/root/lib/libbunga.a
 
 $(eval $(call PACKAGE_template,bunga,$(BUNGA_RSYNC),$(BUNGA_BUILD),$(LIBBUNGA)))
 
+$(BUNGA_BUILD): $(PBTOOLS_BUILD)
 $(BUNGA_BUILD): $(MESSI_BUILD)
 $(BUNGA_BUILD): $(BUNGA_RSYNC)
 	echo "Building bunga."
