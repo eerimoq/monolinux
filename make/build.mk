@@ -4,7 +4,6 @@ OBJ = $(patsubst %,$(BUILD)%,$(abspath $(SRC:%.c=%.o)))
 CFLAGS += $(INC:%=-I%)
 CFLAGS += -ffunction-sections -fdata-sections
 LDFLAGS += -Wl,--gc-sections -L$(BUILD)/root/lib $(LIBS:%=-l%)
-STRIP ?= no
 DEPSDIR = $(BUILD)/deps
 
 .PHONY: clean

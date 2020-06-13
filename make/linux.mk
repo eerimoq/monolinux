@@ -19,6 +19,11 @@ $(LINUX_BUILD): $(LINUX_RSYNC)
 	echo "Building the Linux kernel."
 	cp $(ML_LINUX_CONFIG) $(LINUX_SRC)/.config
 	$(MAKE) -C $(LINUX_SRC)
+ifeq ($(STRIP), yes)
+	for ko in $(LINUX_MODULE_FILES) ; do \
+	    $(CROSS_COMPILE)strip --strip-debug $$ko ; \
+	done
+endif
 	touch $@
 
 linux-clean:

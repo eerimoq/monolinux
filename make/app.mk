@@ -1,7 +1,8 @@
 EXE = $(BUILD)/app
 BZIMAGE ?= $(BUILD)/linux/arch/x86/boot/bzImage
 INITRAMFS = $(BUILD)/initramfs.cpio
-INITRAMFS_FILES ?=
+LINUX_MODULE_FILES ?=
+INITRAMFS_FILES += $(LINUX_MODULE_FILES)
 SCRIPTS_DIR = $(ML_ROOT)/scripts
 CC = $(CROSS_COMPILE)gcc
 CFLAGS += -O2
@@ -11,6 +12,7 @@ QEMU_NETDEV ?=
 QEMU_DISKS ?=
 BUILD = $(shell readlink -f build)
 PACKAGES_DIR = $(BUILD)/packages
+STRIP ?= yes
 
 .PHONY: all run build packages
 
