@@ -22,9 +22,13 @@ Features:
 
   - `async`_ (asynchronous framework)
 
-  - `bitstream`_
+  - `bitstream`_ (bit packing and unpacking)
+
+  - `bunga`_ (OAM over TCP/IP)
 
   - `curl`_ (HTTP, FTP, ...)
+
+  - `dbg-macro`_ (printf debugging)
 
   - `detools`_ (delta encoding)
 
@@ -34,7 +38,11 @@ Features:
 
   - `mbedTLS`_ (TLS, SSL, crypto, ...)
 
-  - `ml`_ (the Monolinux C library)
+  - `messi`_ (message passing in distributed systems)
+
+  - `monolinux-c-library`_ (the Monolinux C library)
+
+  - `pbtools`_ (Google Protocol Buffers)
 
   - `xz`_ (LZMA)
 
@@ -114,7 +122,11 @@ Device tree.
 
 .. _bitstream: https://github.com/eerimoq/bitstream
 
+.. _bunga: https://github.com/eerimoq/bunga
+
 .. _curl: https://curl.haxx.se/
+
+.. _dbg-macro: https://github.com/eerimoq/dbg-macro
 
 .. _detools: https://github.com/eerimoq/detools
 
@@ -124,7 +136,11 @@ Device tree.
 
 .. _mbedTLS: https://tls.mbed.org/
 
-.. _ml: https://github.com/eerimoq/monolinux-c-library
+.. _messi: https://github.com/eerimoq/messi
+
+.. _monolinux-c-library: https://github.com/eerimoq/monolinux-c-library
+
+.. _pbtools: https://github.com/eerimoq/pbtools
 
 .. _xz: https://tukaani.org/xz/
 
