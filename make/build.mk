@@ -3,6 +3,7 @@ SRC += main.c
 OBJ = $(patsubst %,$(BUILD)%,$(abspath $(SRC:%.c=%.o)))
 CFLAGS += $(INC:%=-I%)
 CFLAGS += -ffunction-sections -fdata-sections
+CFLAGS += -Wall -Werror
 LDFLAGS += -Wl,--gc-sections -L$(BUILD)/root/lib $(LIBS:%=-l%)
 DEPSDIR = $(BUILD)/deps
 
