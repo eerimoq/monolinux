@@ -15,6 +15,7 @@ $(EXE): $(OBJ) $(LIBS:%=$(BUILD)/root/lib/lib%.a)
 	@echo "LD $@"
 	mkdir -p $(BUILD)
 	$(CC) $(CFLAGS) $^ $(LDFLAGS) -lpthread -o $@
+	cp $@ $@.debug
 ifeq ($(STRIP), yes)
 	$(CROSS_COMPILE)strip $@
 endif
