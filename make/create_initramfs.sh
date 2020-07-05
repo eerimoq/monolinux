@@ -4,6 +4,7 @@ set -e
 
 BUILD=$1
 INITRAMFS_FILES=$2
+VERSION=$3
 
 rm -rf $BUILD/initramfs
 mkdir -p $BUILD/initramfs
@@ -11,6 +12,8 @@ cd $BUILD/initramfs
 mkdir root
 cp $BUILD/app init
 chmod +x init
+mkdir etc
+echo $VERSION > etc/version
 cd - > /dev/null
 
 for file in $INITRAMFS_FILES ; do

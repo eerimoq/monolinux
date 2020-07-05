@@ -13,6 +13,7 @@ QEMU_DISKS ?=
 BUILD = $(shell readlink -f build)
 PACKAGES_DIR = $(BUILD)/packages
 STRIP ?= yes
+VERSION ?= 0.0.0
 
 .PHONY: all run build packages
 
@@ -49,7 +50,10 @@ size:
 
 $(INITRAMFS): $(EXE) $(INITRAMFS_FILES)
 	@echo "Creating the initramfs."
-	fakeroot $(ML_ROOT)/make/create_initramfs.sh $(BUILD) "$(INITRAMFS_FILES)"
+	fakeroot $(ML_ROOT)/make/create_initramfs.sh \
+	    $(BUILD) \
+	    "$(INITRAMFS_FILES)" \
+	    $(VERSION)
 
 include $(ML_ROOT)/make/packages/packages.mk
 
