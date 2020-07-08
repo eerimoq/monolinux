@@ -28,7 +28,7 @@ packages-rsync:
 packages-build:
 
 packages-clean:
-	rm -rf $(BUILD)/packages $(BUILD)/root
+	rm -rf $(BUILD)/packages $(BUILD)/root $(BUILD)/deps
 
 build:
 	$(MAKE) linux-all
